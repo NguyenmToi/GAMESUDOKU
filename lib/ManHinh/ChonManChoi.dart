@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/ManHinhChoi.dart';
+import 'package:sudoku/ManHinh/ManHinhChoi.dart';
 
 class ChonManCHoi extends StatefulWidget {
   const ChonManCHoi({super.key});

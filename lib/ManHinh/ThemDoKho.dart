@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-class QuanLyMucDo extends StatefulWidget {
-  const QuanLyMucDo({super.key});
+class ThemDoKho extends StatefulWidget {
+  const ThemDoKho({super.key});
 
   @override
-  State<QuanLyMucDo> createState() => _QuanLyMucDoState();
+  State<ThemDoKho> createState() => ThemDoKhoState();
 }
 
-class _QuanLyMucDoState extends State<QuanLyMucDo> {
+class ThemDoKhoState extends State<ThemDoKho> {
   List<String> levels = ['Dễ', 'Trung bình', 'Khó', 'Ác mộng'];
   @override
   Widget build(BuildContext context) {

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/QuanLyMucDo.dart';
-import 'package:flutter_application_1/QuanLyThuThach.dart';
+import 'package:sudoku/ThanhPhan/QuanLyMucDo.dart';
+import 'package:sudoku/ThanhPhan/QuanLyThuThach.dart';
 
 class QuanLyManChoi extends StatefulWidget {
   const QuanLyManChoi({super.key});

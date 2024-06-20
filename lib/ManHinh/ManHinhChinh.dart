@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/ChonManChoi.dart';
-import 'package:flutter_application_1/QuanLyManChoi.dart';
-import 'package:flutter_application_1/QuanLyThongTinCaNhan.dart';
+import 'package:sudoku/ManHinh/ChonManChoi.dart';
+import 'package:sudoku/ManHinh/ManHinhChoiMucDo.dart';
+import 'package:sudoku/ManHinh/QuanLyManChoi.dart';
+import 'package:sudoku/ManHinh/QuanLyThongTinCaNhan.dart';
+import 'package:sudoku/ThanhPhan/QuanLyMucDo.dart';
 
 class ManHinhChinh extends StatefulWidget {
   const ManHinhChinh({super.key});
@@ -40,7 +42,7 @@ class _ManHinhChinhState extends State<ManHinhChinh> {
                         },
                         child: CircleAvatar(
                           radius: 25,
-                          backgroundImage: AssetImage('assets/df.jpg'),
+                          backgroundImage: AssetImage('assets/image/avt1.jpg'),
                           backgroundColor: Colors.transparent,
                         ),
                       ),
@@ -100,7 +102,7 @@ class _ManHinhChinhState extends State<ManHinhChinh> {
                     height: 20,
                   ),
                   Image.asset(
-                    'assets/df.jpg',
+                    'assets/image/logo.png',
                     width: 220,
                     height: 200,
                   ),
@@ -116,7 +118,7 @@ class _ManHinhChinhState extends State<ManHinhChinh> {
                       );
                     },
                     style: ElevatedButton.styleFrom(
-                      primary: Colors.blue[200], // nền xanh
+                      primary: Colors.blue, // nền xanh
                       onPrimary: Colors.white, // chữ đỏ
                       minimumSize: Size(280, 50), // Tăng bề ngang và độ cao
                       shape: RoundedRectangleBorder(
@@ -131,7 +133,12 @@ class _ManHinhChinhState extends State<ManHinhChinh> {
                     height: 15,
                   ),
                   ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => QuanLyMucDo()),
+                      );
+                    },
                     style: ElevatedButton.styleFrom(
                       primary: Colors.blue, // nền xanh
                       onPrimary: Colors.white, // chữ đỏ
@@ -151,8 +158,7 @@ class _ManHinhChinhState extends State<ManHinhChinh> {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                            builder: (context) => QuanLyManChoi()),
+                        MaterialPageRoute(builder: (context) => QuanLyMucDo()),
                       );
                     },
                     style: ElevatedButton.styleFrom(
