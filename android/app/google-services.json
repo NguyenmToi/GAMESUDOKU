@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "638551450653",
+    "project_id": "gamesudoku-170ad",
+    "storage_bucket": "gamesudoku-170ad.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:638551450653:android:9c85feb93330fd7d7152f4",
+        "android_client_info": {
+          "package_name": "com.example.sudoku"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBCJ7ItXJC4uic9Uz83aItStCS02fxmDlc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

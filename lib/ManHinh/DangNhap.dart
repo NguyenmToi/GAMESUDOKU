@@ -1,6 +1,10 @@
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:sudoku/ManHinh/DangKy.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:sudoku/MoHinh/xulydulieu.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class DangNhap extends StatefulWidget {
   const DangNhap({super.key});
@@ -13,6 +17,48 @@ class DangNhapState extends State<DangNhap> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   bool passToggle = false;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  Future<User?> signUpWithEmailAndPassword(String username, String phoneNumber,
+      String email, String password, bool status) async {
+    try {
+      UserCredential userCredential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(email: email, password: password);
+      String uid = userCredential.user?.uid ?? "";
+
+      saveUserData(uid, username, phoneNumber, email, status);
+
+      return userCredential.user;
+    } catch (e) {
+      print("Error during registration: $e");
+      return null;
+    }
+  }
+
+  void saveUserData(String uid, String username, String phoneNumber,
+      String email, bool status) {
+    final DatabaseReference userRef =
+        FirebaseDatabase.instance.reference().child('users').child(uid);
+    userRef.set({
+      'displayName': username,
+      'phoneNumber': phoneNumber,
+      'email': email,
+      'status': true,
+      'persission': false
+    });
+  }
+
+  Future<User?> signInWithEmailAndPassword(
+      String email, String password) async {
+    final FirebaseAuth _auth = FirebaseAuth.instance;
+    try {
+      UserCredential credential = await _auth.signInWithEmailAndPassword(
+          email: email, password: password);
+      return credential.user;
+    } catch (e) {
+      print("Some Error $e");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
