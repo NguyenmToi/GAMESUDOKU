@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/material.dart';
 import 'package:sudoku/ManHinh/ChonManChoi.dart';
 import 'package:sudoku/ManHinh/ManHinhChinh.dart';
 import 'package:sudoku/ManHinh/ManHinhChoi.dart';
 import 'package:sudoku/ManHinh/QuanLyManChoi.dart';
 import 'package:sudoku/ManHinh/QuanLyThongTinCaNhan.dart';
 import 'package:sudoku/ManHinh/DangKy.dart';
-import '';
 
 void main() {
   runApp(const MyApp());

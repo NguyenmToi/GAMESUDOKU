@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-class ThemChiTietDoKho extends StatefulWidget {
-  const ThemChiTietDoKho({Key? key}) : super(key: key);
+class TaoDoKho extends StatefulWidget {
+  const TaoDoKho({Key? key}) : super(key: key);
 
   @override
-  State<ThemChiTietDoKho> createState() => ThemChiTietDoKhoState();
+  State<TaoDoKho> createState() => TaoDoKhoState();
 }
 
-class ThemChiTietDoKhoState extends State<ThemChiTietDoKho> {
+class TaoDoKhoState extends State<TaoDoKho> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController hiddenCellsController = TextEditingController();
   final TextEditingController hintsController = TextEditingController();
@@ -104,13 +104,13 @@ class ThemChiTietDoKhoState extends State<ThemChiTietDoKho> {
                 Flexible(
                   child: ElevatedButton(
                     onPressed: () {
-                      // Add your solve game logic here
+                    
                     },
                     style: ElevatedButton.styleFrom(
-                      primary: Colors.blue, // Background color
+                      backgroundColor: Colors.blue, 
                       shape: RoundedRectangleBorder(
                         borderRadius:
-                            BorderRadius.circular(15), // Rounded corners
+                            BorderRadius.circular(15), 
                       ),
                     ),
                     child: Text(
@@ -128,7 +128,7 @@ class ThemChiTietDoKhoState extends State<ThemChiTietDoKho> {
                       // Add your random game logic here
                     },
                     style: ElevatedButton.styleFrom(
-                      primary: Colors.blue, // Background color
+                      backgroundColor: Colors.blue, // Background color
                       shape: RoundedRectangleBorder(
                         borderRadius:
                             BorderRadius.circular(15), // Rounded corners
@@ -147,7 +147,7 @@ class ThemChiTietDoKhoState extends State<ThemChiTietDoKho> {
                   child: ElevatedButton(
                     onPressed: _addDifficulty,
                     style: ElevatedButton.styleFrom(
-                      primary: Colors.blue, // Background color
+                      backgroundColor: Colors.blue, // Background color
                       shape: RoundedRectangleBorder(
                         borderRadius:
                             BorderRadius.circular(15), // Rounded corners
@@ -176,10 +176,10 @@ class bangSudoku extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        // Calculate cell size based on screen width minus padding and border widths
+        
         double screenWidth = constraints.maxWidth;
         double cellSize =
-            (screenWidth - 16.0) / 9.0; // 16.0 is total padding (8.0 * 2)
+            (screenWidth - 16.0) / 9.0;
 
         return Container(
           alignment: Alignment.center,

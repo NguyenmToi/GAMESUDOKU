@@ -24,7 +24,7 @@ class _ThongKeState extends State<ThongKe> {
                 CircleAvatar(
                     radius: 35,
                     backgroundColor: const Color.fromARGB(255, 255, 255, 255),
-                    child: Image.asset("data/img/anhCupXepHang.png")),
+                    child: Image.asset("assets/image/avt1.jpg")),
                 SizedBox(width: 16),
                 Text(
                   'Trương Công Mới',

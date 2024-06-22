@@ -78,7 +78,7 @@ class LichSuaChoiState extends State<LichSuaChoi> {
                           SizedBox(height: 10),
                           ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                              primary: Colors.blue, // Background color
+                              backgroundColor: Colors.blue, // Background color
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(
                                     15), // Rounded corners

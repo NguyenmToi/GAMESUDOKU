@@ -44,7 +44,7 @@ class XepHangState extends State<XepHang> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Image.asset(
-                "data/img/anhCupXepHang.png",
+                "assets/image/xephang.jpg",
                 height: 250,
                 width: double.infinity,
                 fit: BoxFit.contain,
@@ -56,7 +56,7 @@ class XepHangState extends State<XepHang> {
                   Expanded(
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        primary: selectedButton == 0
+                        backgroundColor: selectedButton == 0
                             ? Colors.blue
                             : Colors.grey, // Đổi màu nền nút
                         shape: RoundedRectangleBorder(
@@ -82,7 +82,7 @@ class XepHangState extends State<XepHang> {
                   Expanded(
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        primary: selectedButton == 1
+                        backgroundColor: selectedButton == 1
                             ? Colors.blue
                             : Colors.grey, // Đổi màu nền nút
                         shape: RoundedRectangleBorder(

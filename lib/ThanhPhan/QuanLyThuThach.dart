@@ -94,7 +94,7 @@ class _QuanLyThuThachState extends State<QuanLyThuThach> {
             );
           },
           style: ElevatedButton.styleFrom(
-            primary: Colors.blue, // Loại bỏ màu nền mặc định của ElevatedButton
+            backgroundColor: Colors.blue, // Loại bỏ màu nền mặc định của ElevatedButton
             elevation: 0.0, // Loại bỏ độ nhấn của ElevatedButton
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(0.0), // Tạo góc vuông cho nút

@@ -154,8 +154,7 @@ class _QuanLyThongTinCaNhanState extends State<QuanLyThongTinCaNhan> {
                   // Thêm hành động đăng xuất ở đây
                 },
                 style: ElevatedButton.styleFrom(
-                  primary: Colors.greenAccent[200], // nền xanh
-                  onPrimary: Colors.red, // chữ đỏ
+                  foregroundColor: Colors.red, backgroundColor: Colors.greenAccent[200], // chữ đỏ
                   minimumSize: Size(220, 50), // Tăng bề ngang và độ cao
                 ),
                 child: Text('Đăng Xuất', style: TextStyle(fontSize: 22)),

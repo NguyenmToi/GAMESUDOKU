@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sudoku/ManHinh/TaoDoKho.dart';
 
 class QuanLyMucDo extends StatefulWidget {
   const QuanLyMucDo({super.key});
@@ -18,9 +19,12 @@ class _QuanLyMucDoState extends State<QuanLyMucDo> {
           children: [
             ElevatedButton(
               onPressed: () {
-                // Xử lý khi nút "thêm mức độ chơi" được nhấn
+                 Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => TaoDoKho()),
+                    );
               },
-              child: Text('Thêm mức độ chơi'),
+              child: Text('Tạo mức độ chơi'),
               style: ElevatedButton.styleFrom(
                 minimumSize: Size(double.infinity, 50), // Co giãn theo màn hình
                 shape: RoundedRectangleBorder(
