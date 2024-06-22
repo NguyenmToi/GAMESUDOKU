@@ -1,4 +1,9 @@
+import 'dart:math';
+
+import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:sudoku/MoHinh/xulydulieu.dart';
 
 class DangKy extends StatefulWidget {
   const DangKy({super.key});
@@ -13,6 +18,49 @@ class DangKyState extends State<DangKy> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
       TextEditingController();
+
+  String generateRandomString(int length) {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    final random = Random();
+    return String.fromCharCodes(
+      List.generate(
+          length, (_) => chars.codeUnitAt(random.nextInt(chars.length))),
+    );
+  }
+
+  Future<void> addAccount(TextEditingController usernameController,
+      [TextEditingController? passwordController]) async {
+    final name = _usernameController.text;
+    final pass = _passwordController.text;
+    final vaitro = 1;
+    final anh = null;
+    final trangthai = true;
+
+    String idProduct = generateRandomString(10);
+
+    try {
+      DatabaseReference productsRef =
+          FirebaseDatabase.instance.ref().child('taikhoan');
+
+      String productId = productsRef.push().key!;
+
+      Map<String, dynamic> productData = {
+        'idproduct': idProduct,
+        'taikhoan': name,
+        'tentaikhoan': name,
+        'anh': anh,
+        'trangthai': trangthai,
+        'vaitro': vaitro,
+        'matkhau': pass,
+      };
+
+      productsRef
+          .child(productId)
+          .set(productData)
+          .then((_) {})
+          .catchError((error) {});
+    } catch (error) {}
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -84,6 +132,7 @@ class DangKyState extends State<DangKy> {
                   ),
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
+                      addAccount(_usernameController, _passwordController);
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text('Đăng ký thành công')),
                       );
