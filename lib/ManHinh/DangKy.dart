@@ -36,7 +36,7 @@ class DangKyState extends State<DangKy> {
     final anh = null;
     final trangthai = true;
 
-    String idProduct = generateRandomString(10);
+    String id = generateRandomString(10);
 
     try {
       DatabaseReference productsRef =
@@ -45,7 +45,7 @@ class DangKyState extends State<DangKy> {
       String productId = productsRef.push().key!;
 
       Map<String, dynamic> productData = {
-        'idproduct': idProduct,
+        'id': id,
         'taikhoan': name,
         'tentaikhoan': name,
         'anh': anh,

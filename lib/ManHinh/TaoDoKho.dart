@@ -13,16 +13,13 @@ class TaoDoKhoState extends State<TaoDoKho> {
   final TextEditingController hiddenCellsController = TextEditingController();
   final TextEditingController hintsController = TextEditingController();
 
-  // Input formatters to allow only numeric input
   final _numberTextInputFormatter =
       FilteringTextInputFormatter.allow(RegExp(r'[0-9]'));
 
   void _addDifficulty() {
-    // Check if any field is empty
     if (nameController.text.isEmpty ||
         hiddenCellsController.text.isEmpty ||
         hintsController.text.isEmpty) {
-      // Show an error dialog if any field is empty
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
@@ -39,11 +36,9 @@ class TaoDoKhoState extends State<TaoDoKho> {
       return;
     }
 
-    // Parse the number of hidden cells from the controller
     int hiddenCells = int.tryParse(hiddenCellsController.text) ?? 0;
 
     if (hiddenCells <= 0 || hiddenCells > 81) {
-      // Show an error dialog if the number of hidden cells is invalid
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
@@ -58,9 +53,6 @@ class TaoDoKhoState extends State<TaoDoKho> {
         ),
       );
     } else {
-      // Proceed with adding the difficulty level
-      // Implement your logic here
-      // For now, just print the values
       print('Name: ${nameController.text}');
       print('Hidden Cells: $hiddenCells');
       print('Hints: ${hintsController.text}');
@@ -71,7 +63,28 @@ class TaoDoKhoState extends State<TaoDoKho> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Thêm mức độ'),
+        backgroundColor: Colors.yellow[200], // Màu nền appbar
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios),
+          color: Colors.grey,
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+        title: const Stack(
+          children: [
+            Align(
+              alignment: Alignment.center,
+              child: Padding(
+                padding: EdgeInsets.only(right: 38.0),
+                child: Text(
+                  'Tạo mức độ chơi',
+                  style: TextStyle(color: Colors.black, fontSize: 25),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(8.0),
@@ -101,68 +114,74 @@ class TaoDoKhoState extends State<TaoDoKho> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: <Widget>[
-                Flexible(
-                  child: ElevatedButton(
-                    onPressed: () {
-                    
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue, 
-                      shape: RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(15), 
+                Expanded(
+                  child: SizedBox(
+                    height: 45, // Set the height for the button
+                    child: ElevatedButton(
+                      onPressed: () {
+                        // Add your random game logic here
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue, // Background color
+                        shape: RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.circular(15), // Rounded corners
+                        ),
                       ),
-                    ),
-                    child: Text(
-                      'Giải trò chơi',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 15,
-                      ),
-                    ),
-                  ),
-                ),
-                Flexible(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      // Add your random game logic here
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue, // Background color
-                      shape: RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(15), // Rounded corners
-                      ),
-                    ),
-                    child: Text(
-                      'Ngẫu nhiên',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 15,
+                      child: Text(
+                        'Ngẫu nhiên',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 17,
+                        ),
                       ),
                     ),
                   ),
                 ),
-                Flexible(
-                  child: ElevatedButton(
-                    onPressed: _addDifficulty,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue, // Background color
-                      shape: RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(15), // Rounded corners
+                SizedBox(width: 10),
+                Expanded(
+                  child: SizedBox(
+                    height: 45,
+                    child: ElevatedButton(
+                      onPressed: () {},
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
                       ),
-                    ),
-                    child: Text(
-                      'Thêm mức độ',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 15,
+                      child: Text(
+                        'Giải trò chơi',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 17,
+                        ),
                       ),
                     ),
                   ),
                 ),
               ],
+            ),
+            SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton(
+                onPressed: _addDifficulty,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                ),
+                child: Text(
+                  'Thêm mức độ',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                  ),
+                ),
+              ),
             ),
           ],
         ),
@@ -176,32 +195,27 @@ class bangSudoku extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        
         double screenWidth = constraints.maxWidth;
-        double cellSize =
-            (screenWidth - 16.0) / 9.0;
+        double cellSize = (screenWidth - 16.0) / 9.0;
 
         return Container(
           alignment: Alignment.center,
           padding: const EdgeInsets.all(8.0),
           child: GridView.builder(
-            physics: NeverScrollableScrollPhysics(), // Disable scrolling
-            shrinkWrap:
-                true, // Allow GridView to occupy only the space it needs
-            itemCount: 81, // 9x9 grid
+            physics: NeverScrollableScrollPhysics(),
+            shrinkWrap: true,
+            itemCount: 81,
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 9,
-              mainAxisSpacing: 0.2, // Vertical spacing between cells
-              crossAxisSpacing: 0.2, // Horizontal spacing between cells
+              mainAxisSpacing: 0.2,
+              crossAxisSpacing: 0.2,
             ),
             itemBuilder: (context, index) {
-              // Determine fixed border widths
               double borderLeft = 0.2;
               double borderRight = 0.2;
               double borderTop = 0.2;
               double borderBottom = 0.2;
 
-              // Adjust border widths for 3x3 blocks
               if ((index % 9) % 3 == 0) {
                 borderLeft = 1.2;
               }

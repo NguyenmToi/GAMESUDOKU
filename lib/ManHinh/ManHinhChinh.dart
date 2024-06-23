@@ -7,6 +7,7 @@ import 'package:sudoku/ManHinh/ThongKe.dart';
 import 'package:sudoku/ManHinh/XepHang.dart';
 import 'package:sudoku/ThanhPhan/ChonMucDoChoi.dart';
 import 'package:sudoku/ThanhPhan/QuanLyMucDo.dart';
+import 'package:sudoku/ManHinh/QuanLyTaiKhoan.dart';
 
 class ManHinhChinh extends StatefulWidget {
   const ManHinhChinh({super.key});
@@ -161,7 +162,8 @@ class HomeScreen extends StatelessWidget {
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    foregroundColor: Colors.white, backgroundColor: Colors.blue, // chữ đỏ
+                    foregroundColor: Colors.white,
+                    backgroundColor: Colors.blue, // chữ đỏ
                     minimumSize: Size(280, 50), // Tăng bề ngang và độ cao
                     shape: RoundedRectangleBorder(
                       borderRadius:
@@ -174,19 +176,18 @@ class HomeScreen extends StatelessWidget {
                   height: 15,
                 ),
                 ElevatedButton(
-                  
                   onPressed: () => _showDifficultyLevels(context),
-                  
                   style: ElevatedButton.styleFrom(
-                    foregroundColor: Colors.white, backgroundColor: Colors.blue, // chữ đỏ
+                    foregroundColor: Colors.white,
+                    backgroundColor: Colors.blue, // chữ đỏ
                     minimumSize: Size(280, 50), // Tăng bề ngang và độ cao
                     shape: RoundedRectangleBorder(
                       borderRadius:
                           BorderRadius.circular(15), // làm tròn góc 8px
                     ),
                   ),
-                  child: const Text('Ngẫu nhiên',
-                      style: TextStyle(fontSize: 22)),
+                  child:
+                      const Text('Ngẫu nhiên', style: TextStyle(fontSize: 22)),
                 ),
                 const SizedBox(
                   height: 15,
@@ -199,7 +200,8 @@ class HomeScreen extends StatelessWidget {
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    foregroundColor: Colors.white, backgroundColor: Colors.blue, // chữ đỏ
+                    foregroundColor: Colors.white,
+                    backgroundColor: Colors.blue, // chữ đỏ
                     minimumSize: Size(280, 50), // Tăng bề ngang và độ
                     shape: RoundedRectangleBorder(
                       borderRadius:
@@ -214,10 +216,15 @@ class HomeScreen extends StatelessWidget {
                 ),
                 ElevatedButton(
                   onPressed: () {
-
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const QuanLyTaiKhoan()),
+                    );
                   },
                   style: ElevatedButton.styleFrom(
-                    foregroundColor: Colors.white, backgroundColor: Colors.blue, // chữ đỏ
+                    foregroundColor: Colors.white,
+                    backgroundColor: Colors.blue, // chữ đỏ
                     minimumSize: Size(280, 50), // Tăng bề ngang và độ cao
                     shape: RoundedRectangleBorder(
                       borderRadius:
@@ -254,67 +261,70 @@ class _ThongKe extends StatelessWidget {
   }
 }
 
-void _showDifficultyLevels(BuildContext context, {bool showBottomSheet = true}) {
-    if (showBottomSheet) {
-      showModalBottomSheet(
-        context: context,
-        builder: (BuildContext context) {
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              ListTile(
-                leading: const Icon(Icons.sentiment_satisfied),
-                title: const Text('Dễ'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => EasyScreen()),
-                  );
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.sentiment_neutral),
-                title: const Text('Trung Bình'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => MediumScreen()),
-                  );
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.sentiment_dissatisfied),
-                title: const Text('Khó'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => HardScreen()),
-                  );
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.sentiment_very_dissatisfied),
-                title: const Text('Ác Mộng'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => NightmareScreen()),
-                  );
-                },
-              ),
-            ],
-          );
-        },
-      );
-    } else {
-      // Optional: Direct navigation without showing the bottom sheet
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => EasyScreen()), // Replace with appropriate screen
-      );
-    }
+void _showDifficultyLevels(BuildContext context,
+    {bool showBottomSheet = true}) {
+  if (showBottomSheet) {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            ListTile(
+              leading: const Icon(Icons.sentiment_satisfied),
+              title: const Text('Dễ'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ManHinhChoiMucDo()),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.sentiment_neutral),
+              title: const Text('Trung Bình'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ManHinhChoiMucDo()),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.sentiment_dissatisfied),
+              title: const Text('Khó'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ManHinhChoiMucDo()),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.sentiment_very_dissatisfied),
+              title: const Text('Ác Mộng'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ManHinhChoiMucDo()),
+                );
+              },
+            ),
+          ],
+        );
+      },
+    );
+  } else {
+    // Optional: Direct navigation without showing the bottom sheet
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+          builder: (context) =>
+              ManHinhChoiMucDo()), // Replace with appropriate screen
+    );
   }
+}
