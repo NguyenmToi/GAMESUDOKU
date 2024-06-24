@@ -14,23 +14,25 @@ class _QuanLyMucDoState extends State<QuanLyMucDo> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(7.0),
         child: Column(
           children: [
             ElevatedButton(
               onPressed: () {
-                 Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => TaoDoKho()),
-                    );
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => TaoDoKho()),
+                );
               },
-              child: Text('Tạo mức độ chơi'),
+              child: Text('Tạo mức độ chơi',
+                  style: TextStyle(color: Colors.white, fontSize: 18)),
               style: ElevatedButton.styleFrom(
                 minimumSize: Size(double.infinity, 50), // Co giãn theo màn hình
                 shape: RoundedRectangleBorder(
                   borderRadius:
                       BorderRadius.circular(15), // Thêm bán kính bo tròn
                 ),
+                backgroundColor: Colors.blue, // Đặt màu nền xanh
               ),
             ),
             SizedBox(height: 20),
@@ -39,23 +41,23 @@ class _QuanLyMucDoState extends State<QuanLyMucDo> {
                 itemCount: levels.length,
                 itemBuilder: (context, index) {
                   return Card(
-                    color: Colors.blue,
+                    color: Colors.lightBlue[100],
                     child: ListTile(
                       title: Text(
                         levels[index],
-                        style: TextStyle(color: Colors.white),
+                        style: TextStyle(color: Colors.black),
                       ),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           IconButton(
-                            icon: Icon(Icons.edit, color: Colors.white),
+                            icon: Icon(Icons.edit, color: Colors.black),
                             onPressed: () {
                               // Xử lý khi nhấn icon sửa
                             },
                           ),
                           IconButton(
-                            icon: Icon(Icons.delete, color: Colors.white),
+                            icon: Icon(Icons.delete, color: Colors.black),
                             onPressed: () {
                               // Xử lý khi nhấn icon xóa
                             },

@@ -68,7 +68,7 @@ class _QuanLyManChoi extends State<QuanLyManChoi> {
                         )),
                     child: const Text(
                       'Thử thách',
-                      style: TextStyle(color: Colors.black),
+                      style: TextStyle(color: Colors.black, fontSize: 17),
                     ),
                   ),
                 ),
@@ -93,7 +93,7 @@ class _QuanLyManChoi extends State<QuanLyManChoi> {
                         )),
                     child: const Text(
                       'Mức độ',
-                      style: TextStyle(color: Colors.black),
+                      style: TextStyle(color: Colors.black, fontSize: 17),
                     ),
                   ),
                 ),

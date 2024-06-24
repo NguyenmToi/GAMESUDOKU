@@ -3,6 +3,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:sudoku/ManHinh/DangKy.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:sudoku/ManHinh/ManHinhChinh.dart';
 import 'package:sudoku/MoHinh/xulydulieu.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -17,48 +18,6 @@ class DangNhapState extends State<DangNhap> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   bool passToggle = false;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-
-  Future<User?> signUpWithEmailAndPassword(String username, String phoneNumber,
-      String email, String password, bool status) async {
-    try {
-      UserCredential userCredential = await FirebaseAuth.instance
-          .createUserWithEmailAndPassword(email: email, password: password);
-      String uid = userCredential.user?.uid ?? "";
-
-      saveUserData(uid, username, phoneNumber, email, status);
-
-      return userCredential.user;
-    } catch (e) {
-      print("Error during registration: $e");
-      return null;
-    }
-  }
-
-  void saveUserData(String uid, String username, String phoneNumber,
-      String email, bool status) {
-    final DatabaseReference userRef =
-        FirebaseDatabase.instance.reference().child('users').child(uid);
-    userRef.set({
-      'displayName': username,
-      'phoneNumber': phoneNumber,
-      'email': email,
-      'status': true,
-      'persission': false
-    });
-  }
-
-  Future<User?> signInWithEmailAndPassword(
-      String email, String password) async {
-    final FirebaseAuth _auth = FirebaseAuth.instance;
-    try {
-      UserCredential credential = await _auth.signInWithEmailAndPassword(
-          email: email, password: password);
-      return credential.user;
-    } catch (e) {
-      print("Some Error $e");
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -119,7 +78,7 @@ class DangNhapState extends State<DangNhap> {
                 const SizedBox(height: 30),
                 SizedBox(
                   width: 250,
-                  height: 40, // Set button width to fill the parent
+                  height: 40,
                   child: ElevatedButton(
                     style: ButtonStyle(
                       shape: MaterialStateProperty.all<RoundedRectangleBorder>(
@@ -136,6 +95,11 @@ class DangNhapState extends State<DangNhap> {
 
                       if (username.isNotEmpty && password.isNotEmpty) {
                         print("Username: $username, Password: $password");
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const ManHinhChinh()),
+                        );
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(

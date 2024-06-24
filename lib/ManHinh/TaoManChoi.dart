@@ -153,7 +153,7 @@ class _TaoManChoiState extends State<TaoManChoi> {
                   ),
                   child: TextButton(
                     onPressed: () {
-                      _randomMatrix();
+                      _maTranNgauNhien();
                     },
                     style: TextButton.styleFrom(
                       padding: EdgeInsets.all(10),
@@ -271,14 +271,14 @@ class _TaoManChoiState extends State<TaoManChoi> {
                 xaydungso(7),
                 xaydungso(8),
                 xaydungso(9),
-                Ink(
-                  decoration: ShapeDecoration(
-                      shape: const CircleBorder(), color: Colors.blue[100]),
-                  child: IconButton(
-                      onPressed: () {},
-                      color: Colors.black,
-                      icon: Icon(Icons.rotate_left_rounded)),
-                ),
+                Container(
+                    width: 60,
+                    height: 45,
+                    decoration: BoxDecoration(
+                      color: Colors.blue[100],
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(Icons.rotate_left_rounded)),
               ],
             ),
             SizedBox(
@@ -315,8 +315,7 @@ class _TaoManChoiState extends State<TaoManChoi> {
     );
   }
 
-  bool _fillRandomSudoku(int row, int col) {
-    // Trường hợp cơ sở: nếu chúng ta đã điền tất cả các ô thành công
+  bool _NgauNhienSudoku(int row, int col) {
     if (row == 9) {
       return true; // Đã điền đầy đủ Sudoku thành công
     }
@@ -329,14 +328,14 @@ class _TaoManChoiState extends State<TaoManChoi> {
     List<int> nums = [1, 2, 3, 4, 5, 6, 7, 8, 9];
     nums.shuffle();
 
-    // Thử điền ô (row, col) với từng số trong nums
+    // Thử điền ô hàng,cột từng số
     for (int num in nums) {
-      if (_isValid(row, col, num)) {
+      if (_hopLe(row, col, num)) {
         // Đặt số nếu số đó hợp lệ
         bangSudoku[row][col] = num;
 
         // Điền đệ quy ô tiếp theo
-        if (_fillRandomSudoku(nextRow, nextCol)) {
+        if (_NgauNhienSudoku(nextRow, nextCol)) {
           return true;
         }
 
@@ -349,15 +348,15 @@ class _TaoManChoiState extends State<TaoManChoi> {
     return false;
   }
 
-  bool _isValid(int row, int col, int num) {
-    // Check if num is already in the current row or column
+  bool _hopLe(int row, int col, int num) {
+    //kiểm tra số đã tồn tại trong hàng, cột
     for (int i = 0; i < 9; i++) {
       if (bangSudoku[row][i] == num || bangSudoku[i][col] == num) {
         return false;
       }
     }
 
-    // Check if num is already in the current 3x3 sub-grid
+    //kiểm tra số đã tồn tại trong bảng 3x3
     int startRow = (row ~/ 3) * 3;
     int startCol = (col ~/ 3) * 3;
     for (int i = startRow; i < startRow + 3; i++) {
@@ -368,26 +367,23 @@ class _TaoManChoiState extends State<TaoManChoi> {
       }
     }
 
-    return true; // num is valid in this position
+    return true;
   }
 
-  void _randomMatrix() {
-    // Xóa bảng Sudoku hiện tại
+  void _maTranNgauNhien() {
     for (int i = 0; i < 9; i++) {
       for (int j = 0; j < 9; j++) {
         bangSudoku[i][j] = 0;
       }
     }
 
-    // Sinh ra một ma trận Sudoku ngẫu nhiên hợp lệ
-    if (_fillRandomSudoku(0, 0)) {
-      // Cập nhật giao diện bằng cách gọi setState
-      setState(() {
-        // Bảng đã được cập nhật bởi _fillRandomSudoku
-      });
+    // tạo bảng hợp lệ
+    if (_NgauNhienSudoku(0, 0)) {
+      // Cập nhật giao diện
+      setState(() {});
     } else {
-      // Xử lý trường hợp không tìm thấy giải pháp Sudoku hợp lệ
-      print("Không thể sinh ra giải pháp Sudoku.");
+      // Xử lý trường hợp không tìm thấy
+      print("không thể tạo nguẫ nhiên");
     }
   }
 }

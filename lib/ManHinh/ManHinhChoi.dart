@@ -12,7 +12,7 @@ class ManHinhChoi extends StatefulWidget {
 }
 
 class _ManHinhChoiState extends State<ManHinhChoi> {
-  int giay = 3;
+  int giay = 30;
   late Timer thoiGian;
   bool ktNhan = false;
   int? selectedRow;
@@ -257,7 +257,7 @@ class _ManHinhChoiState extends State<ManHinhChoi> {
 Widget xaydungso(int number) {
   return Container(
     width: 60,
-    height: 60,
+    height: 45,
     decoration: BoxDecoration(
       color: Colors.blue[100],
       borderRadius: BorderRadius.circular(8),

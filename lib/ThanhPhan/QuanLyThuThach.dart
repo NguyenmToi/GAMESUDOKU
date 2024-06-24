@@ -10,103 +10,85 @@ class QuanLyThuThach extends StatefulWidget {
 }
 
 class _QuanLyThuThachState extends State<QuanLyThuThach> {
+  List<String> manChoi = ['Màn 1', 'Màn 2', 'Màn 3', 'Màn 4'];
+
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        _buildAddButton(),
-        SizedBox(
-          height: 5,
+    return Scaffold(
+      body: Padding(
+        padding: const EdgeInsets.all(7.0),
+        child: Column(
+          children: [
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const TaoManChoi()),
+                );
+              },
+              child: Text(
+                'Tạo màn chơi',
+                style: TextStyle(color: Colors.white, fontSize: 18),
+              ),
+              style: ElevatedButton.styleFrom(
+                minimumSize: Size(double.infinity, 50), // Co giãn theo màn hình
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15), // Bo tròn góc
+                ),
+                backgroundColor: Colors.blue, // Màu nền xanh
+              ),
+            ),
+            SizedBox(height: 20),
+            Expanded(
+              child: ListView.builder(
+                itemCount: manChoi.length,
+                itemBuilder: (context, index) {
+                  return _buildScreen(
+                      title: manChoi[index], color: Colors.lightBlue[100]!);
+                },
+              ),
+            ),
+          ],
         ),
-        _buildScreen(title: 'Màn 1', color: Colors.lightBlue[100]!),
-        SizedBox(
-          height: 5,
-        ),
-        _buildScreen(title: 'Màn 2', color: Colors.lightBlue[100]!),
-        SizedBox(
-          height: 5,
-        ),
-        _buildScreen(title: 'Màn 3', color: Colors.lightBlue[100]!),
-        SizedBox(
-          height: 5,
-        ),
-        _buildScreen(title: 'Màn 4', color: Colors.lightBlue[100]!),
-        SizedBox(
-          height: 5,
-        ),
-      ],
+      ),
     );
   }
 
   Widget _buildScreen({required String title, required Color color}) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 7.0),
-      decoration: BoxDecoration(
-        color: color,
-        border: Border.all(color: Colors.grey, width: 1.0),
+    return Card(
+      color: color,
+      // margin: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(
-              color: Colors.black,
-              fontWeight: FontWeight.bold,
+      child: ListTile(
+        title: Text(
+          title,
+          style: TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.normal,
+          ),
+        ),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              icon: Icon(Icons.edit, color: Colors.black),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const CapNhatManChoi()),
+                );
+              },
             ),
-          ),
-          Row(
-            children: [
-              IconButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => CapNhatManChoi()),
-                  );
-                },
-                icon: const Icon(Icons.edit),
-              ),
-              IconButton(
-                onPressed: () {
-                  // Xử lý sự kiện khi nhấn vào nút "thùng rác"
-                },
-                icon: const Icon(Icons.delete),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAddButton() {
-    return Container(
-      width: double.infinity,
-      height: 50.0, // Chiều cao của nút
-      color: Colors.blue, // Màu nền của nút
-      child: Center(
-        child: ElevatedButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => TaoManChoi()),
-            );
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue, // Loại bỏ màu nền mặc định của ElevatedButton
-            elevation: 0.0, // Loại bỏ độ nhấn của ElevatedButton
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(0.0), // Tạo góc vuông cho nút
+            IconButton(
+              icon: Icon(Icons.delete, color: Colors.black),
+              onPressed: () {
+                // Xử lý khi nhấn icon xóa
+              },
             ),
-          ),
-          child: const Text(
-            'Tạo màn chơi',
-            style: TextStyle(
-                color: Colors.white, // Màu chữ của nút
-                fontWeight: FontWeight.bold, // Kiểu chữ đậm
-                fontSize: 18),
-          ),
+          ],
         ),
       ),
     );

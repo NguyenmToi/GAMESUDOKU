@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:sudoku/ManHinh/DangNhap.dart';
 import 'dart:io';
+
+import 'package:sudoku/ManHinh/LichSuChoi.dart';
 
 class QuanLyThongTinCaNhan extends StatefulWidget {
   const QuanLyThongTinCaNhan({super.key});
@@ -10,16 +13,6 @@ class QuanLyThongTinCaNhan extends StatefulWidget {
 
 class _QuanLyThongTinCaNhanState extends State<QuanLyThongTinCaNhan> {
   File? _image;
-
-  // Future<void> _pickImage() async {
-  //   final pickedFile = await picker.getImage(source: ImageSource.gallery);
-
-  //   if (pickedFile != null) {
-  //     setState(() {
-  //       _image = File(pickedFile.path);
-  //     });
-  //   }
-  // }
 
   void _changeNameDialog(BuildContext context) {
     showDialog(
@@ -94,68 +87,47 @@ class _QuanLyThongTinCaNhanState extends State<QuanLyThongTinCaNhan> {
               ),
             ),
             SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Tên người chơi:',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                GestureDetector(
-                  onTap: null,
-                  child: Row(
-                    children: [
-                      Text(
-                        "_name",
-                        style: TextStyle(fontSize: 18),
-                      ),
-                      SizedBox(width: 8),
-                      Icon(
-                        Icons.edit,
-                        color: Colors.blue,
-                      ),
-                    ],
+            _buildInfoRow('Tên người chơi', 'John Doe'),
+            SizedBox(height: 10),
+            _buildInfoRow('Màn', 'Màn 22'),
+            SizedBox(height: 10),
+            _buildInfoRow('Điểm', '35'),
+            SizedBox(height: 10),
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const LichSuaChoi()),
+                );
+              },
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Lịch sử chơi:',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
-                ),
-              ],
-            ),
-            SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Màn:',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  'Màn 22',
-                  style: TextStyle(fontSize: 18),
-                ),
-              ],
-            ),
-            SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Điểm:',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  '35',
-                  style: TextStyle(fontSize: 18),
-                ),
-              ],
+                  Icon(
+                    Icons.history,
+                    color: Colors.blue,
+                    size: 30,
+                  ),
+                ],
+              ),
             ),
             Spacer(),
             Center(
               child: ElevatedButton(
                 onPressed: () {
-                  // Thêm hành động đăng xuất ở đây
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => const DangNhap()),
+                  );
                 },
                 style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.red, backgroundColor: Colors.greenAccent[200], // chữ đỏ
-                  minimumSize: Size(220, 50), // Tăng bề ngang và độ cao
+                  foregroundColor: Colors.red,
+                  backgroundColor: Colors.white,
+                  minimumSize: Size(220, 50),
                 ),
                 child: Text('Đăng Xuất', style: TextStyle(fontSize: 22)),
               ),
@@ -164,6 +136,32 @@ class _QuanLyThongTinCaNhanState extends State<QuanLyThongTinCaNhan> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildInfoRow(String label, String value) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        Container(
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(width: 1, color: Colors.black),
+            ),
+          ),
+          child: Text(
+            value,
+            style: TextStyle(
+              fontSize: 18,
+              decoration: TextDecoration.underline,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

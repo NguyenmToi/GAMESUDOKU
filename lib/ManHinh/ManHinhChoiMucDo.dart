@@ -47,9 +47,31 @@ class _ManHinhChoiMucDoState extends State<ManHinhChoiMucDo> {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 Text('Mức độ: Dễ', style: TextStyle(fontSize: 18)),
-                Text('Số lượt sai: 3', style: TextStyle(fontSize: 18)),
-                Text('Gợi ý: 5', style: TextStyle(fontSize: 18)),
-                Text('Thời gian: 00:00', style: TextStyle(fontSize: 18)),
+                Row(
+                  children: [
+                    Icon(Icons.error, size: 18), // Biểu tượng thời gian
+                    SizedBox(width: 5), // Khoảng cách giữa Icon và Text
+                    Text('1',
+                        style: TextStyle(fontSize: 18)), // Văn bản thời gian
+                  ],
+                ),
+                Row(
+                  children: [
+                    Icon(Icons.lightbulb_sharp,
+                        size: 18), // Biểu tượng thời gian
+                    SizedBox(width: 5), // Khoảng cách giữa Icon và Text
+                    Text('4',
+                        style: TextStyle(fontSize: 18)), // Văn bản thời gian
+                  ],
+                ),
+                Row(
+                  children: [
+                    Icon(Icons.access_time, size: 18), // Biểu tượng thời gian
+                    SizedBox(width: 5), // Khoảng cách giữa Icon và Text
+                    Text('00:00',
+                        style: TextStyle(fontSize: 18)), // Văn bản thời gian
+                  ],
+                )
               ],
             ),
             SizedBox(height: 20),
