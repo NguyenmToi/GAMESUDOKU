@@ -1,6 +1,6 @@
 import 'dart:convert';
-
 import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class taiKhoan {
   String id;
@@ -56,18 +56,38 @@ class taiKhoan {
       throw Exception("User not found");
     }
   }
+}
 
-  static Future<void> createUser(String taikhoan, String matkhau, bool vaitro,
-      bool trangthai, String anh) async {
-    DatabaseReference userReference =
-        FirebaseDatabase.instance.ref().child('taikhoan ').push();
-    await userReference.set({
-      'tentaikhoan': taiKhoan,
-      'matkhau': matkhau,
-      'persission': vaitro,
-      'trangthai': trangthai,
-      'anh': anh,
-      'id': userReference.key,
-    });
+class cManThuThach {
+  late int maman;
+  late String tenman;
+
+  cManThuThach({required this.maman, required this.tenman});
+
+  factory cManThuThach.fromJson(String key, Map<dynamic, dynamic> json) {
+    return cManThuThach(
+      maman: json['maman'] ?? 0,
+      tenman: json['tenman'] ?? "",
+    );
+  }
+
+  static DatabaseReference dsThuThach() {
+    return FirebaseDatabase.instance.ref().child('thuthach');
+  }
+
+  static Future<List<cManThuThach>> taiDanhSachMan() async {
+    DatabaseReference reference = dsThuThach();
+    DatabaseEvent event = await reference.once();
+    DataSnapshot dataSnapshot = event.snapshot;
+    Map<dynamic, dynamic>? values =
+        dataSnapshot.value as Map<dynamic, dynamic>?;
+
+    List<cManThuThach> man = [];
+    if (values != null) {
+      values.forEach((key, value) {
+        man.add(cManThuThach.fromJson(key, value));
+      });
+    }
+    return man;
   }
 }

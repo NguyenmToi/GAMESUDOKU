@@ -61,59 +61,60 @@ class _ManHinhChinhState extends State<ManHinhChinh> {
 class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    return SingleChildScrollView(
       padding: EdgeInsets.fromLTRB(3, 25, 3, 3),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Container(
-                padding: EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Row(
-                  children: [
-                    InkWell(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => QuanLyThongTinCaNhan()),
-                        );
-                      },
-                      child: CircleAvatar(
-                        radius: 25,
-                        backgroundImage: AssetImage('assets/image/avt1.jpg'),
-                        backgroundColor: Colors.transparent,
+              Expanded(
+                child: Container(
+                  padding: EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[200],
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Row(
+                    children: [
+                      InkWell(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => QuanLyThongTinCaNhan()),
+                          );
+                        },
+                        child: CircleAvatar(
+                          radius: 25,
+                          backgroundImage: AssetImage('assets/image/avt1.jpg'),
+                          backgroundColor: Colors.transparent,
+                        ),
                       ),
-                    ),
-                    SizedBox(width: 10),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Phạm Tuân',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
+                      SizedBox(width: 10),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Phạm Tuân',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        ),
-                        Text(
-                          'Màn 22',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey,
+                          Text(
+                            'Màn 22',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
-              Spacer(),
               IconButton(
                 icon: Icon(
                   Icons.question_mark,
@@ -241,7 +242,7 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-class _XepHang extends StatelessWidget {
+class XepHang extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
@@ -250,7 +251,7 @@ class _XepHang extends StatelessWidget {
   }
 }
 
-class _ThongKe extends StatelessWidget {
+class ThongKe extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
@@ -317,12 +318,9 @@ void _showDifficultyLevels(BuildContext context,
       },
     );
   } else {
-    // Optional: Direct navigation without showing the bottom sheet
     Navigator.push(
       context,
-      MaterialPageRoute(
-          builder: (context) =>
-              ManHinhChoiMucDo()), // Replace with appropriate screen
+      MaterialPageRoute(builder: (context) => ManHinhChoiMucDo()),
     );
   }
 }

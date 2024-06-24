@@ -1,11 +1,12 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:sudoku/ManHinh/ChonManChoi.dart';
 
 class ManHinhChoi extends StatefulWidget {
-  const ManHinhChoi({super.key, required this.soMan});
+  const ManHinhChoi({super.key, required this.tenMan});
 
-  final int soMan;
+  final String tenMan;
 
   @override
   State<ManHinhChoi> createState() => _ManHinhChoiState();
@@ -77,7 +78,7 @@ class _ManHinhChoiState extends State<ManHinhChoi> {
           icon: const Icon(Icons.arrow_back_ios),
           color: Colors.grey,
           onPressed: () {
-            Navigator.pop(context);
+            thongBaoThoat();
           },
         ),
         title: Stack(
@@ -87,7 +88,7 @@ class _ManHinhChoiState extends State<ManHinhChoi> {
               child: Padding(
                 padding: const EdgeInsets.only(right: 38.0),
                 child: Text(
-                  'Màn ${widget.soMan}',
+                  '${widget.tenMan}',
                   style: const TextStyle(color: Colors.black, fontSize: 25),
                 ),
               ),
@@ -223,10 +224,10 @@ class _ManHinhChoiState extends State<ManHinhChoi> {
             style: TextStyle(fontSize: 25),
             textAlign: TextAlign.center,
           ),
-          content: Text('Bạn đã thua, bạn có muốn chơi lại không ?'),
+          content: const Text('Bạn đã thua, bạn có muốn chơi lại không ?'),
           actions: <Widget>[
             TextButton(
-              child: Text('Thoát'),
+              child: const Text('Thoát'),
               onPressed: () {
                 Navigator.of(context).pop(); // Đóng hộp thoại
                 Navigator.of(context).pop();
@@ -241,7 +242,49 @@ class _ManHinhChoiState extends State<ManHinhChoi> {
                   context,
                   MaterialPageRoute(
                     builder: (context) => ManHinhChoi(
-                      soMan: widget.soMan,
+                      tenMan: widget.tenMan,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void thongBaoThoat() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text(
+            'Thoát trò chơi',
+            style: TextStyle(fontSize: 25),
+            textAlign: TextAlign.center,
+          ),
+          content:
+              const Text('Thoát sẽ hủy kết quả, bạn có muốn thoát không ?'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Đồng ý'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Ở lại'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                Navigator.of(context).pop();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ManHinhChoi(
+                      tenMan: widget.tenMan,
                     ),
                   ),
                 );

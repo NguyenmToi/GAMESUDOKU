@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sudoku/ManHinh/ManHinhChoi.dart';
+import 'package:sudoku/MoHinh/xulydulieu.dart';
 
 class ChonManCHoi extends StatefulWidget {
   const ChonManCHoi({super.key});
@@ -9,7 +10,14 @@ class ChonManCHoi extends StatefulWidget {
 }
 
 class _ChonManCHoiState extends State<ChonManCHoi> {
-  int soman = 60;
+  late Future<List<cManThuThach>> _manThuThachList;
+
+  @override
+  void initState() {
+    super.initState();
+    _manThuThachList = cManThuThach
+        .taiDanhSachMan(); // Gọi hàm để load danh sách màn thử thách
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,43 +49,65 @@ class _ChonManCHoiState extends State<ChonManCHoi> {
       body: Padding(
         padding: const EdgeInsets.fromLTRB(
             7, 10, 7, 5), // Thêm khoảng cách padding ở trên
-        child: GridView.builder(
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-              childAspectRatio: 1.8, // tỉ lệ dài - rộng
-              crossAxisSpacing: 8.0,
-              mainAxisSpacing: 8.0,
-            ),
-            itemCount: soman,
-            itemBuilder: (BuildContext context, int index) {
-              return GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ManHinhChoi(
-                          soMan: index + 1, // Truyền số màn vào
+        child: FutureBuilder<List<cManThuThach>>(
+          future: _manThuThachList,
+          builder: (BuildContext context,
+              AsyncSnapshot<List<cManThuThach>> snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Center(child: Text('Error: ${snapshot.error}'));
+            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return const Center(child: Text('No data available'));
+            } else {
+              List<cManThuThach> manThuThachList = snapshot.data!;
+
+              // Sắp xếp danh sách theo mã màn
+              manThuThachList.sort((a, b) => a.maman.compareTo(b.maman));
+
+              return GridView.builder(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  childAspectRatio: 1.8, // tỉ lệ dài - rộng
+                  crossAxisSpacing: 8.0,
+                  mainAxisSpacing: 8.0,
+                ),
+                itemCount: manThuThachList.length,
+                itemBuilder: (BuildContext context, int index) {
+                  cManThuThach manThuThach = manThuThachList[index];
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ManHinhChoi(
+                            tenMan: manThuThach.tenman,
+                          ),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                      child: Center(
+                        child: Text(
+                          ' ${manThuThach.tenman}',
+                          style: const TextStyle(
+                            color: Colors.black,
+                            fontSize: 18.0,
+                            fontWeight: FontWeight.normal,
+                          ),
                         ),
                       ),
-                    );
-                  },
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.grey[300],
-                      borderRadius: BorderRadius.circular(8.0),
                     ),
-                    child: Center(
-                      child: Text(
-                        'Màn ${index + 1}',
-                        style: const TextStyle(
-                          color: Colors.black,
-                          fontSize: 18.0,
-                          fontWeight: FontWeight.normal,
-                        ),
-                      ),
-                    ),
-                  ));
-            }),
+                  );
+                },
+              );
+            }
+          },
+        ),
       ),
     );
   }
