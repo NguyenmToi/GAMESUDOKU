@@ -29,7 +29,6 @@ class MyApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/': (context) => const ManHinhChinh(),
-        '/chonmanchoi': (context) => const ChonManCHoi(),
       },
       debugShowCheckedModeBanner: false,
     );

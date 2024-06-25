@@ -38,7 +38,7 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
 
   @override
   void dispose() {
-    thoiGian.cancel(); // Hủy Timer khi Widget bị dispose để tránh rò rỉ bộ nhớ
+    thoiGian.cancel();
     super.dispose();
   }
 
@@ -113,22 +113,55 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
                     gridDelegate:
                         const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 9, // số lượng cột trong lưới
-                      childAspectRatio: 0.8, // tỉ lệ giữa chiều rộng và cao
+                      childAspectRatio: 1, // tỉ lệ giữa chiều rộng và cao
                     ),
                     itemBuilder: (context, index) {
                       int row = index ~/ 9; // lấy chỉ số hàng, chia lấy nguyên
                       int col = index % 9; // lấy chỉ số cột, chia lấy dư
                       bool isSelected =
                           row == selectedRow && col == selectedCol;
-                      return GestureDetector(
+
+                      Border border = Border(
+                        top: BorderSide(
+                          color: row == 0
+                              ? Colors.black
+                              : (row % 3 == 0)
+                                  ? Colors.black
+                                  : Colors.grey,
+                          width: row == 0 ? 1.0 : 1.0,
+                        ),
+                        left: BorderSide(
+                          color: col == 0
+                              ? Colors.black
+                              : (col % 3 == 0)
+                                  ? Colors.black
+                                  : Colors.grey,
+                          width: col == 0 ? 1.0 : 1.0,
+                        ),
+                        bottom: BorderSide(
+                          color: row == 8
+                              ? Colors.black
+                              : ((row + 1) % 3 == 0)
+                                  ? Colors.black
+                                  : Colors.grey,
+                          width: row == 8 ? 1.0 : 1.0,
+                        ),
+                        right: BorderSide(
+                          color: col == 8
+                              ? Colors.black
+                              : ((col + 1) % 3 == 0)
+                                  ? Colors.black
+                                  : Colors.grey,
+                          width: col == 8 ? 1.0 : 1.0,
+                        ),
+                      );
+
+                      return InkWell(
                         onTap: () => handleCellTap(row, col),
                         child: Container(
                           decoration: BoxDecoration(
                             color: isSelected ? Colors.blue[100] : null,
-                            border: Border.all(
-                              color: isSelected ? Colors.blue : Colors.grey,
-                              width: 1.0,
-                            ),
+                            border: border,
                           ),
                           child: Center(
                             child: Text(
@@ -165,16 +198,20 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
                       children: [
                         for (int i = 6; i <= 9; i++) xayDungSo(i),
                         Ink(
-                          decoration: ShapeDecoration(
-                            shape: CircleBorder(),
-                            color: Colors.blue[100],
-                          ),
-                          child: IconButton(
-                            onPressed: () {},
-                            color: Colors.black,
-                            icon: Icon(Icons.lightbulb_outline_sharp),
-                          ),
-                        ),
+                            height: 45,
+                            width: 60,
+                            decoration: BoxDecoration(
+                              color: Colors.blue[50],
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(20),
+                              child: IconButton(
+                                onPressed: () {},
+                                color: Colors.black,
+                                icon: const Icon(Icons.lightbulb_outline_sharp),
+                              ),
+                            )),
                       ],
                     ),
                   ],
@@ -262,21 +299,23 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
   }
 
   Widget xayDungSo(int number) {
-    return Container(
-      width: 60,
-      height: 45,
+    return Ink(
       decoration: BoxDecoration(
-        color: Colors.blue[100],
-        borderRadius: BorderRadius.circular(8),
+        color: Colors.blue[50],
+        borderRadius: BorderRadius.circular(20),
       ),
-      child: GestureDetector(
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
         onTap: () {
           handleNumberTap(number);
         },
-        child: Center(
+        child: Container(
+          width: 60,
+          height: 45,
+          alignment: Alignment.center,
           child: Text(
             number.toString(),
-            style: TextStyle(color: Colors.black, fontSize: 20),
+            style: const TextStyle(color: Colors.black, fontSize: 20),
           ),
         ),
       ),

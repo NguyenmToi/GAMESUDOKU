@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:sudoku/ManHinh/TaoDoKho.dart';
+import 'package:sudoku/ManHinh/TaoManChoi.dart';
 import 'package:sudoku/ThanhPhan/QuanLyMucDo.dart';
 import 'package:sudoku/ThanhPhan/QuanLyThuThach.dart';
 
@@ -107,6 +109,35 @@ class _QuanLyManChoi extends State<QuanLyManChoi> {
                 ),
                 child:
                     qlThuThach ? const QuanLyThuThach() : const QuanLyMucDo()),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (qlThuThach == true) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const TaoManChoi()),
+                );
+              } else {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const TaoDoKho()),
+                );
+              }
+            },
+            child: const Text(
+              'Tạo màn chơi',
+              style: TextStyle(color: Colors.white, fontSize: 18),
+            ),
+            style: ElevatedButton.styleFrom(
+              padding: EdgeInsets.fromLTRB(5, 5, 5, 5),
+              minimumSize:
+                  const Size(double.infinity, 50), // Co giãn theo màn hình
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(0), // Bo tròn góc
+              ),
+              backgroundColor: Colors.blue, // Màu nền xanh
+              side: BorderSide.none, // Xóa viền
+            ),
           ),
         ],
       ),

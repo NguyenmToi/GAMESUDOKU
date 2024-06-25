@@ -11,12 +11,12 @@ class ChonManCHoi extends StatefulWidget {
 }
 
 class _ChonManCHoiState extends State<ChonManCHoi> {
-  late Future<List<cManThuThach>> _manThuThachList;
+  late Future<List<cManThuThach>> _dsManThuThach;
 
   @override
   void initState() {
     super.initState();
-    _manThuThachList = cManThuThach
+    _dsManThuThach = cManThuThach
         .taiDanhSachMan(); // Gọi hàm để load danh sách màn thử thách
   }
 
@@ -51,7 +51,7 @@ class _ChonManCHoiState extends State<ChonManCHoi> {
         padding: const EdgeInsets.fromLTRB(
             7, 10, 7, 5), // Thêm khoảng cách padding ở trên
         child: FutureBuilder<List<cManThuThach>>(
-          future: _manThuThachList,
+          future: _dsManThuThach,
           builder: (BuildContext context,
               AsyncSnapshot<List<cManThuThach>> snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {

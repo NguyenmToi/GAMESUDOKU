@@ -17,25 +17,25 @@ class _QuanLyMucDoState extends State<QuanLyMucDo> {
         padding: const EdgeInsets.all(7.0),
         child: Column(
           children: [
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => TaoDoKho()),
-                );
-              },
-              child: Text('Tạo mức độ chơi',
-                  style: TextStyle(color: Colors.white, fontSize: 18)),
-              style: ElevatedButton.styleFrom(
-                minimumSize: Size(double.infinity, 50), // Co giãn theo màn hình
-                shape: RoundedRectangleBorder(
-                  borderRadius:
-                      BorderRadius.circular(15), // Thêm bán kính bo tròn
-                ),
-                backgroundColor: Colors.blue, // Đặt màu nền xanh
-              ),
-            ),
-            SizedBox(height: 20),
+            // ElevatedButton(
+            //   onPressed: () {
+            //     Navigator.push(
+            //       context,
+            //       MaterialPageRoute(builder: (context) => TaoDoKho()),
+            //     );
+            //   },
+            //   child: Text('Tạo mức độ chơi',
+            //       style: TextStyle(color: Colors.white, fontSize: 18)),
+            //   style: ElevatedButton.styleFrom(
+            //     minimumSize: Size(double.infinity, 50), // Co giãn theo màn hình
+            //     shape: RoundedRectangleBorder(
+            //       borderRadius:
+            //           BorderRadius.circular(15), // Thêm bán kính bo tròn
+            //     ),
+            //     backgroundColor: Colors.blue, // Đặt màu nền xanh
+            //   ),
+            // ),
+            SizedBox(height: 10),
             Expanded(
               child: ListView.builder(
                 itemCount: levels.length,

@@ -8,8 +8,27 @@ class TaoManChoi extends StatefulWidget {
 }
 
 class _TaoManChoiState extends State<TaoManChoi> {
+  int? selectedRow;
+  int? selectedCol;
   List<List<int>> bangSudoku =
       List.generate(9, (_) => List.generate(9, (_) => 0));
+
+  void handleCellTap(int row, int col) {
+    setState(() {
+      selectedRow = row;
+      selectedCol = col;
+    });
+  }
+
+  void handleNumberTap(int number) {
+    if (selectedRow != null && selectedCol != null) {
+      setState(() {
+        bangSudoku[selectedRow!][selectedCol!] = number;
+        selectedRow = null;
+        selectedCol = null;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,11 +65,11 @@ class _TaoManChoiState extends State<TaoManChoi> {
             // Dòng 1: Tên màn chơi và ô nhập thông tin
             Row(
               children: [
-                Text(
+                const Text(
                   'Tên màn chơi:',
                   style: TextStyle(fontSize: 16),
                 ),
-                SizedBox(width: 10),
+                const SizedBox(width: 10),
                 Expanded(
                   child: Container(
                     height: 35,
@@ -61,7 +80,7 @@ class _TaoManChoiState extends State<TaoManChoi> {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 10),
                       child: TextFormField(
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           border: InputBorder
                               .none, // Loại bỏ viền của TextFormField
                         ),
@@ -71,16 +90,16 @@ class _TaoManChoiState extends State<TaoManChoi> {
                 ),
               ],
             ),
-            SizedBox(
+            const SizedBox(
               height: 5,
             ),
             Row(
               children: [
-                Text(
+                const Text(
                   'Thời gian:',
                   style: TextStyle(fontSize: 16),
                 ),
-                SizedBox(width: 10),
+                const SizedBox(width: 10),
                 Expanded(
                   child: Container(
                     height: 35,
@@ -91,7 +110,7 @@ class _TaoManChoiState extends State<TaoManChoi> {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 10),
                       child: TextFormField(
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           border: InputBorder
                               .none, // Loại bỏ viền của TextFormField
                         ),
@@ -99,12 +118,12 @@ class _TaoManChoiState extends State<TaoManChoi> {
                     ),
                   ),
                 ),
-                SizedBox(width: 10),
-                Text(
+                const SizedBox(width: 10),
+                const Text(
                   'Số gợi ý:',
                   style: TextStyle(fontSize: 16),
                 ),
-                SizedBox(width: 10),
+                const SizedBox(width: 10),
                 Expanded(
                   child: Container(
                     height: 35,
@@ -115,7 +134,7 @@ class _TaoManChoiState extends State<TaoManChoi> {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 10),
                       child: TextFormField(
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           border: InputBorder
                               .none, // Loại bỏ viền của TextFormField
                         ),
@@ -125,7 +144,7 @@ class _TaoManChoiState extends State<TaoManChoi> {
                 ),
               ],
             ),
-            SizedBox(
+            const SizedBox(
               height: 10,
             ),
             Row(
@@ -140,7 +159,7 @@ class _TaoManChoiState extends State<TaoManChoi> {
                     onPressed: () {
                       // Xử lý khi nhấn nút Giải trò chơi
                     },
-                    child: Text(
+                    child: const Text(
                       'Giải trò chơi',
                       style: TextStyle(color: Colors.black, fontSize: 16),
                     ),
@@ -158,7 +177,7 @@ class _TaoManChoiState extends State<TaoManChoi> {
                     style: TextButton.styleFrom(
                       padding: EdgeInsets.all(10),
                     ),
-                    child: Text(
+                    child: const Text(
                       'Ngẫu nhiên',
                       style: TextStyle(color: Colors.black, fontSize: 16),
                     ),
@@ -174,7 +193,7 @@ class _TaoManChoiState extends State<TaoManChoi> {
                       // Xử lý khi nhấn nút Ẩn
                     },
                     color: Colors.black,
-                    icon: Icon(Icons.visibility_off),
+                    icon: const Icon(Icons.visibility_off),
                   ),
                 ),
                 Container(
@@ -187,51 +206,65 @@ class _TaoManChoiState extends State<TaoManChoi> {
                       // Xử lý khi nhấn nút Hiện
                     },
                     color: Colors.black,
-                    icon: Icon(Icons.visibility),
+                    icon: const Icon(Icons.visibility),
                   ),
                 ),
               ],
             ),
-            SizedBox(height: 5), // Khoảng cách giữa các dòng
-            // GridView và các nút chức năng
+            const SizedBox(height: 35),
+
             Expanded(
               child: GridView.builder(
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 9, // số lượng cột trong lưới
-                  childAspectRatio: 0.85, // tỉ lệ giữa chiều rộng và cao
+                  childAspectRatio: 1, // tỉ lệ giữa chiều rộng và cao
                 ),
                 itemBuilder: (context, index) {
                   int row = index ~/ 9; // lấy chỉ số hàng, chia lấy nguyên
-                  int col = index %
-                      9; // lấy chỉ số cột, chia lấy dư, vd ô 27%9 = 3 dư 0: hàng 3 cột 0
-                  return GestureDetector(
-                    // widget phát hiện cử chỉ tương tác với ứng dụng
-                    onTap: () {},
+                  int col = index % 9; // lấy chỉ số cột, chia lấy dư
+                  bool isSelected = row == selectedRow && col == selectedCol;
+
+                  Border border = Border(
+                    top: BorderSide(
+                      color: row == 0
+                          ? Colors.black
+                          : (row % 3 == 0)
+                              ? Colors.black
+                              : Colors.grey,
+                      width: row == 0 ? 1.0 : 1.0,
+                    ),
+                    left: BorderSide(
+                      color: col == 0
+                          ? Colors.black
+                          : (col % 3 == 0)
+                              ? Colors.black
+                              : Colors.grey,
+                      width: col == 0 ? 1.0 : 1.0,
+                    ),
+                    bottom: BorderSide(
+                      color: row == 8
+                          ? Colors.black
+                          : ((row + 1) % 3 == 0)
+                              ? Colors.black
+                              : Colors.grey,
+                      width: row == 8 ? 1.0 : 1.0,
+                    ),
+                    right: BorderSide(
+                      color: col == 8
+                          ? Colors.black
+                          : ((col + 1) % 3 == 0)
+                              ? Colors.black
+                              : Colors.grey,
+                      width: col == 8 ? 1.0 : 1.0,
+                    ),
+                  );
+
+                  return InkWell(
+                    onTap: () => handleCellTap(row, col),
                     child: Container(
-                      color: null,
                       decoration: BoxDecoration(
-                        border: Border(
-                          top: BorderSide(
-                            color: (row % 3 == 0) ? Colors.black : Colors.grey,
-                            width: 1.0,
-                          ),
-                          left: BorderSide(
-                            color: (col % 3 == 0) ? Colors.black : Colors.grey,
-                            width: 1.0,
-                          ),
-                          bottom: BorderSide(
-                            color: ((row + 1) % 3 == 0)
-                                ? Colors.black
-                                : Colors.grey,
-                            width: 1.0,
-                          ),
-                          right: BorderSide(
-                            color: ((col + 1) % 3 == 0)
-                                ? Colors.black
-                                : Colors.grey,
-                            width: 1.0,
-                          ),
-                        ),
+                        color: isSelected ? Colors.blue[100] : null,
+                        border: border,
                       ),
                       child: Center(
                         child: Text(
@@ -249,39 +282,39 @@ class _TaoManChoiState extends State<TaoManChoi> {
                 itemCount: 81,
               ),
             ),
-            SizedBox(
+            const SizedBox(
                 height: 10), // Khoảng cách giữa GridView và các nút chức năng
-            // Dòng nút chức năng
 
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                xaydungso(1),
-                xaydungso(2),
-                xaydungso(3),
-                xaydungso(4),
-                xaydungso(5),
+                for (int i = 1; i <= 5; i++) xayDungSo(i),
               ],
             ),
-            SizedBox(height: 3), // Khoảng cách giữa các dòng nút chức năng
+            const SizedBox(
+                height: 10), // Khoảng cách giữa các dòng nút chức năng
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                xaydungso(6),
-                xaydungso(7),
-                xaydungso(8),
-                xaydungso(9),
-                Container(
-                    width: 60,
+                for (int i = 6; i <= 9; i++) xayDungSo(i),
+                Ink(
                     height: 45,
+                    width: 60,
                     decoration: BoxDecoration(
-                      color: Colors.blue[100],
-                      borderRadius: BorderRadius.circular(8),
+                      color: Colors.blue[50],
+                      borderRadius: BorderRadius.circular(20),
                     ),
-                    child: Icon(Icons.rotate_left_rounded)),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(20),
+                      child: IconButton(
+                        onPressed: () {},
+                        color: Colors.black,
+                        icon: const Icon(Icons.rotate_left),
+                      ),
+                    )),
               ],
             ),
-            SizedBox(
+            const SizedBox(
                 height:
                     15), // Khoảng cách giữa dòng nút chức năng và nút "Thêm màn chơi"
             // Nút "Thêm màn chơi"
@@ -298,10 +331,10 @@ class _TaoManChoiState extends State<TaoManChoi> {
                     // Xử lý khi nhấn nút
                   },
                   style: TextButton.styleFrom(
-                    padding: EdgeInsets.symmetric(
-                        vertical: 10), // Khoảng cách lề trên và dưới
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 15), // Khoảng cách lề trên và dưới
                   ),
-                  child: Text(
+                  child: const Text(
                     'Thêm màn chơi',
                     style: TextStyle(
                         color: Colors.white, fontSize: 18), // Màu chữ đen
@@ -386,26 +419,28 @@ class _TaoManChoiState extends State<TaoManChoi> {
       print("không thể tạo nguẫ nhiên");
     }
   }
-}
 
-Widget xaydungso(int number) {
-  return Container(
-    width: 60,
-    height: 45,
-    decoration: BoxDecoration(
-      color: Colors.blue[100],
-      borderRadius: BorderRadius.circular(8),
-    ),
-    child: GestureDetector(
-      onTap: () {
-        print('Button $number pressed');
-      },
-      child: Center(
-        child: Text(
-          number.toString(),
-          style: TextStyle(color: Colors.black, fontSize: 20),
+  Widget xayDungSo(int number) {
+    return Ink(
+      decoration: BoxDecoration(
+        color: Colors.blue[50],
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: () {
+          handleNumberTap(number);
+        },
+        child: Container(
+          width: 60,
+          height: 45,
+          alignment: Alignment.center,
+          child: Text(
+            number.toString(),
+            style: const TextStyle(color: Colors.black, fontSize: 20),
+          ),
         ),
       ),
-    ),
-  );
+    );
+  }
 }

@@ -1,70 +1,88 @@
 import 'package:flutter/material.dart';
 import 'package:sudoku/ManHinh/CapNhatManChoi.dart';
 import 'package:sudoku/ManHinh/TaoManChoi.dart';
+import 'package:sudoku/MoHinh/xulydulieu.dart';
 
 class QuanLyThuThach extends StatefulWidget {
-  const QuanLyThuThach({super.key});
+  const QuanLyThuThach({Key? key}) : super(key: key);
 
   @override
   State<QuanLyThuThach> createState() => _QuanLyThuThachState();
 }
 
 class _QuanLyThuThachState extends State<QuanLyThuThach> {
-  List<String> manChoi = ['Màn 1', 'Màn 2', 'Màn 3', 'Màn 4'];
+  late Future<List<cManThuThach>> _dsManThuThach;
+
+  @override
+  void initState() {
+    super.initState();
+    _dsManThuThach =
+        cManThuThach.taiDanhSachMan(); // Load danh sách màn từ Firebase
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.all(7.0),
-        child: Column(
-          children: [
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const TaoManChoi()),
-                );
-              },
-              child: Text(
-                'Tạo màn chơi',
-                style: TextStyle(color: Colors.white, fontSize: 18),
-              ),
-              style: ElevatedButton.styleFrom(
-                minimumSize: Size(double.infinity, 50), // Co giãn theo màn hình
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15), // Bo tròn góc
-                ),
-                backgroundColor: Colors.blue, // Màu nền xanh
-              ),
-            ),
-            SizedBox(height: 20),
-            Expanded(
-              child: ListView.builder(
-                itemCount: manChoi.length,
-                itemBuilder: (context, index) {
-                  return _buildScreen(
-                      title: manChoi[index], color: Colors.lightBlue[100]!);
+        child: FutureBuilder<List<cManThuThach>>(
+          future: _dsManThuThach,
+          builder: (BuildContext context,
+              AsyncSnapshot<List<cManThuThach>> snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Center(child: Text('Error: ${snapshot.error}'));
+            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return const Center(child: Text('No data available'));
+            } else {
+              List<cManThuThach> dsManThuThach = snapshot.data!;
+
+              dsManThuThach.sort((a, b) => a.maman.compareTo(b.maman));
+              SizedBox(
+                height: 10,
+              );
+              return ListView.builder(
+                itemCount: dsManThuThach.length,
+                itemBuilder: (BuildContext context, int index) {
+                  cManThuThach manThuThach = dsManThuThach[index];
+                  return _xayDungCacThanhPhan(
+                    title: manThuThach.tenman,
+                    color: Colors.lightBlue[100]!,
+                    onTapEdit: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => CapNhatManChoi(),
+                        ),
+                      );
+                    },
+                    onTapDelete: () {},
+                  );
                 },
-              ),
-            ),
-          ],
+              );
+            }
+          },
         ),
       ),
     );
   }
 
-  Widget _buildScreen({required String title, required Color color}) {
+  Widget _xayDungCacThanhPhan({
+    required String title,
+    required Color color,
+    VoidCallback? onTapEdit,
+    VoidCallback? onTapDelete,
+  }) {
     return Card(
       color: color,
-      // margin: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
       ),
       child: ListTile(
         title: Text(
           title,
-          style: TextStyle(
+          style: const TextStyle(
             color: Colors.black,
             fontWeight: FontWeight.normal,
           ),
@@ -73,20 +91,12 @@ class _QuanLyThuThachState extends State<QuanLyThuThach> {
           mainAxisSize: MainAxisSize.min,
           children: [
             IconButton(
-              icon: Icon(Icons.edit, color: Colors.black),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const CapNhatManChoi()),
-                );
-              },
+              icon: const Icon(Icons.edit, color: Colors.black),
+              onPressed: onTapEdit,
             ),
             IconButton(
-              icon: Icon(Icons.delete, color: Colors.black),
-              onPressed: () {
-                // Xử lý khi nhấn icon xóa
-              },
+              icon: const Icon(Icons.delete, color: Colors.black),
+              onPressed: onTapDelete,
             ),
           ],
         ),
