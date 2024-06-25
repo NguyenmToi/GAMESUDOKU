@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:sudoku/ManHinh/ManHinhChoi.dart';
+
+import 'package:sudoku/ManHinh/ManHinhChoiThuThach.dart';
 import 'package:sudoku/MoHinh/xulydulieu.dart';
 
 class ChonManCHoi extends StatefulWidget {
@@ -80,7 +81,7 @@ class _ChonManCHoiState extends State<ChonManCHoi> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => ManHinhChoi(
+                          builder: (context) => ManHinhChoiThuThach(
                             tenMan: manThuThach.tenman,
                           ),
                         ),

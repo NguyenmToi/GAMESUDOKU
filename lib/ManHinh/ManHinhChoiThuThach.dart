@@ -1,45 +1,28 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:sudoku/ManHinh/ChonManChoi.dart';
 
-class ManHinhChoi extends StatefulWidget {
-  const ManHinhChoi({super.key, required this.tenMan});
+class ManHinhChoiThuThach extends StatefulWidget {
+  const ManHinhChoiThuThach({super.key, required this.tenMan});
 
   final String tenMan;
 
   @override
-  State<ManHinhChoi> createState() => _ManHinhChoiState();
+  State<ManHinhChoiThuThach> createState() => _ManHinhChoiThuThachState();
 }
 
-class _ManHinhChoiState extends State<ManHinhChoi> {
-  int giay = 30;
+class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
+  int giay = 300;
   late Timer thoiGian;
-  bool ktNhan = false;
   int? selectedRow;
   int? selectedCol;
-
-  void handleCellTap(int row, int col) {
-    setState(() {
-      if (selectedRow == row && selectedCol == col) {
-        // Nếu ô đã được chọn rồi thì bỏ chọn
-        selectedRow = null;
-        selectedCol = null;
-      } else {
-        // Nếu chưa được chọn thì chọn ô này
-        selectedRow = row;
-        selectedCol = col;
-      }
-    });
-  }
 
   @override
   void initState() {
     super.initState();
-    batdauthoigian();
+    batDauThoiGian();
   }
 
-  void batdauthoigian() {
+  void batDauThoiGian() {
     const oneSecond = Duration(seconds: 1);
     thoiGian = Timer.periodic(oneSecond, (Timer thoiGian) {
       setState(() {
@@ -66,9 +49,24 @@ class _ManHinhChoiState extends State<ManHinhChoi> {
   }
 
   List<List<int>> board = List.generate(9, (_) => List.generate(9, (_) => 0));
-  //List.generate(9, (_) => ...): Tạo ra một danh sách 1 chiều gồm 9 phần tử. Mỗi phần tử được khởi tạo bằng cách gọi hàm List.generate(9, (_) => 0).
-  //List.generate(9, (_) => 0): Tạo ra một danh sách 1 chiều gồm 9 phần tử, mỗi phần tử được khởi tạo bằng giá trị 0.
-  // _ biến ẩn danh : không cần đặt tên cho biến
+
+  void handleCellTap(int row, int col) {
+    setState(() {
+      selectedRow = row;
+      selectedCol = col;
+    });
+  }
+
+  void handleNumberTap(int number) {
+    if (selectedRow != null && selectedCol != null) {
+      setState(() {
+        board[selectedRow!][selectedCol!] = number;
+        selectedRow = null;
+        selectedCol = null;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -97,7 +95,7 @@ class _ManHinhChoiState extends State<ManHinhChoi> {
         ),
       ),
       body: Padding(
-        padding: const EdgeInsets.fromLTRB(5, 70, 5, 10),
+        padding: const EdgeInsets.fromLTRB(5, 100, 5, 10),
         child: Stack(
           children: [
             Column(
@@ -119,39 +117,17 @@ class _ManHinhChoiState extends State<ManHinhChoi> {
                     ),
                     itemBuilder: (context, index) {
                       int row = index ~/ 9; // lấy chỉ số hàng, chia lấy nguyên
-                      int col = index %
-                          9; // lấy chỉ số cột, chia lấy dư, vd ô 27%9 = 3 dư 0: hàng 3 cột 0
+                      int col = index % 9; // lấy chỉ số cột, chia lấy dư
+                      bool isSelected =
+                          row == selectedRow && col == selectedCol;
                       return GestureDetector(
-                        // widget phát hiện cử chỉ tương tác với ứng dụng
-                        onTap: () {
-                          handleCellTap(row, col);
-                        },
+                        onTap: () => handleCellTap(row, col),
                         child: Container(
-                          color: board[row][col] == 1 ? Colors.blue[250] : null,
                           decoration: BoxDecoration(
-                            border: Border(
-                              top: BorderSide(
-                                color:
-                                    (row % 3 == 0) ? Colors.black : Colors.grey,
-                                width: 1.0,
-                              ),
-                              left: BorderSide(
-                                color:
-                                    (col % 3 == 0) ? Colors.black : Colors.grey,
-                                width: 1.0,
-                              ),
-                              bottom: BorderSide(
-                                color: ((row + 1) % 3 == 0)
-                                    ? Colors.black
-                                    : Colors.grey,
-                                width: 1.0,
-                              ),
-                              right: BorderSide(
-                                color: ((col + 1) % 3 == 0)
-                                    ? Colors.black
-                                    : Colors.grey,
-                                width: 1.0,
-                              ),
+                            color: isSelected ? Colors.blue[100] : null,
+                            border: Border.all(
+                              color: isSelected ? Colors.blue : Colors.grey,
+                              width: 1.0,
                             ),
                           ),
                           child: Center(
@@ -176,33 +152,31 @@ class _ManHinhChoiState extends State<ManHinhChoi> {
                       height: 10,
                     ),
                     Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          xaydungso(1),
-                          xaydungso(2),
-                          xaydungso(3),
-                          xaydungso(4),
-                          xaydungso(5)
-                        ]),
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        for (int i = 1; i <= 5; i++) xayDungSo(i),
+                      ],
+                    ),
                     SizedBox(
                       height: 10,
                     ),
                     Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          xaydungso(6),
-                          xaydungso(7),
-                          xaydungso(8),
-                          xaydungso(9),
-                          Ink(
-                            decoration: ShapeDecoration(
-                                shape: CircleBorder(), color: Colors.blue[100]),
-                            child: IconButton(
-                                onPressed: () {},
-                                color: Colors.black,
-                                icon: Icon(Icons.lightbulb_outline_sharp)),
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        for (int i = 6; i <= 9; i++) xayDungSo(i),
+                        Ink(
+                          decoration: ShapeDecoration(
+                            shape: CircleBorder(),
+                            color: Colors.blue[100],
                           ),
-                        ]),
+                          child: IconButton(
+                            onPressed: () {},
+                            color: Colors.black,
+                            icon: Icon(Icons.lightbulb_outline_sharp),
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
                 )
               ],
@@ -241,7 +215,7 @@ class _ManHinhChoiState extends State<ManHinhChoi> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => ManHinhChoi(
+                    builder: (context) => ManHinhChoiThuThach(
                       tenMan: widget.tenMan,
                     ),
                   ),
@@ -279,15 +253,6 @@ class _ManHinhChoiState extends State<ManHinhChoi> {
               child: const Text('Ở lại'),
               onPressed: () {
                 Navigator.of(context).pop();
-                Navigator.of(context).pop();
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ManHinhChoi(
-                      tenMan: widget.tenMan,
-                    ),
-                  ),
-                );
               },
             ),
           ],
@@ -295,26 +260,26 @@ class _ManHinhChoiState extends State<ManHinhChoi> {
       },
     );
   }
-}
 
-Widget xaydungso(int number) {
-  return Container(
-    width: 60,
-    height: 45,
-    decoration: BoxDecoration(
-      color: Colors.blue[100],
-      borderRadius: BorderRadius.circular(8),
-    ),
-    child: GestureDetector(
-      onTap: () {
-        print('Button $number pressed');
-      },
-      child: Center(
-        child: Text(
-          number.toString(),
-          style: TextStyle(color: Colors.black, fontSize: 20),
+  Widget xayDungSo(int number) {
+    return Container(
+      width: 60,
+      height: 45,
+      decoration: BoxDecoration(
+        color: Colors.blue[100],
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: GestureDetector(
+        onTap: () {
+          handleNumberTap(number);
+        },
+        child: Center(
+          child: Text(
+            number.toString(),
+            style: TextStyle(color: Colors.black, fontSize: 20),
+          ),
         ),
       ),
-    ),
-  );
+    );
+  }
 }
