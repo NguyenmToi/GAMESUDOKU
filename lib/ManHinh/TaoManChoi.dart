@@ -1,4 +1,8 @@
+import 'dart:convert';
+
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class TaoManChoi extends StatefulWidget {
   const TaoManChoi({super.key});
@@ -8,30 +12,88 @@ class TaoManChoi extends StatefulWidget {
 }
 
 class _TaoManChoiState extends State<TaoManChoi> {
-  int? selectedRow;
-  int? selectedCol;
+  int? hangChon;
+  int? cotChon;
+  final TextEditingController _tenManChoiController = TextEditingController();
+
+  final TextEditingController _soGoiYController = TextEditingController();
   List<List<int>> bangSudoku =
       List.generate(9, (_) => List.generate(9, (_) => 0));
 
-  void handleCellTap(int row, int col) {
-    setState(() {
-      selectedRow = row;
-      selectedCol = col;
+//kiểm tra màn chơi đã tồn tại chưa
+  Future<bool> kiemTraManChoi(String maman) async {
+    DatabaseEvent event = await FirebaseDatabase.instance
+        .reference()
+        .child('thuthach')
+        .orderByKey()
+        .equalTo(maman)
+        .once();
+    DataSnapshot snapshot = event.snapshot;
+
+    return snapshot.value != null;
+  }
+
+// thêm màn chơi
+  void themManChoiLenFireBase() async {
+    String maman = 'man${_tenManChoiController.text.toString()}';
+    bool exists = await kiemTraManChoi(maman);
+    if (exists) {
+      const SnackBar(content: Text("Tên màn chơi đã tồn tại"));
+    } else {
+      themManChoi();
+    }
+  }
+
+//thêm màn chơi lên firebase
+  final databaseReference = FirebaseDatabase.instance.reference();
+  Future<void> themManChoi() async {
+    databaseReference
+        .child('thuthach')
+        .child('man${_tenManChoiController.text.toString()}')
+        .set({
+      'board': bangSudoku,
+      'maman': int.parse(_tenManChoiController.text.toString()),
+      'tenman': 'Màn ${_tenManChoiController.text.toString()}',
+      'timestamp': DateTime.now().toString(),
+    }).then((_) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Đã thêm màn chơi thành công lên Firebase'),
+        ),
+      );
+    }).catchError((error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Lỗi khi thêm màn chơi: $error'),
+        ),
+      );
     });
   }
 
-  void handleNumberTap(int number) {
-    if (selectedRow != null && selectedCol != null) {
+  void xyLyNhanSo(int so) {
+    if (hangChon != null && cotChon != null) {
       setState(() {
-        bangSudoku[selectedRow!][selectedCol!] = number;
-        selectedRow = null;
-        selectedCol = null;
+        bangSudoku[hangChon!][cotChon!] = so;
+        hangChon = null;
+        cotChon = null;
       });
     }
   }
 
+  void xuLyNhan(int hang, int cot) {
+    setState(() {
+      hangChon = hang;
+      cotChon = cot;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    // cố định màn hình ứng dụng ở chế độ dọc
+    // SystemChrome.setPreferredOrientations([
+    //   DeviceOrientation.portraitUp,
+    //   DeviceOrientation.portraitDown,
+    // ]);
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.yellow[200], // Màu nền appbar
@@ -65,7 +127,7 @@ class _TaoManChoiState extends State<TaoManChoi> {
             // Dòng 1: Tên màn chơi và ô nhập thông tin
             Row(
               children: [
-                const Text(
+                Text(
                   'Tên màn chơi:',
                   style: TextStyle(fontSize: 16),
                 ),
@@ -80,6 +142,7 @@ class _TaoManChoiState extends State<TaoManChoi> {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 10),
                       child: TextFormField(
+                        controller: _tenManChoiController,
                         decoration: const InputDecoration(
                           border: InputBorder
                               .none, // Loại bỏ viền của TextFormField
@@ -134,6 +197,7 @@ class _TaoManChoiState extends State<TaoManChoi> {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 10),
                       child: TextFormField(
+                        controller: _soGoiYController,
                         decoration: const InputDecoration(
                           border: InputBorder
                               .none, // Loại bỏ viền của TextFormField
@@ -222,7 +286,7 @@ class _TaoManChoiState extends State<TaoManChoi> {
                 itemBuilder: (context, index) {
                   int row = index ~/ 9; // lấy chỉ số hàng, chia lấy nguyên
                   int col = index % 9; // lấy chỉ số cột, chia lấy dư
-                  bool isSelected = row == selectedRow && col == selectedCol;
+                  bool isSelected = row == hangChon && col == cotChon;
 
                   Border border = Border(
                     top: BorderSide(
@@ -260,7 +324,7 @@ class _TaoManChoiState extends State<TaoManChoi> {
                   );
 
                   return InkWell(
-                    onTap: () => handleCellTap(row, col),
+                    onTap: () => xuLyNhan(row, col),
                     child: Container(
                       decoration: BoxDecoration(
                         color: isSelected ? Colors.blue[100] : null,
@@ -314,10 +378,8 @@ class _TaoManChoiState extends State<TaoManChoi> {
                     )),
               ],
             ),
-            const SizedBox(
-                height:
-                    15), // Khoảng cách giữa dòng nút chức năng và nút "Thêm màn chơi"
-            // Nút "Thêm màn chơi"
+            const SizedBox(height: 15), // Khoảng cách giữa các số và nút thêm
+
             Center(
               child: Container(
                 width: double
@@ -328,7 +390,7 @@ class _TaoManChoiState extends State<TaoManChoi> {
                 ),
                 child: TextButton(
                   onPressed: () {
-                    // Xử lý khi nhấn nút
+                    themManChoiLenFireBase();
                   },
                   style: TextButton.styleFrom(
                     padding: const EdgeInsets.symmetric(
@@ -336,8 +398,7 @@ class _TaoManChoiState extends State<TaoManChoi> {
                   ),
                   child: const Text(
                     'Thêm màn chơi',
-                    style: TextStyle(
-                        color: Colors.white, fontSize: 18), // Màu chữ đen
+                    style: TextStyle(color: Colors.white, fontSize: 18),
                   ),
                 ),
               ),
@@ -348,32 +409,32 @@ class _TaoManChoiState extends State<TaoManChoi> {
     );
   }
 
-  bool _NgauNhienSudoku(int row, int col) {
-    if (row == 9) {
+  bool _ngauNhienSudoku(int hang, int cot) {
+    if (hang == 9) {
       return true; // Đã điền đầy đủ Sudoku thành công
     }
 
     // Tính toán hàng và cột tiếp theo
-    int nextRow = (col == 8) ? (row + 1) : row;
-    int nextCol = (col + 1) % 9;
+    int hangtieptheo = (cot == 8) ? (hang + 1) : hang;
+    int cottieptheo = (cot + 1) % 9;
 
     // Xáo trộn các số từ 1 đến 9 để ngẫu nhiên hóa quá trình sinh ra Sudoku
-    List<int> nums = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-    nums.shuffle();
+    List<int> dsso = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+    dsso.shuffle();
 
     // Thử điền ô hàng,cột từng số
-    for (int num in nums) {
-      if (_hopLe(row, col, num)) {
+    for (int so in dsso) {
+      if (_hopLe(hang, cot, so)) {
         // Đặt số nếu số đó hợp lệ
-        bangSudoku[row][col] = num;
+        bangSudoku[hang][cot] = so;
 
         // Điền đệ quy ô tiếp theo
-        if (_NgauNhienSudoku(nextRow, nextCol)) {
+        if (_ngauNhienSudoku(hangtieptheo, cottieptheo)) {
           return true;
         }
 
         // Nếu điền ô tiếp theo thất bại, backtrack
-        bangSudoku[row][col] = 0;
+        bangSudoku[hang][cot] = 0;
       }
     }
 
@@ -411,16 +472,16 @@ class _TaoManChoiState extends State<TaoManChoi> {
     }
 
     // tạo bảng hợp lệ
-    if (_NgauNhienSudoku(0, 0)) {
+    if (_ngauNhienSudoku(0, 0)) {
       // Cập nhật giao diện
       setState(() {});
     } else {
       // Xử lý trường hợp không tìm thấy
-      print("không thể tạo nguẫ nhiên");
+      print("không thể tạo ngẫu nhiên");
     }
   }
 
-  Widget xayDungSo(int number) {
+  Widget xayDungSo(int so) {
     return Ink(
       decoration: BoxDecoration(
         color: Colors.blue[50],
@@ -429,14 +490,14 @@ class _TaoManChoiState extends State<TaoManChoi> {
       child: InkWell(
         borderRadius: BorderRadius.circular(20),
         onTap: () {
-          handleNumberTap(number);
+          xyLyNhanSo(so);
         },
         child: Container(
           width: 60,
           height: 45,
           alignment: Alignment.center,
           child: Text(
-            number.toString(),
+            so.toString(),
             style: const TextStyle(color: Colors.black, fontSize: 20),
           ),
         ),

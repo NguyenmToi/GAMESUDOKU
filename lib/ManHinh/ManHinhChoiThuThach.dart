@@ -95,19 +95,42 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
         ),
       ),
       body: Padding(
-        padding: const EdgeInsets.fromLTRB(5, 100, 5, 10),
+        padding: const EdgeInsets.fromLTRB(5, 50, 5, 60),
         child: Stack(
           children: [
             Column(
               children: [
-                Align(
-                  alignment: Alignment.topRight,
-                  child: Text(
-                    '${dinhDang(giay)}',
-                    style: const TextStyle(color: Colors.black, fontSize: 20),
+                Text(
+                  'SUDOKU',
+                  style: TextStyle(
+                    fontSize: 50.0,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey[400],
                   ),
                 ),
-                // Tạo lưới 9x9 ô
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.error, size: 18), // Biểu tượng thời gian
+                        SizedBox(width: 5), // Khoảng cách giữa Icon và Text
+                        Text('1',
+                            style:
+                                TextStyle(fontSize: 18)), // Văn bản thời gian
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        Text(
+                          '${dinhDang(giay)}',
+                          style: const TextStyle(
+                              color: Colors.black, fontSize: 20),
+                        ),
+                      ],
+                    )
+                  ],
+                ),
                 Expanded(
                   child: GridView.builder(
                     gridDelegate:

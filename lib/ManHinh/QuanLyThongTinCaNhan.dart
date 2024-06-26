@@ -87,11 +87,11 @@ class _QuanLyThongTinCaNhanState extends State<QuanLyThongTinCaNhan> {
               ),
             ),
             SizedBox(height: 20),
-            _buildInfoRow('Tên người chơi', 'John Doe'),
+            _xayDungDong('Tên người chơi', 'John Doe'),
             SizedBox(height: 10),
-            _buildInfoRow('Màn', 'Màn 22'),
+            _xayDungDong('Màn', 'Màn 22'),
             SizedBox(height: 10),
-            _buildInfoRow('Điểm', '35'),
+            _xayDungDong('Điểm', '35'),
             SizedBox(height: 10),
             GestureDetector(
               onTap: () {
@@ -115,7 +115,7 @@ class _QuanLyThongTinCaNhanState extends State<QuanLyThongTinCaNhan> {
                 ],
               ),
             ),
-            Spacer(),
+            const Spacer(),
             Center(
               child: ElevatedButton(
                 onPressed: () {
@@ -129,17 +129,21 @@ class _QuanLyThongTinCaNhanState extends State<QuanLyThongTinCaNhan> {
                   backgroundColor: Colors.white,
                   minimumSize: Size(220, 50),
                 ),
-                child: Text('Đăng Xuất', style: TextStyle(fontSize: 22)),
+                // child: Text('Đăng Xuất', style: TextStyle(fontSize: 22)),
+                child: const Icon(
+                  Icons.exit_to_app,
+                  size: 30,
+                ),
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildInfoRow(String label, String value) {
+  Widget _xayDungDong(String label, String value) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [

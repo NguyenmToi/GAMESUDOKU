@@ -5,12 +5,11 @@ import 'package:sudoku/ManHinh/QuanLyManChoi.dart';
 import 'package:sudoku/ManHinh/QuanLyThongTinCaNhan.dart';
 import 'package:sudoku/ManHinh/ThongKe.dart';
 import 'package:sudoku/ManHinh/XepHang.dart';
-import 'package:sudoku/ThanhPhan/ChonMucDoChoi.dart';
-import 'package:sudoku/ThanhPhan/QuanLyMucDo.dart';
 import 'package:sudoku/ManHinh/QuanLyTaiKhoan.dart';
+import 'package:sudoku/MoHinh/xulydulieu.dart';
 
 class ManHinhChinh extends StatefulWidget {
-  const ManHinhChinh({super.key});
+  const ManHinhChinh({Key? key}) : super(key: key);
 
   @override
   State<ManHinhChinh> createState() => _ManHinhChinhState();
@@ -18,12 +17,19 @@ class ManHinhChinh extends StatefulWidget {
 
 class _ManHinhChinhState extends State<ManHinhChinh> {
   int _currentIndex = 0;
+  late Future<List<cmucDo>> _dsmucDo;
 
   final List<Widget> _pages = [
     HomeScreen(),
     XepHang(),
     ThongKe(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _dsmucDo = cmucDo.dsMucDo();
+  }
 
   void _onTabTapped(int index) {
     setState(() {
@@ -56,6 +62,93 @@ class _ManHinhChinhState extends State<ManHinhChinh> {
       ),
     );
   }
+
+  void HienThiMucDo(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return FutureBuilder<List<cmucDo>>(
+          future: _dsmucDo,
+          builder:
+              (BuildContext context, AsyncSnapshot<List<cmucDo>> snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Center(
+                  child: Text('Lỗi khi tải dữ liệu: ${snapshot.error}'));
+            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return Center(child: Text('Không có dữ liệu'));
+            } else {
+              List<cmucDo> mucDos = snapshot.data!;
+              mucDos.sort((a, b) => a.mamucdo.compareTo(b.mamucdo));
+              return Container(
+                padding: EdgeInsets.all(20.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Text(
+                      'Mức độ chơi',
+                      style: TextStyle(
+                        fontSize: 20.0,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 10.0),
+                    SingleChildScrollView(
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        physics: NeverScrollableScrollPhysics(),
+                        itemCount: mucDos.length,
+                        itemBuilder: (context, index) {
+                          cmucDo mucDo = mucDos[index];
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8.0),
+                            child: GestureDetector(
+                              onTap: () {
+                                Navigator.pop(context);
+                                _navigateToManHinhChoiMucDo(mucDo);
+                              },
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[300],
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
+                                padding: const EdgeInsets.all(12.0),
+                                child: Center(
+                                  child: Text(
+                                    mucDo.tenmucdo,
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 18.0,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }
+          },
+        );
+      },
+    );
+  }
+
+  void _navigateToManHinhChoiMucDo(cmucDo mucDo) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ManHinhChoiMucDo(), //mucdo: mucDo.tenmucdo
+      ),
+    );
+  }
 }
 
 class HomeScreen extends StatelessWidget {
@@ -68,53 +161,53 @@ class HomeScreen extends StatelessWidget {
         children: [
           Row(
             children: [
-              Expanded(
-                child: Container(
-                  padding: EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[200],
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Row(
-                    children: [
-                      InkWell(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => QuanLyThongTinCaNhan()),
-                          );
-                        },
-                        child: CircleAvatar(
-                          radius: 25,
-                          backgroundImage: AssetImage('assets/image/avt1.jpg'),
-                          backgroundColor: Colors.transparent,
+              Container(
+                padding: EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.grey[200],
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(
+                  children: [
+                    InkWell(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => QuanLyThongTinCaNhan(),
+                          ),
+                        );
+                      },
+                      child: CircleAvatar(
+                        radius: 25,
+                        backgroundImage: AssetImage('assets/image/avt1.jpg'),
+                        backgroundColor: Colors.transparent,
+                      ),
+                    ),
+                    SizedBox(width: 10),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Phạm Tuân',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                      SizedBox(width: 10),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Phạm Tuân',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
+                        Text(
+                          'Màn 22',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey,
                           ),
-                          Text(
-                            'Màn 22',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.grey,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
+              Spacer(),
               IconButton(
                 icon: Icon(
                   Icons.question_mark,
@@ -125,9 +218,7 @@ class HomeScreen extends StatelessWidget {
               ),
             ],
           ),
-          SizedBox(
-            height: 20,
-          ),
+          SizedBox(height: 20),
           Align(
             alignment: Alignment.center,
             child: Column(
@@ -141,93 +232,87 @@ class HomeScreen extends StatelessWidget {
                     color: Colors.grey[600],
                   ),
                 ),
-                SizedBox(
-                  height: 20,
-                ),
+                SizedBox(height: 20),
                 Image.asset(
                   'assets/image/logo.png',
                   width: 220,
                   height: 200,
                 ),
-                SizedBox(
-                  height: 60,
-                ),
+                SizedBox(height: 60),
                 ElevatedButton(
                   onPressed: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => const ChonManCHoi()),
+                        builder: (context) => const ChonManCHoi(),
+                      ),
                     );
                   },
                   style: ElevatedButton.styleFrom(
                     foregroundColor: Colors.white,
-                    backgroundColor: Colors.blue, // chữ đỏ
-                    minimumSize: Size(280, 50), // Tăng bề ngang và độ cao
+                    backgroundColor: Colors.blue,
+                    minimumSize: Size(280, 50),
                     shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(15), // làm tròn góc 8px
+                      borderRadius: BorderRadius.circular(15),
                     ),
                   ),
                   child: const Text('Chọn màn', style: TextStyle(fontSize: 22)),
                 ),
-                const SizedBox(
-                  height: 15,
-                ),
+                const SizedBox(height: 15),
                 ElevatedButton(
-                  onPressed: () => _showDifficultyLevels(context),
+                  onPressed: () {
+                    // Sử dụng hàm showDifficultyLevels thông qua _ManHinhChinhState
+                    (context.findAncestorStateOfType<_ManHinhChinhState>())
+                        ?.HienThiMucDo(context);
+                  },
                   style: ElevatedButton.styleFrom(
                     foregroundColor: Colors.white,
-                    backgroundColor: Colors.blue, // chữ đỏ
-                    minimumSize: Size(280, 50), // Tăng bề ngang và độ cao
+                    backgroundColor: Colors.blue,
+                    minimumSize: Size(280, 50),
                     shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(15), // làm tròn góc 8px
+                      borderRadius: BorderRadius.circular(15),
                     ),
                   ),
                   child:
                       const Text('Ngẫu nhiên', style: TextStyle(fontSize: 22)),
                 ),
-                const SizedBox(
-                  height: 15,
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => QuanLyManChoi()),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    backgroundColor: Colors.blue, // chữ đỏ
-                    minimumSize: Size(280, 50), // Tăng bề ngang và độ
-                    shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(15), // làm tròn góc 8px
-                    ),
-                  ),
-                  child: const Text('Quản lý màn chơi',
-                      style: TextStyle(fontSize: 22)),
-                ),
-                const SizedBox(
-                  height: 15,
-                ),
+                const SizedBox(height: 15),
                 ElevatedButton(
                   onPressed: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => const QuanLyTaiKhoan()),
+                        builder: (context) => QuanLyManChoi(),
+                      ),
                     );
                   },
                   style: ElevatedButton.styleFrom(
                     foregroundColor: Colors.white,
-                    backgroundColor: Colors.blue, // chữ đỏ
-                    minimumSize: Size(280, 50), // Tăng bề ngang và độ cao
+                    backgroundColor: Colors.blue,
+                    minimumSize: Size(280, 50),
                     shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(15), // làm tròn góc 8px
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                  ),
+                  child: const Text('Quản lý màn chơi',
+                      style: TextStyle(fontSize: 22)),
+                ),
+                const SizedBox(height: 15),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const QuanLyTaiKhoan(),
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    backgroundColor: Colors.blue,
+                    minimumSize: Size(280, 50),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
                     ),
                   ),
                   child: const Text('Quản lý tài khoản',
@@ -238,89 +323,6 @@ class HomeScreen extends StatelessWidget {
           )
         ],
       ),
-    );
-  }
-}
-
-class XepHang extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text('Xếp Hạng'),
-    );
-  }
-}
-
-class ThongKe extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text('Thống Kê'),
-    );
-  }
-}
-
-void _showDifficultyLevels(BuildContext context,
-    {bool showBottomSheet = true}) {
-  if (showBottomSheet) {
-    showModalBottomSheet(
-      context: context,
-      builder: (BuildContext context) {
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            ListTile(
-              leading: const Icon(Icons.sentiment_satisfied),
-              title: const Text('Dễ'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => ManHinhChoiMucDo()),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.sentiment_neutral),
-              title: const Text('Trung Bình'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => ManHinhChoiMucDo()),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.sentiment_dissatisfied),
-              title: const Text('Khó'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => ManHinhChoiMucDo()),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.sentiment_very_dissatisfied),
-              title: const Text('Ác Mộng'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => ManHinhChoiMucDo()),
-                );
-              },
-            ),
-          ],
-        );
-      },
-    );
-  } else {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => ManHinhChoiMucDo()),
     );
   }
 }

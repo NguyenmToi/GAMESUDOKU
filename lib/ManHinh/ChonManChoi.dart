@@ -1,3 +1,4 @@
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 
 import 'package:sudoku/ManHinh/ManHinhChoiThuThach.dart';
@@ -63,7 +64,6 @@ class _ChonManCHoiState extends State<ChonManCHoi> {
             } else {
               List<cManThuThach> manThuThachList = snapshot.data!;
 
-              // Sắp xếp danh sách theo mã màn
               manThuThachList.sort((a, b) => a.maman.compareTo(b.maman));
 
               return GridView.builder(
