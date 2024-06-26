@@ -13,8 +13,8 @@ class ManHinhChoiThuThach extends StatefulWidget {
 class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
   int giay = 300;
   late Timer thoiGian;
-  int? selectedRow;
-  int? selectedCol;
+  int? hangDuocChon;
+  int? cotDuocChon;
 
   @override
   void initState() {
@@ -23,8 +23,8 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
   }
 
   void batDauThoiGian() {
-    const oneSecond = Duration(seconds: 1);
-    thoiGian = Timer.periodic(oneSecond, (Timer thoiGian) {
+    const motGiay = Duration(seconds: 1);
+    thoiGian = Timer.periodic(motGiay, (Timer thoiGian) {
       setState(() {
         if (giay <= 0) {
           thoiGian.cancel();
@@ -42,27 +42,28 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
     super.dispose();
   }
 
-  String dinhDang(int timeInSeconds) {
-    int minutes = timeInSeconds ~/ 60;
-    int seconds = timeInSeconds % 60;
-    return '${minutes.toString().padLeft(1, '0')}:${seconds.toString().padLeft(2, '0')}';
+  String dinhDangThoiGian(int timeInSeconds) {
+    int phut = timeInSeconds ~/ 60;
+    int giay = timeInSeconds % 60;
+    return '${phut.toString().padLeft(1, '0')}:${giay.toString().padLeft(2, '0')}';
   }
 
-  List<List<int>> board = List.generate(9, (_) => List.generate(9, (_) => 0));
+  List<List<int>> bangSudoku =
+      List.generate(9, (_) => List.generate(9, (_) => 0));
 
-  void handleCellTap(int row, int col) {
+  void xuLyChonO(int hang, int cot) {
     setState(() {
-      selectedRow = row;
-      selectedCol = col;
+      hangDuocChon = hang;
+      cotDuocChon = cot;
     });
   }
 
-  void handleNumberTap(int number) {
-    if (selectedRow != null && selectedCol != null) {
+  void xuLyChonSo(int so) {
+    if (hangDuocChon != null && cotDuocChon != null) {
       setState(() {
-        board[selectedRow!][selectedCol!] = number;
-        selectedRow = null;
-        selectedCol = null;
+        bangSudoku[hangDuocChon!][cotDuocChon!] = so;
+        hangDuocChon = null;
+        cotDuocChon = null;
       });
     }
   }
@@ -95,7 +96,7 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
         ),
       ),
       body: Padding(
-        padding: const EdgeInsets.fromLTRB(5, 50, 5, 60),
+        padding: const EdgeInsets.fromLTRB(5, 40, 5, 60),
         child: Stack(
           children: [
             Column(
@@ -108,12 +109,24 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
                     color: Colors.grey[400],
                   ),
                 ),
+                const SizedBox(
+                  height: 10,
+                ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    Row(
+                    const Row(
                       children: [
                         Icon(Icons.error, size: 18), // Biểu tượng thời gian
+                        SizedBox(width: 5), // Khoảng cách giữa Icon và Text
+                        Text('1',
+                            style:
+                                TextStyle(fontSize: 18)), // Văn bản thời gian
+                      ],
+                    ),
+                    const Row(
+                      children: [
+                        Icon(Icons.lightbulb, size: 18), // Biểu tượng thời gian
                         SizedBox(width: 5), // Khoảng cách giữa Icon và Text
                         Text('1',
                             style:
@@ -123,7 +136,7 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
                     Row(
                       children: [
                         Text(
-                          '${dinhDang(giay)}',
+                          dinhDangThoiGian(giay),
                           style: const TextStyle(
                               color: Colors.black, fontSize: 20),
                         ),
@@ -139,58 +152,58 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
                       childAspectRatio: 1, // tỉ lệ giữa chiều rộng và cao
                     ),
                     itemBuilder: (context, index) {
-                      int row = index ~/ 9; // lấy chỉ số hàng, chia lấy nguyên
-                      int col = index % 9; // lấy chỉ số cột, chia lấy dư
-                      bool isSelected =
-                          row == selectedRow && col == selectedCol;
+                      int hang = index ~/ 9; // lấy chỉ số hàng, chia lấy nguyên
+                      int cot = index % 9; // lấy chỉ số cột, chia lấy dư
+                      bool duocChon =
+                          hang == hangDuocChon && cot == cotDuocChon;
 
                       Border border = Border(
                         top: BorderSide(
-                          color: row == 0
+                          color: hang == 0
                               ? Colors.black
-                              : (row % 3 == 0)
+                              : (hang % 3 == 0)
                                   ? Colors.black
                                   : Colors.grey,
-                          width: row == 0 ? 1.0 : 1.0,
+                          width: hang == 0 ? 1.0 : 1.0,
                         ),
                         left: BorderSide(
-                          color: col == 0
+                          color: cot == 0
                               ? Colors.black
-                              : (col % 3 == 0)
+                              : (cot % 3 == 0)
                                   ? Colors.black
                                   : Colors.grey,
-                          width: col == 0 ? 1.0 : 1.0,
+                          width: cot == 0 ? 1.0 : 1.0,
                         ),
                         bottom: BorderSide(
-                          color: row == 8
+                          color: hang == 8
                               ? Colors.black
-                              : ((row + 1) % 3 == 0)
+                              : ((hang + 1) % 3 == 0)
                                   ? Colors.black
                                   : Colors.grey,
-                          width: row == 8 ? 1.0 : 1.0,
+                          width: hang == 8 ? 1.0 : 1.0,
                         ),
                         right: BorderSide(
-                          color: col == 8
+                          color: cot == 8
                               ? Colors.black
-                              : ((col + 1) % 3 == 0)
+                              : ((cot + 1) % 3 == 0)
                                   ? Colors.black
                                   : Colors.grey,
-                          width: col == 8 ? 1.0 : 1.0,
+                          width: cot == 8 ? 1.0 : 1.0,
                         ),
                       );
 
                       return InkWell(
-                        onTap: () => handleCellTap(row, col),
+                        onTap: () => xuLyChonO(hang, cot),
                         child: Container(
                           decoration: BoxDecoration(
-                            color: isSelected ? Colors.blue[100] : null,
+                            color: duocChon ? Colors.blue[100] : null,
                             border: border,
                           ),
                           child: Center(
                             child: Text(
-                              board[row][col] == 0
+                              bangSudoku[hang][cot] == 0
                                   ? ''
-                                  : board[row][col].toString(),
+                                  : bangSudoku[hang][cot].toString(),
                               style: const TextStyle(
                                 fontSize: 24,
                               ),
@@ -204,7 +217,7 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
                 ),
                 Column(
                   children: [
-                    SizedBox(
+                    const SizedBox(
                       height: 10,
                     ),
                     Row(
@@ -213,7 +226,7 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
                         for (int i = 1; i <= 5; i++) xayDungSo(i),
                       ],
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 10,
                     ),
                     Row(
@@ -321,7 +334,7 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
     );
   }
 
-  Widget xayDungSo(int number) {
+  Widget xayDungSo(int so) {
     return Ink(
       decoration: BoxDecoration(
         color: Colors.blue[50],
@@ -330,14 +343,14 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
       child: InkWell(
         borderRadius: BorderRadius.circular(20),
         onTap: () {
-          handleNumberTap(number);
+          xuLyChonSo(so);
         },
         child: Container(
           width: 60,
           height: 45,
           alignment: Alignment.center,
           child: Text(
-            number.toString(),
+            so.toString(),
             style: const TextStyle(color: Colors.black, fontSize: 20),
           ),
         ),

@@ -16,8 +16,13 @@ class _QuanLyThuThachState extends State<QuanLyThuThach> {
   @override
   void initState() {
     super.initState();
-    _dsManThuThach =
-        cManThuThach.taiDanhSachMan(); // Load danh sách màn từ Firebase
+    _dsManThuThach = cManThuThach.taiDanhSachMan();
+  }
+
+  Future<void> taiLaiDanhSachMan() async {
+    setState(() {
+      _dsManThuThach = cManThuThach.taiDanhSachMan();
+    });
   }
 
   @override
@@ -25,44 +30,44 @@ class _QuanLyThuThachState extends State<QuanLyThuThach> {
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.all(7.0),
-        child: FutureBuilder<List<cManThuThach>>(
-          future: _dsManThuThach,
-          builder: (BuildContext context,
-              AsyncSnapshot<List<cManThuThach>> snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            } else if (snapshot.hasError) {
-              return Center(child: Text('Error: ${snapshot.error}'));
-            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return const Center(child: Text('No data available'));
-            } else {
-              List<cManThuThach> dsManThuThach = snapshot.data!;
+        child: RefreshIndicator(
+          onRefresh: taiLaiDanhSachMan,
+          child: FutureBuilder<List<cManThuThach>>(
+            future: _dsManThuThach,
+            builder: (BuildContext context,
+                AsyncSnapshot<List<cManThuThach>> snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              } else if (snapshot.hasError) {
+                return Center(child: Text('Error: ${snapshot.error}'));
+              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return const Center(child: Text('No data available'));
+              } else {
+                List<cManThuThach> dsManThuThach = snapshot.data!;
 
-              dsManThuThach.sort((a, b) => a.maman.compareTo(b.maman));
-              SizedBox(
-                height: 10,
-              );
-              return ListView.builder(
-                itemCount: dsManThuThach.length,
-                itemBuilder: (BuildContext context, int index) {
-                  cManThuThach manThuThach = dsManThuThach[index];
-                  return _xayDungCacThanhPhan(
-                    title: manThuThach.tenman,
-                    color: Colors.lightBlue[100]!,
-                    onTapEdit: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => CapNhatManChoi(),
-                        ),
-                      );
-                    },
-                    onTapDelete: () {},
-                  );
-                },
-              );
-            }
-          },
+                dsManThuThach.sort((a, b) => a.maman.compareTo(b.maman));
+                return ListView.builder(
+                  itemCount: dsManThuThach.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    cManThuThach manThuThach = dsManThuThach[index];
+                    return _xayDungCacThanhPhan(
+                      title: manThuThach.tenman,
+                      color: Colors.lightBlue[100]!,
+                      onTapEdit: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => CapNhatManChoi(),
+                          ),
+                        );
+                      },
+                      onTapDelete: () {},
+                    );
+                  },
+                );
+              }
+            },
+          ),
         ),
       ),
     );

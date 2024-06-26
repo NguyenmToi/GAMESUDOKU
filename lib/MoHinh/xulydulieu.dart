@@ -237,9 +237,9 @@ class ctaiKhoan {
   }
 
   static Future<bool> kiemTraTaiKhoanTonTai(String ten) async {
-    DatabaseReference ref = FirebaseDatabase.instance.ref().child('taiKhoan');
+    DatabaseReference ref = FirebaseDatabase.instance.ref().child('taikhoan');
     DatabaseEvent event =
-        await ref.orderByChild('taiKhoan').equalTo(ten).once();
+        await ref.orderByChild('taikhoan').equalTo(ten).once();
     DataSnapshot snapshot = event.snapshot;
 
     return snapshot.value != null;
@@ -247,15 +247,15 @@ class ctaiKhoan {
 
 //đăng nhập tài khoản
   static Future<bool> dangNhap(String taiKhoan, String matKhau) async {
-    DatabaseReference ref = FirebaseDatabase.instance.ref().child('taiKhoan');
+    DatabaseReference ref = FirebaseDatabase.instance.ref().child('taikhoan');
     DatabaseEvent event =
-        await ref.orderByChild('taiKhoan').equalTo(taiKhoan).once();
+        await ref.orderByChild('taikhoan').equalTo(taiKhoan).once();
     DataSnapshot snapshot = event.snapshot;
 
     if (snapshot.value != null) {
       Map<dynamic, dynamic> userData = snapshot.value as Map<dynamic, dynamic>;
       for (var user in userData.values) {
-        if (user['matKhau'] == matKhau) {
+        if (user['matkhau'] == matKhau) {
           return true;
         }
       }

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:sudoku/ManHinh/ManHinhChoiMucDo.dart';
 
 class TaoManChoi extends StatefulWidget {
   const TaoManChoi({super.key});
@@ -11,16 +12,83 @@ class TaoManChoi extends StatefulWidget {
   State<TaoManChoi> createState() => _TaoManChoiState();
 }
 
-class _TaoManChoiState extends State<TaoManChoi> {
-  int? hangChon;
-  int? cotChon;
-  final TextEditingController _tenManChoiController = TextEditingController();
+class SudokuSolver {
+  final List<List<int>> board;
 
+  SudokuSolver(this.board);
+
+  bool solve() {
+    for (int row = 0; row < 9; row++) {
+      for (int col = 0; col < 9; col++) {
+        if (board[row][col] == 0) {
+          for (int num = 1; num <= 9; num++) {
+            if (isSafe(row, col, num)) {
+              board[row][col] = num;
+              if (solve()) {
+                return true;
+              }
+              board[row][col] = 0;
+            }
+          }
+          return false;
+        }
+      }
+    }
+    return true; // Solved
+  }
+
+  bool isSafe(int row, int col, int num) {
+    // Check row
+    for (int x = 0; x < 9; x++) {
+      if (board[row][x] == num) {
+        return false;
+      }
+    }
+
+    // Check column
+    for (int x = 0; x < 9; x++) {
+      if (board[x][col] == num) {
+        return false;
+      }
+    }
+
+    // Check 3x3 subgrid
+    int startRow = row - row % 3;
+    int startCol = col - col % 3;
+    for (int i = 0; i < 3; i++) {
+      for (int j = 0; j < 3; j++) {
+        if (board[i + startRow][j + startCol] == num) {
+          return false;
+        }
+      }
+    }
+
+    return true;
+  }
+}
+
+class _TaoManChoiState extends State<TaoManChoi> {
+  int? hangDuocChon;
+  int? cotDuocChon;
+  final TextEditingController _tenManChoiController = TextEditingController();
+  final TextEditingController _thoiGianController = TextEditingController();
   final TextEditingController _soGoiYController = TextEditingController();
+  final TextEditingController _soLoiController = TextEditingController();
   List<List<int>> bangSudoku =
       List.generate(9, (_) => List.generate(9, (_) => 0));
 
-//kiểm tra màn chơi đã tồn tại chưa
+  void giaiSudoku() {
+    SudokuSolver solver = SudokuSolver(bangSudoku);
+    if (solver.solve()) {
+      setState(() {});
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Không thể giải bảng Sudoku")),
+      );
+    }
+  }
+
+  //kiểm tra màn chơi đã tồn tại chưa
   Future<bool> kiemTraManChoi(String maman) async {
     DatabaseEvent event = await FirebaseDatabase.instance
         .reference()
@@ -38,7 +106,9 @@ class _TaoManChoiState extends State<TaoManChoi> {
     String maman = 'man${_tenManChoiController.text.toString()}';
     bool exists = await kiemTraManChoi(maman);
     if (exists) {
-      const SnackBar(content: Text("Tên màn chơi đã tồn tại"));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Tên màn chơi đã tồn tại")),
+      );
     } else {
       themManChoi();
     }
@@ -51,14 +121,16 @@ class _TaoManChoiState extends State<TaoManChoi> {
         .child('thuthach')
         .child('man${_tenManChoiController.text.toString()}')
         .set({
-      'board': bangSudoku,
+      'bang': bangSudoku,
       'maman': int.parse(_tenManChoiController.text.toString()),
       'tenman': 'Màn ${_tenManChoiController.text.toString()}',
-      'timestamp': DateTime.now().toString(),
+      'thoigian': int.parse(_thoiGianController.text.toString()),
+      'trangthai': true,
+      'thoigiantao': DateTime.now().toString(),
     }).then((_) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Đã thêm màn chơi thành công lên Firebase'),
+          content: Text('Đã thêm màn chơi thành công'),
         ),
       );
     }).catchError((error) {
@@ -67,23 +139,6 @@ class _TaoManChoiState extends State<TaoManChoi> {
           content: Text('Lỗi khi thêm màn chơi: $error'),
         ),
       );
-    });
-  }
-
-  void xyLyNhanSo(int so) {
-    if (hangChon != null && cotChon != null) {
-      setState(() {
-        bangSudoku[hangChon!][cotChon!] = so;
-        hangChon = null;
-        cotChon = null;
-      });
-    }
-  }
-
-  void xuLyNhan(int hang, int cot) {
-    setState(() {
-      hangChon = hang;
-      cotChon = cot;
     });
   }
 
@@ -96,12 +151,12 @@ class _TaoManChoiState extends State<TaoManChoi> {
     // ]);
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.yellow[200], // Màu nền appbar
+        backgroundColor: Colors.yellow[200],
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios),
           color: Colors.grey,
           onPressed: () {
-            Navigator.pop(context);
+            Navigator.pop(context, true);
           },
         ),
         title: const Stack(
@@ -127,7 +182,7 @@ class _TaoManChoiState extends State<TaoManChoi> {
             // Dòng 1: Tên màn chơi và ô nhập thông tin
             Row(
               children: [
-                Text(
+                const Text(
                   'Tên màn chơi:',
                   style: TextStyle(fontSize: 16),
                 ),
@@ -144,8 +199,31 @@ class _TaoManChoiState extends State<TaoManChoi> {
                       child: TextFormField(
                         controller: _tenManChoiController,
                         decoration: const InputDecoration(
-                          border: InputBorder
-                              .none, // Loại bỏ viền của TextFormField
+                          border: InputBorder.none,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                const Text(
+                  'Số lỗi:',
+                  style: TextStyle(fontSize: 16),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Container(
+                    height: 35,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey), // Viền xám
+                      borderRadius: BorderRadius.circular(5), // Bo tròn góc
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      child: TextFormField(
+                        controller: _soLoiController,
+                        decoration: const InputDecoration(
+                          border: InputBorder.none,
                         ),
                       ),
                     ),
@@ -154,7 +232,7 @@ class _TaoManChoiState extends State<TaoManChoi> {
               ],
             ),
             const SizedBox(
-              height: 5,
+              height: 10,
             ),
             Row(
               children: [
@@ -173,6 +251,7 @@ class _TaoManChoiState extends State<TaoManChoi> {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 10),
                       child: TextFormField(
+                        controller: _thoiGianController,
                         decoration: const InputDecoration(
                           border: InputBorder
                               .none, // Loại bỏ viền của TextFormField
@@ -221,7 +300,7 @@ class _TaoManChoiState extends State<TaoManChoi> {
                   ),
                   child: TextButton(
                     onPressed: () {
-                      // Xử lý khi nhấn nút Giải trò chơi
+                      giaiSudoku();
                     },
                     child: const Text(
                       'Giải trò chơi',
@@ -254,7 +333,7 @@ class _TaoManChoiState extends State<TaoManChoi> {
                   ),
                   child: IconButton(
                     onPressed: () {
-                      // Xử lý khi nhấn nút Ẩn
+                      xoaODangChon();
                     },
                     color: Colors.black,
                     icon: const Icon(Icons.visibility_off),
@@ -284,47 +363,47 @@ class _TaoManChoiState extends State<TaoManChoi> {
                   childAspectRatio: 1, // tỉ lệ giữa chiều rộng và cao
                 ),
                 itemBuilder: (context, index) {
-                  int row = index ~/ 9; // lấy chỉ số hàng, chia lấy nguyên
-                  int col = index % 9; // lấy chỉ số cột, chia lấy dư
-                  bool isSelected = row == hangChon && col == cotChon;
+                  int hang = index ~/ 9; // lấy chỉ số hàng, chia lấy nguyên
+                  int cot = index % 9; // lấy chỉ số cột, chia lấy dư
+                  bool isSelected = hang == hangDuocChon && cot == cotDuocChon;
 
                   Border border = Border(
                     top: BorderSide(
-                      color: row == 0
+                      color: hang == 0
                           ? Colors.black
-                          : (row % 3 == 0)
+                          : (hang % 3 == 0)
                               ? Colors.black
                               : Colors.grey,
-                      width: row == 0 ? 1.0 : 1.0,
+                      width: hang == 0 ? 1.0 : 1.0,
                     ),
                     left: BorderSide(
-                      color: col == 0
+                      color: cot == 0
                           ? Colors.black
-                          : (col % 3 == 0)
+                          : (cot % 3 == 0)
                               ? Colors.black
                               : Colors.grey,
-                      width: col == 0 ? 1.0 : 1.0,
+                      width: cot == 0 ? 1.0 : 1.0,
                     ),
                     bottom: BorderSide(
-                      color: row == 8
+                      color: hang == 8
                           ? Colors.black
-                          : ((row + 1) % 3 == 0)
+                          : ((hang + 1) % 3 == 0)
                               ? Colors.black
                               : Colors.grey,
-                      width: row == 8 ? 1.0 : 1.0,
+                      width: hang == 8 ? 1.0 : 1.0,
                     ),
                     right: BorderSide(
-                      color: col == 8
+                      color: cot == 8
                           ? Colors.black
-                          : ((col + 1) % 3 == 0)
+                          : ((cot + 1) % 3 == 0)
                               ? Colors.black
                               : Colors.grey,
-                      width: col == 8 ? 1.0 : 1.0,
+                      width: cot == 8 ? 1.0 : 1.0,
                     ),
                   );
 
                   return InkWell(
-                    onTap: () => xuLyNhan(row, col),
+                    onTap: () => xuLyNhan(hang, cot),
                     child: Container(
                       decoration: BoxDecoration(
                         color: isSelected ? Colors.blue[100] : null,
@@ -332,9 +411,9 @@ class _TaoManChoiState extends State<TaoManChoi> {
                       ),
                       child: Center(
                         child: Text(
-                          bangSudoku[row][col] == 0
+                          bangSudoku[hang][cot] == 0
                               ? ''
-                              : bangSudoku[row][col].toString(),
+                              : bangSudoku[hang][cot].toString(),
                           style: const TextStyle(
                             fontSize: 24,
                           ),
@@ -371,7 +450,9 @@ class _TaoManChoiState extends State<TaoManChoi> {
                     child: InkWell(
                       borderRadius: BorderRadius.circular(20),
                       child: IconButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          lamMoiBangSuDoKu();
+                        },
                         color: Colors.black,
                         icon: const Icon(Icons.rotate_left),
                       ),
@@ -409,6 +490,40 @@ class _TaoManChoiState extends State<TaoManChoi> {
     );
   }
 
+  void xyLyNhanSo(int so) {
+    if (hangDuocChon != null && cotDuocChon != null) {
+      setState(() {
+        bangSudoku[hangDuocChon!][cotDuocChon!] = so;
+        hangDuocChon = null;
+        cotDuocChon = null;
+      });
+    }
+  }
+
+  void xuLyNhan(int hang, int cot) {
+    setState(() {
+      hangDuocChon = hang;
+      cotDuocChon = cot;
+    });
+  }
+
+  void xoaODangChon() {
+    if (hangDuocChon != null && cotDuocChon != null) {
+      setState(() {
+        bangSudoku[hangDuocChon!][cotDuocChon!] = 0;
+      });
+    }
+  }
+
+  void lamMoiBangSuDoKu() {
+    for (int i = 0; i < 9; i++) {
+      for (int j = 0; j < 9; j++) {
+        bangSudoku[i][j] = 0;
+      }
+    }
+    setState(() {});
+  }
+
   bool _ngauNhienSudoku(int hang, int cot) {
     if (hang == 9) {
       return true; // Đã điền đầy đủ Sudoku thành công
@@ -442,20 +557,20 @@ class _TaoManChoiState extends State<TaoManChoi> {
     return false;
   }
 
-  bool _hopLe(int row, int col, int num) {
+  bool _hopLe(int hang, int cot, int so) {
     //kiểm tra số đã tồn tại trong hàng, cột
     for (int i = 0; i < 9; i++) {
-      if (bangSudoku[row][i] == num || bangSudoku[i][col] == num) {
+      if (bangSudoku[hang][i] == so || bangSudoku[i][cot] == so) {
         return false;
       }
     }
 
     //kiểm tra số đã tồn tại trong bảng 3x3
-    int startRow = (row ~/ 3) * 3;
-    int startCol = (col ~/ 3) * 3;
-    for (int i = startRow; i < startRow + 3; i++) {
-      for (int j = startCol; j < startCol + 3; j++) {
-        if (bangSudoku[i][j] == num) {
+    int dhang = (hang ~/ 3) * 3;
+    int dcot = (cot ~/ 3) * 3;
+    for (int i = dhang; i < dhang + 3; i++) {
+      for (int j = dcot; j < dcot + 3; j++) {
+        if (bangSudoku[i][j] == so) {
           return false;
         }
       }
@@ -498,7 +613,8 @@ class _TaoManChoiState extends State<TaoManChoi> {
           alignment: Alignment.center,
           child: Text(
             so.toString(),
-            style: const TextStyle(color: Colors.black, fontSize: 20),
+            style: const TextStyle(
+                color: Colors.black, fontSize: 20, fontWeight: FontWeight.w500),
           ),
         ),
       ),
