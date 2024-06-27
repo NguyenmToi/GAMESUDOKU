@@ -5,7 +5,7 @@ import 'package:sudoku/ManHinh/ManHinhChinh.dart';
 import 'package:sudoku/MoHinh/xulydulieu.dart';
 
 class DangNhap extends StatefulWidget {
-  const DangNhap({super.key});
+  const DangNhap({Key? key}) : super(key: key);
 
   @override
   State<DangNhap> createState() => DangNhapState();
@@ -55,129 +55,131 @@ class DangNhapState extends State<DangNhap> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 60),
-          child: Form(
-            key: _formKey, // Gắn GlobalKey cho Form để quản lý
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                const Text(
-                  "SUDOKU",
-                  style: TextStyle(
-                    color: Color.fromARGB(255, 219, 219, 219),
-                    fontWeight: FontWeight.bold,
-                    fontSize: 45,
-                  ),
-                ),
-                const SizedBox(height: 70), // Khoảng cách giữa tiêu đề và ô nhập liệu
-                TextFormField(
-                  controller: _TaiKhoan, // Controller để lấy giá trị từ ô nhập tài khoản
-                  decoration: const InputDecoration(
-                    labelText: 'Đăng Nhập', // Nhãn cho ô nhập tài khoản
-                    prefixIcon: Icon(Icons.person_4_sharp), // Biểu tượng trước ô nhập
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(15.0)), // Bo viền ô nhập
+      body: Center( // Để căn giữa nội dung của DangNhap
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+            child: Form(
+              key: _formKey, // Gắn GlobalKey cho Form để quản lý
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: <Widget>[
+                  const Text(
+                    "SUDOKU",
+                    style: TextStyle(
+                      color: Color.fromARGB(255, 192, 192, 192),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 45,
                     ),
-                    contentPadding:
-                        EdgeInsets.symmetric(vertical: 10, horizontal: 10), // Khoảng cách bên trong ô nhập
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Vui lòng nhập tên tài khoản'; // Kiểm tra hợp lệ khi submit Form
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 20), // Khoảng cách giữa ô nhập tài khoản và ô nhập mật khẩu
-                TextFormField(
-                  controller: _MatKhau, // Controller để lấy giá trị từ ô nhập mật khẩu
-                  obscureText: !temp, // Ẩn hiện mật khẩu khi nhập
-                  decoration: InputDecoration(
-                    labelText: "Mật khẩu", // Nhãn cho ô nhập mật khẩu
-                    prefixIcon: const Icon(Icons.lock), // Biểu tượng trước ô nhập
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        temp ? Icons.visibility : Icons.visibility_off, // Biểu tượng ẩn hiện mật khẩu
+                  const SizedBox(height: 70), // Khoảng cách giữa tiêu đề và ô nhập liệu
+                  TextFormField(
+                    controller: _TaiKhoan, // Controller để lấy giá trị từ ô nhập tài khoản
+                    decoration: const InputDecoration(
+                      labelText: 'Đăng Nhập', // Nhãn cho ô nhập tài khoản
+                      prefixIcon: Icon(Icons.person_4_sharp), // Biểu tượng trước ô nhập
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(15.0)), // Bo viền ô nhập
+                      ),
+                      contentPadding:
+                          EdgeInsets.symmetric(vertical: 10, horizontal: 10), // Khoảng cách bên trong ô nhập
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Vui lòng nhập tên tài khoản'; // Kiểm tra hợp lệ khi submit Form
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 20), // Khoảng cách giữa ô nhập tài khoản và ô nhập mật khẩu
+                  TextFormField(
+                    controller: _MatKhau, // Controller để lấy giá trị từ ô nhập mật khẩu
+                    obscureText: !temp, // Ẩn hiện mật khẩu khi nhập
+                    decoration: InputDecoration(
+                      labelText: "Mật khẩu", // Nhãn cho ô nhập mật khẩu
+                      prefixIcon: const Icon(Icons.lock), // Biểu tượng trước ô nhập
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          temp ? Icons.visibility : Icons.visibility_off, // Biểu tượng ẩn hiện mật khẩu
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            temp = !temp; // Thay đổi trạng thái ẩn hiện mật khẩu
+                          });
+                        },
+                      ),
+                      border: const OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(15.0)), // Bo viền ô nhập
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                          vertical: 10, horizontal: 10), // Khoảng cách bên trong ô nhập
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Vui lòng nhập mật khẩu'; // Kiểm tra hợp lệ khi submit Form
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 30), // Khoảng cách giữa ô nhập mật khẩu và nút Đăng nhập
+                  SizedBox(
+                    width: 250, // Độ rộng của nút Đăng nhập
+                    height: 40, // Chiều cao của nút Đăng nhập
+                    child: ElevatedButton(
+                      style: ButtonStyle(
+                        shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                          RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15.0), // Bo góc của nút Đăng nhập
+                          ),
+                        ),
+                        backgroundColor: MaterialStateProperty.all(
+                            Color.fromARGB(255, 42, 158, 240)), // Màu nền của nút Đăng nhập
                       ),
                       onPressed: () {
-                        setState(() {
-                          temp = !temp; // Thay đổi trạng thái ẩn hiện mật khẩu
-                        });
+                        if (_formKey.currentState!.validate()) {
+                          _dangNhap(); // Gọi hàm đăng nhập khi Form hợp lệ
+                        }
                       },
-                    ),
-                    border: const OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(15.0)), // Bo viền ô nhập
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                        vertical: 10, horizontal: 10), // Khoảng cách bên trong ô nhập
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Vui lòng nhập mật khẩu'; // Kiểm tra hợp lệ khi submit Form
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 30), // Khoảng cách giữa ô nhập mật khẩu và nút Đăng nhập
-                SizedBox(
-                  width: 250, // Độ rộng của nút Đăng nhập
-                  height: 40, // Chiều cao của nút Đăng nhập
-                  child: ElevatedButton(
-                    style: ButtonStyle(
-                      shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                        RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15.0), // Bo góc của nút Đăng nhập
+                      child: const Text(
+                        "Đăng nhập", // Nội dung của nút Đăng nhập
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 17,
                         ),
                       ),
-                      backgroundColor: MaterialStateProperty.all(
-                          Color.fromARGB(255, 42, 158, 240)), // Màu nền của nút Đăng nhập
                     ),
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        _dangNhap(); // Gọi hàm đăng nhập khi Form hợp lệ
-                      }
-                    },
-                    child: const Text(
-                      "Đăng nhập", // Nội dung của nút Đăng nhập
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 17,
+                  ),
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
+                    child: RichText(
+                      text: TextSpan(
+                        text: 'Bạn chưa có tài khoản? ', // Chữ trước link Đăng ký
+                        style: const TextStyle(
+                            color: Colors.black, fontStyle: FontStyle.italic), // Kiểu chữ cho chữ trước
+                        children: <TextSpan>[
+                          TextSpan(
+                            text: 'Đăng ký ngay', // Link Đăng ký
+                            style: const TextStyle(
+                                color: Colors.blue,
+                                fontWeight: FontWeight.bold,
+                                fontStyle: FontStyle.normal), // Kiểu chữ cho link Đăng ký
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const DangKy()), // Chuyển hướng đến màn hình Đăng ký khi nhấp vào link
+                                );
+                              },
+                          ),
+                        ],
                       ),
                     ),
                   ),
-                ),
-                Padding(
-                  padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
-                  child: RichText(
-                    text: TextSpan(
-                      text: 'Bạn chưa có tài khoản? ', // Chữ trước link Đăng ký
-                      style: const TextStyle(
-                          color: Colors.black, fontStyle: FontStyle.italic), // Kiểu chữ cho chữ trước
-                      children: <TextSpan>[
-                        TextSpan(
-                          text: 'Đăng ký ngay', // Link Đăng ký
-                          style: const TextStyle(
-                              color: Colors.blue,
-                              fontWeight: FontWeight.bold,
-                              fontStyle: FontStyle.normal), // Kiểu chữ cho link Đăng ký
-                          recognizer: TapGestureRecognizer()
-                            ..onTap = () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const DangKy()), // Chuyển hướng đến màn hình Đăng ký khi nhấp vào link
-                              );
-                            },
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
