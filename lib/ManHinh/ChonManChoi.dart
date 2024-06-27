@@ -58,13 +58,13 @@ class _ChonManCHoiState extends State<ChonManCHoi> {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
             } else if (snapshot.hasError) {
-              return Center(child: Text('Error: ${snapshot.error}'));
+              return Center(child: Text('Lỗi: ${snapshot.error}'));
             } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return const Center(child: Text('No data available'));
+              return const Center(child: Text('Không có dữ liệu màn chơi'));
             } else {
-              List<cManThuThach> manThuThachList = snapshot.data!;
+              List<cManThuThach> dsManThuThach = snapshot.data!;
 
-              manThuThachList.sort((a, b) => a.maman.compareTo(b.maman));
+              dsManThuThach.sort((a, b) => a.maman.compareTo(b.maman));
 
               return GridView.builder(
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -73,9 +73,14 @@ class _ChonManCHoiState extends State<ChonManCHoi> {
                   crossAxisSpacing: 8.0,
                   mainAxisSpacing: 8.0,
                 ),
-                itemCount: manThuThachList.length,
+                itemCount: dsManThuThach.length,
                 itemBuilder: (BuildContext context, int index) {
-                  cManThuThach manThuThach = manThuThachList[index];
+                  cManThuThach manThuThach = dsManThuThach[index];
+                  List bangc = dsManThuThach[index].bang;
+                  int goiyc = dsManThuThach[index].sogoiy;
+                  int soloic = dsManThuThach[index].soloi;
+                  int thoigianc = dsManThuThach[index].thoigian;
+
                   return GestureDetector(
                     onTap: () {
                       Navigator.push(
@@ -83,6 +88,10 @@ class _ChonManCHoiState extends State<ChonManCHoi> {
                         MaterialPageRoute(
                           builder: (context) => ManHinhChoiThuThach(
                             tenMan: manThuThach.tenman,
+                            bang: bangc,
+                            soloi: soloic,
+                            goiy: goiyc,
+                            thoigian: thoigianc,
                           ),
                         ),
                       );

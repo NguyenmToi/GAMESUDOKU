@@ -1,17 +1,27 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:sudoku/ManHinh/TaoDoKho.dart';
 
 class ManHinhChoiThuThach extends StatefulWidget {
-  const ManHinhChoiThuThach({super.key, required this.tenMan});
-
+  const ManHinhChoiThuThach(
+      {super.key,
+      required this.tenMan,
+      required this.bang,
+      required this.soloi,
+      required this.goiy,
+      required this.thoigian});
+  final List bang;
   final String tenMan;
+  final int soloi;
+  final int thoigian;
+  final int goiy;
 
   @override
   State<ManHinhChoiThuThach> createState() => _ManHinhChoiThuThachState();
 }
 
 class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
-  int giay = 300;
+  late int giay = widget.thoigian;
   late Timer thoiGian;
   int? hangDuocChon;
   int? cotDuocChon;
@@ -58,13 +68,24 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
     });
   }
 
+  // void xuLyChonSo(int so) {
+  //   if (hangDuocChon != null && cotDuocChon != null) {
+  //     setState(() {
+  //       widget.bang[hangDuocChon!][cotDuocChon!] = so;
+  //       hangDuocChon = null;
+  //       cotDuocChon = null;
+  //     });
+  //   }
+  // }
+
   void xuLyChonSo(int so) {
     if (hangDuocChon != null && cotDuocChon != null) {
-      setState(() {
-        bangSudoku[hangDuocChon!][cotDuocChon!] = so;
-        hangDuocChon = null;
-        cotDuocChon = null;
-      });
+      // Kiểm tra nếu ô đang chọn là ô có giá trị 0 (chưa có giá trị từ Firebase)
+      if (widget.bang[hangDuocChon!][cotDuocChon!] == 0) {
+        setState(() {
+          widget.bang[hangDuocChon!][cotDuocChon!] = so;
+        });
+      }
     }
   }
 
@@ -87,7 +108,7 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
               child: Padding(
                 padding: const EdgeInsets.only(right: 38.0),
                 child: Text(
-                  '${widget.tenMan}',
+                  widget.tenMan,
                   style: const TextStyle(color: Colors.black, fontSize: 25),
                 ),
               ),
@@ -115,22 +136,20 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    const Row(
+                    Row(
                       children: [
-                        Icon(Icons.error, size: 18), // Biểu tượng thời gian
-                        SizedBox(width: 5), // Khoảng cách giữa Icon và Text
-                        Text('1',
-                            style:
-                                TextStyle(fontSize: 18)), // Văn bản thời gian
+                        const Icon(Icons.error, size: 18),
+                        const SizedBox(width: 5),
+                        Text(widget.soloi.toString(),
+                            style: const TextStyle(fontSize: 18)),
                       ],
                     ),
-                    const Row(
+                    Row(
                       children: [
-                        Icon(Icons.lightbulb, size: 18), // Biểu tượng thời gian
-                        SizedBox(width: 5), // Khoảng cách giữa Icon và Text
-                        Text('1',
-                            style:
-                                TextStyle(fontSize: 18)), // Văn bản thời gian
+                        const Icon(Icons.lightbulb, size: 18),
+                        const SizedBox(width: 5),
+                        Text(widget.goiy.toString(),
+                            style: const TextStyle(fontSize: 18)),
                       ],
                     ),
                     Row(
@@ -193,7 +212,15 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
                       );
 
                       return InkWell(
-                        onTap: () => xuLyChonO(hang, cot),
+                        onTap: () {
+                          if (widget.bang != null &&
+                              hang < widget.bang.length &&
+                              widget.bang[hang] != null &&
+                              cot < widget.bang[hang].length &&
+                              widget.bang[hang][cot] == 0) {
+                            xuLyChonO(hang, cot);
+                          }
+                        },
                         child: Container(
                           decoration: BoxDecoration(
                             color: duocChon ? Colors.blue[100] : null,
@@ -201,9 +228,13 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
                           ),
                           child: Center(
                             child: Text(
-                              bangSudoku[hang][cot] == 0
-                                  ? ''
-                                  : bangSudoku[hang][cot].toString(),
+                              widget.bang != null &&
+                                      hang < widget.bang.length &&
+                                      widget.bang[hang] != null &&
+                                      cot < widget.bang[hang].length &&
+                                      widget.bang[hang][cot] != 0
+                                  ? widget.bang[hang][cot].toString()
+                                  : '',
                               style: const TextStyle(
                                 fontSize: 24,
                               ),
@@ -290,6 +321,10 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
                   MaterialPageRoute(
                     builder: (context) => ManHinhChoiThuThach(
                       tenMan: widget.tenMan,
+                      bang: widget.bang,
+                      soloi: widget.soloi,
+                      thoigian: widget.thoigian,
+                      goiy: widget.goiy,
                     ),
                   ),
                 );
@@ -343,7 +378,10 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
       child: InkWell(
         borderRadius: BorderRadius.circular(20),
         onTap: () {
-          xuLyChonSo(so);
+          if (so != 0) {
+            // Kiểm tra nếu số khác 0 thì mới cho phép chọn
+            xuLyChonSo(so);
+          }
         },
         child: Container(
           width: 60,

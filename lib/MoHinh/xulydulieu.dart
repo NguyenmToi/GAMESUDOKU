@@ -61,14 +61,46 @@ class taiKhoan {
 class cManThuThach {
   late int maman;
   late String tenman;
+  late int soloi;
+  late int sogoiy;
+  late int thoigian;
+  late List<List<int>> bang;
 
-  cManThuThach({required this.maman, required this.tenman});
+  cManThuThach({
+    required this.maman,
+    required this.tenman,
+    this.soloi = 0,
+    this.sogoiy = 0,
+    this.thoigian = 0,
+    required this.bang,
+  });
 
   factory cManThuThach.fromJson(String key, Map<dynamic, dynamic> json) {
+    List<List<int>> bang = (json['bang'] as List<dynamic>? ?? [])
+        .map((row) => (row as List<dynamic>? ?? [])
+            .map((cell) => cell as int? ?? 0)
+            .toList())
+        .toList();
+
     return cManThuThach(
       maman: json['maman'] ?? 0,
       tenman: json['tenman'] ?? "",
+      soloi: json['soloi'] ?? 0,
+      sogoiy: json['sogoiy'] ?? 0,
+      thoigian: json['thoigian'] ?? 0,
+      bang: bang,
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'maman': maman,
+      'tenman': tenman,
+      'soloi': soloi,
+      'sogoiy': sogoiy,
+      'thoigian': thoigian,
+      'board': bang.map((row) => row.map((cell) => cell).toList()).toList(),
+    };
   }
 
   static DatabaseReference dsThuThach() {
@@ -178,15 +210,15 @@ class ctaiKhoan {
   Future<void> capNhat(int diem, int man, String taiKhoan, String tenTaiKhoan,
       String matKhau, bool quanLy, bool trangThai, String anh) async {
     DatabaseReference userReference =
-        FirebaseDatabase.instance.ref().child('taiKhoan').child(taiKhoan);
+        FirebaseDatabase.instance.ref().child('taikhoan').child(taiKhoan);
     await userReference.update({
       'diem': diem,
       'man': man,
-      'taiKhoan': taiKhoan,
-      'tenTaiKhoan': tenTaiKhoan,
-      'matKhau': matKhau,
-      'quanLy': quanLy,
-      'trangThai': trangThai,
+      'taikhoan': taiKhoan,
+      'tentaikhoan': tenTaiKhoan,
+      'matkhau': matKhau,
+      'quanly': quanLy,
+      'trangthai': trangThai,
       'anh': anh
     });
   }
@@ -213,19 +245,19 @@ class ctaiKhoan {
 
     try {
       DatabaseReference productsRef =
-          FirebaseDatabase.instance.ref().child('taiKhoan');
+          FirebaseDatabase.instance.ref().child('taikhoan');
 
       String productId = productsRef.push().key!;
 
       Map<String, dynamic> productData = {
         'diem': diem,
         'man': man,
-        'taiKhoan': ten,
-        'tenTaiKhoan': ten,
+        'taikhoan': ten,
+        'tentaikhoan': ten,
         'anh': anh,
-        'trangThai': trangThai,
-        'quanLy': quanLy,
-        'matKhau': matKhau,
+        'trangthai': trangThai,
+        'quanly': quanLy,
+        'matkhau': matKhau,
       };
 
       await productsRef.child(productId).set(productData);
@@ -240,6 +272,7 @@ class ctaiKhoan {
     DatabaseReference ref = FirebaseDatabase.instance.ref().child('taikhoan');
     DatabaseEvent event =
         await ref.orderByChild('taikhoan').equalTo(ten).once();
+
     DataSnapshot snapshot = event.snapshot;
 
     return snapshot.value != null;
@@ -262,4 +295,74 @@ class ctaiKhoan {
     }
     return false;
   }
+}
+
+//hàm giải trò chơi
+class GiaiSudoku {
+  final List<List<int>> bang;
+
+  GiaiSudoku(this.bang);
+
+  bool giai() {
+    for (int dong = 0; dong < 9; dong++) {
+      for (int cot = 0; cot < 9; cot++) {
+        if (bang[dong][cot] == 0) {
+          for (int so = 1; so <= 9; so++) {
+            if (ktHopLe(dong, cot, so)) {
+              bang[dong][cot] = so;
+              if (giai()) {
+                return true;
+              }
+              bang[dong][cot] = 0;
+            }
+          }
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  bool ktHopLe(int dong, int cot, int so) {
+    // Kiểm tra dòng
+    for (int i = 0; i < 9; i++) {
+      if (bang[dong][i] == so) {
+        return false;
+      }
+    }
+
+    // Kiểm tra cột
+    for (int i = 0; i < 9; i++) {
+      if (bang[i][cot] == so) {
+        return false;
+      }
+    }
+
+    // Kiểm tra ô 3x3
+    int batDauDong = dong - dong % 3;
+    int batDauCot = cot - cot % 3;
+    for (int i = 0; i < 3; i++) {
+      for (int j = 0; j < 3; j++) {
+        if (bang[i + batDauDong][j + batDauCot] == so) {
+          return false;
+        }
+      }
+    }
+
+    return true;
+  }
+}
+
+//kiểm tra màn chơi đã tồn tại chưa
+Future<bool> kiemTraManChoi(String maman) async {
+  DatabaseEvent event = await FirebaseDatabase.instance
+      .reference()
+      .child('thuthach')
+      .orderByKey()
+      .equalTo(maman)
+      .once();
+
+  DataSnapshot snapshot = event.snapshot;
+
+  return snapshot.value != null;
 }

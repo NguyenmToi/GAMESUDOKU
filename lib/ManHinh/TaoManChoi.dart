@@ -5,66 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:sudoku/ManHinh/ManHinhChoiMucDo.dart';
 
+import '../MoHinh/xulydulieu.dart';
+
 class TaoManChoi extends StatefulWidget {
   const TaoManChoi({super.key});
 
   @override
   State<TaoManChoi> createState() => _TaoManChoiState();
-}
-
-class SudokuSolver {
-  final List<List<int>> board;
-
-  SudokuSolver(this.board);
-
-  bool solve() {
-    for (int row = 0; row < 9; row++) {
-      for (int col = 0; col < 9; col++) {
-        if (board[row][col] == 0) {
-          for (int num = 1; num <= 9; num++) {
-            if (isSafe(row, col, num)) {
-              board[row][col] = num;
-              if (solve()) {
-                return true;
-              }
-              board[row][col] = 0;
-            }
-          }
-          return false;
-        }
-      }
-    }
-    return true; // Solved
-  }
-
-  bool isSafe(int row, int col, int num) {
-    // Check row
-    for (int x = 0; x < 9; x++) {
-      if (board[row][x] == num) {
-        return false;
-      }
-    }
-
-    // Check column
-    for (int x = 0; x < 9; x++) {
-      if (board[x][col] == num) {
-        return false;
-      }
-    }
-
-    // Check 3x3 subgrid
-    int startRow = row - row % 3;
-    int startCol = col - col % 3;
-    for (int i = 0; i < 3; i++) {
-      for (int j = 0; j < 3; j++) {
-        if (board[i + startRow][j + startCol] == num) {
-          return false;
-        }
-      }
-    }
-
-    return true;
-  }
 }
 
 class _TaoManChoiState extends State<TaoManChoi> {
@@ -78,30 +25,17 @@ class _TaoManChoiState extends State<TaoManChoi> {
       List.generate(9, (_) => List.generate(9, (_) => 0));
 
   void giaiSudoku() {
-    SudokuSolver solver = SudokuSolver(bangSudoku);
-    if (solver.solve()) {
+    GiaiSudoku sdk = GiaiSudoku(bangSudoku);
+    if (sdk.giai()) {
       setState(() {});
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Không thể giải bảng Sudoku")),
+        const SnackBar(content: Text("Không thể giải bảng Sudoku")),
       );
     }
   }
 
-  //kiểm tra màn chơi đã tồn tại chưa
-  Future<bool> kiemTraManChoi(String maman) async {
-    DatabaseEvent event = await FirebaseDatabase.instance
-        .reference()
-        .child('thuthach')
-        .orderByKey()
-        .equalTo(maman)
-        .once();
-    DataSnapshot snapshot = event.snapshot;
-
-    return snapshot.value != null;
-  }
-
-// thêm màn chơi
+// kiểm tra và thực hiện thêm màn chơi
   void themManChoiLenFireBase() async {
     String maman = 'man${_tenManChoiController.text.toString()}';
     bool exists = await kiemTraManChoi(maman);
@@ -114,9 +48,20 @@ class _TaoManChoiState extends State<TaoManChoi> {
     }
   }
 
-//thêm màn chơi lên firebase
+//hàm thêm màn chơi
   final databaseReference = FirebaseDatabase.instance.reference();
   Future<void> themManChoi() async {
+    if (_tenManChoiController.text.isEmpty ||
+        _soGoiYController.text.isEmpty ||
+        _soLoiController.text.isEmpty ||
+        _thoiGianController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Vui lòng điền đầy đủ thông tin'),
+        ),
+      );
+      return;
+    }
     databaseReference
         .child('thuthach')
         .child('man${_tenManChoiController.text.toString()}')
@@ -125,6 +70,8 @@ class _TaoManChoiState extends State<TaoManChoi> {
       'maman': int.parse(_tenManChoiController.text.toString()),
       'tenman': 'Màn ${_tenManChoiController.text.toString()}',
       'thoigian': int.parse(_thoiGianController.text.toString()),
+      'soloi': int.parse(_soGoiYController.text.toString()),
+      'sogoiy': int.parse(_soGoiYController.text.toString()),
       'trangthai': true,
       'thoigiantao': DateTime.now().toString(),
     }).then((_) {
@@ -133,6 +80,47 @@ class _TaoManChoiState extends State<TaoManChoi> {
           content: Text('Đã thêm màn chơi thành công'),
         ),
       );
+    }).catchError((error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Lỗi khi thêm màn chơi: $error'),
+        ),
+      );
+    });
+  }
+
+  //thêm lời giải màn chơi
+  final dbref = FirebaseDatabase.instance.reference();
+  Future<void> themLoiGiaiManChoi() async {
+    if (_tenManChoiController.text.isEmpty ||
+        _soGoiYController.text.isEmpty ||
+        _soLoiController.text.isEmpty ||
+        _thoiGianController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Vui lòng điền đầy đủ thông tin'),
+        ),
+      );
+      return;
+    }
+    databaseReference
+        .child('loigiai')
+        .child('man${_tenManChoiController.text.toString()}')
+        .set({
+      'bang': bangSudoku,
+      'maman': int.parse(_tenManChoiController.text.toString()),
+      'tenman': 'Màn ${_tenManChoiController.text.toString()}',
+      'thoigian': int.parse(_thoiGianController.text.toString()),
+      'soloi': int.parse(_soGoiYController.text.toString()),
+      'sogoiy': int.parse(_soGoiYController.text.toString()),
+      'trangthai': true,
+      'thoigiantao': DateTime.now().toString(),
+    }).then((_) {
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   const SnackBar(
+      //     content: Text('Đã thêm màn chơi thành công'),
+      //   ),
+      // );
     }).catchError((error) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -472,6 +460,8 @@ class _TaoManChoiState extends State<TaoManChoi> {
                 child: TextButton(
                   onPressed: () {
                     themManChoiLenFireBase();
+                    giaiSudoku();
+                    themLoiGiaiManChoi();
                   },
                   style: TextButton.styleFrom(
                     padding: const EdgeInsets.symmetric(

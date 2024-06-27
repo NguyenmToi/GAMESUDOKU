@@ -1,3 +1,4 @@
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:sudoku/ManHinh/CapNhatManChoi.dart';
 import 'package:sudoku/ManHinh/TaoManChoi.dart';
@@ -12,6 +13,12 @@ class QuanLyThuThach extends StatefulWidget {
 
 class _QuanLyThuThachState extends State<QuanLyThuThach> {
   late Future<List<cManThuThach>> _dsManThuThach;
+
+  void xoaManChoi(String maman) async {
+    DatabaseReference manChoi =
+        FirebaseDatabase.instance.ref().child('thuthach').child(maman);
+    await manChoi.remove();
+  }
 
   @override
   void initState() {
@@ -39,9 +46,9 @@ class _QuanLyThuThachState extends State<QuanLyThuThach> {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(child: CircularProgressIndicator());
               } else if (snapshot.hasError) {
-                return Center(child: Text('Error: ${snapshot.error}'));
+                return Center(child: Text('Lỗi: ${snapshot.error}'));
               } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return const Center(child: Text('No data available'));
+                return const Center(child: Text('Không có dữ liệu màn chơi'));
               } else {
                 List<cManThuThach> dsManThuThach = snapshot.data!;
 
@@ -50,6 +57,7 @@ class _QuanLyThuThachState extends State<QuanLyThuThach> {
                   itemCount: dsManThuThach.length,
                   itemBuilder: (BuildContext context, int index) {
                     cManThuThach manThuThach = dsManThuThach[index];
+                    int mamanxoa = dsManThuThach[index].maman;
                     return _xayDungCacThanhPhan(
                       title: manThuThach.tenman,
                       color: Colors.lightBlue[100]!,
@@ -61,7 +69,9 @@ class _QuanLyThuThachState extends State<QuanLyThuThach> {
                           ),
                         );
                       },
-                      onTapDelete: () {},
+                      onTapDelete: () {
+                        thongBaoXoaManChoi('man${mamanxoa.toString()}');
+                      },
                     );
                   },
                 );
@@ -106,6 +116,49 @@ class _QuanLyThuThachState extends State<QuanLyThuThach> {
           ],
         ),
       ),
+    );
+  }
+
+  void thongBaoXoaManChoi(String maman) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text(
+            'Xóa màn chơi',
+            style: TextStyle(fontSize: 25),
+            textAlign: TextAlign.center,
+          ),
+          content: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.warning_amber, size: 30, color: Colors.red),
+              SizedBox(width: 8), // Khoảng cách giữa icon và văn bản
+              Flexible(
+                child: Text(
+                    'Màn chơi sẽ bị xóa vĩnh viễn, bạn có muốn xóa không ?'),
+              ),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Hủy'),
+              onPressed: () {
+                Navigator.of(context).pop(); // Đóng hộp thoại
+              },
+            ),
+            TextButton(
+              child: const Text('Đồng ý'),
+              onPressed: () {
+                xoaManChoi(maman);
+                Navigator.of(context).pop();
+                setState(() {});
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }
