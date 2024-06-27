@@ -23,6 +23,10 @@ class _TaoManChoiState extends State<TaoManChoi> {
   final TextEditingController _soLoiController = TextEditingController();
   List<List<int>> bangSudoku =
       List.generate(9, (_) => List.generate(9, (_) => 0));
+  List<List<int>> bangChoiSudoku =
+      List.generate(9, (_) => List.generate(9, (_) => 0));
+  List<List<int>> bangLoiGiaiSudoku =
+      List.generate(9, (_) => List.generate(9, (_) => 0));
 
   void giaiSudoku() {
     GiaiSudoku sdk = GiaiSudoku(bangSudoku);
@@ -36,8 +40,9 @@ class _TaoManChoiState extends State<TaoManChoi> {
   }
 
 // kiểm tra và thực hiện thêm màn chơi
-  void themManChoiLenFireBase() async {
+  void kiemTraThongTin() async {
     String maman = 'man${_tenManChoiController.text.toString()}';
+    bangChoiSudoku = bangSudoku;
     bool exists = await kiemTraManChoi(maman);
     if (exists) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -66,11 +71,11 @@ class _TaoManChoiState extends State<TaoManChoi> {
         .child('thuthach')
         .child('man${_tenManChoiController.text.toString()}')
         .set({
-      'bang': bangSudoku,
+      'bang': bangChoiSudoku,
       'maman': int.parse(_tenManChoiController.text.toString()),
       'tenman': 'Màn ${_tenManChoiController.text.toString()}',
       'thoigian': int.parse(_thoiGianController.text.toString()),
-      'soloi': int.parse(_soGoiYController.text.toString()),
+      'soloi': int.parse(_soLoiController.text.toString()),
       'sogoiy': int.parse(_soGoiYController.text.toString()),
       'trangthai': true,
       'thoigiantao': DateTime.now().toString(),
@@ -87,48 +92,49 @@ class _TaoManChoiState extends State<TaoManChoi> {
         ),
       );
     });
+
+    giaiSudoku();
+    bangLoiGiaiSudoku = bangSudoku;
+    databaseReference
+        .child('thuthach')
+        .child('man${_tenManChoiController.text.toString()}')
+        .update({'banggiai': bangLoiGiaiSudoku});
   }
 
-  //thêm lời giải màn chơi
-  final dbref = FirebaseDatabase.instance.reference();
-  Future<void> themLoiGiaiManChoi() async {
-    if (_tenManChoiController.text.isEmpty ||
-        _soGoiYController.text.isEmpty ||
-        _soLoiController.text.isEmpty ||
-        _thoiGianController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Vui lòng điền đầy đủ thông tin'),
-        ),
-      );
-      return;
-    }
-    databaseReference
-        .child('loigiai')
-        .child('man${_tenManChoiController.text.toString()}')
-        .set({
-      'bang': bangSudoku,
-      'maman': int.parse(_tenManChoiController.text.toString()),
-      'tenman': 'Màn ${_tenManChoiController.text.toString()}',
-      'thoigian': int.parse(_thoiGianController.text.toString()),
-      'soloi': int.parse(_soGoiYController.text.toString()),
-      'sogoiy': int.parse(_soGoiYController.text.toString()),
-      'trangthai': true,
-      'thoigiantao': DateTime.now().toString(),
-    }).then((_) {
-      // ScaffoldMessenger.of(context).showSnackBar(
-      //   const SnackBar(
-      //     content: Text('Đã thêm màn chơi thành công'),
-      //   ),
-      // );
-    }).catchError((error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Lỗi khi thêm màn chơi: $error'),
-        ),
-      );
-    });
-  }
+  // //thêm lời giải màn chơi
+  // final dbref = FirebaseDatabase.instance.reference();
+  // Future<void> themLoiGiaiManChoi() async {
+  //   if (_tenManChoiController.text.isEmpty ||
+  //       _soGoiYController.text.isEmpty ||
+  //       _soLoiController.text.isEmpty ||
+  //       _thoiGianController.text.isEmpty) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(
+  //         content: Text('Vui lòng điền đầy đủ thông tin'),
+  //       ),
+  //     );
+  //     return;
+  //   }
+  //   dbref
+  //       .child('loigiai')
+  //       .child('man${_tenManChoiController.text.toString()}')
+  //       .update({
+  //     'bang': bangSudoku,
+  //     'maman': int.parse(_tenManChoiController.text.toString()),
+  //     'tenman': 'Màn ${_tenManChoiController.text.toString()}',
+  //     'thoigian': int.parse(_thoiGianController.text.toString()),
+  //     'soloi': int.parse(_soGoiYController.text.toString()),
+  //     'sogoiy': int.parse(_soGoiYController.text.toString()),
+  //     'trangthai': true,
+  //     'thoigiantao': DateTime.now().toString(),
+  //   }).catchError((error) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(
+  //         content: Text('Lỗi khi thêm lời giải màn chơi: $error'),
+  //       ),
+  //     );
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -459,9 +465,9 @@ class _TaoManChoiState extends State<TaoManChoi> {
                 ),
                 child: TextButton(
                   onPressed: () {
-                    themManChoiLenFireBase();
-                    giaiSudoku();
-                    themLoiGiaiManChoi();
+                    kiemTraThongTin();
+
+                    // lamMoiBangSuDoKu();
                   },
                   style: TextButton.styleFrom(
                     padding: const EdgeInsets.symmetric(

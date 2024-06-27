@@ -20,6 +20,12 @@ class _QuanLyThuThachState extends State<QuanLyThuThach> {
     await manChoi.remove();
   }
 
+  void xoaLoiGiaiManChoi(String maman) async {
+    DatabaseReference manChoi =
+        FirebaseDatabase.instance.ref().child('loigiai').child(maman);
+    await manChoi.remove();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -152,6 +158,7 @@ class _QuanLyThuThachState extends State<QuanLyThuThach> {
               child: const Text('Đồng ý'),
               onPressed: () {
                 xoaManChoi(maman);
+                xoaLoiGiaiManChoi(maman);
                 Navigator.of(context).pop();
                 setState(() {});
               },

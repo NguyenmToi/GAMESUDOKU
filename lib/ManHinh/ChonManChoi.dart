@@ -77,6 +77,7 @@ class _ChonManCHoiState extends State<ChonManCHoi> {
                 itemBuilder: (BuildContext context, int index) {
                   cManThuThach manThuThach = dsManThuThach[index];
                   List bangc = dsManThuThach[index].bang;
+                  List banggiaic = dsManThuThach[index].banggiai;
                   int goiyc = dsManThuThach[index].sogoiy;
                   int soloic = dsManThuThach[index].soloi;
                   int thoigianc = dsManThuThach[index].thoigian;
@@ -92,6 +93,7 @@ class _ChonManCHoiState extends State<ChonManCHoi> {
                             soloi: soloic,
                             goiy: goiyc,
                             thoigian: thoigianc,
+                            banggiai: banggiaic,
                           ),
                         ),
                       );

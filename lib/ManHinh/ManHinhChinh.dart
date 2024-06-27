@@ -40,11 +40,12 @@ class _ManHinhChinhState extends State<ManHinhChinh> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[200],
+      backgroundColor: Colors.grey[50],
       body: _pages[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: _onTabTapped,
+        selectedItemColor: Colors.blue,
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
@@ -145,7 +146,8 @@ class _ManHinhChinhState extends State<ManHinhChinh> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ManHinhChoiMucDo(), //mucdo: mucDo.tenmucdo
+        builder: (context) => Manhinhchoimucdo(
+            mucdo: mucDo.tenmucdo, soan: mucDo.soan, diem: mucDo.diem),
       ),
     );
   }
@@ -250,13 +252,13 @@ class HomeScreen extends StatelessWidget {
                   },
                   style: ElevatedButton.styleFrom(
                     foregroundColor: Colors.white,
-                    backgroundColor: Colors.blue,
+                    backgroundColor: Colors.blueAccent,
                     minimumSize: Size(280, 50),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
+                      borderRadius: BorderRadius.circular(25),
                     ),
                   ),
-                  child: const Text('Chọn màn', style: TextStyle(fontSize: 22)),
+                  child: const Text('Chọn màn', style: TextStyle(fontSize: 20)),
                 ),
                 const SizedBox(height: 15),
                 ElevatedButton(
@@ -267,14 +269,14 @@ class HomeScreen extends StatelessWidget {
                   },
                   style: ElevatedButton.styleFrom(
                     foregroundColor: Colors.white,
-                    backgroundColor: Colors.blue,
+                    backgroundColor: Colors.blueAccent,
                     minimumSize: Size(280, 50),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
+                      borderRadius: BorderRadius.circular(25),
                     ),
                   ),
                   child:
-                      const Text('Ngẫu nhiên', style: TextStyle(fontSize: 22)),
+                      const Text('Ngẫu nhiên', style: TextStyle(fontSize: 20)),
                 ),
                 const SizedBox(height: 15),
                 ElevatedButton(
@@ -288,14 +290,14 @@ class HomeScreen extends StatelessWidget {
                   },
                   style: ElevatedButton.styleFrom(
                     foregroundColor: Colors.white,
-                    backgroundColor: Colors.blue,
+                    backgroundColor: Colors.blueAccent,
                     minimumSize: Size(280, 50),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
+                      borderRadius: BorderRadius.circular(25),
                     ),
                   ),
                   child: const Text('Quản lý màn chơi',
-                      style: TextStyle(fontSize: 22)),
+                      style: TextStyle(fontSize: 20)),
                 ),
                 const SizedBox(height: 15),
                 ElevatedButton(
@@ -309,14 +311,14 @@ class HomeScreen extends StatelessWidget {
                   },
                   style: ElevatedButton.styleFrom(
                     foregroundColor: Colors.white,
-                    backgroundColor: Colors.blue,
+                    backgroundColor: Colors.blueAccent,
                     minimumSize: Size(280, 50),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
+                      borderRadius: BorderRadius.circular(25),
                     ),
                   ),
                   child: const Text('Quản lý tài khoản',
-                      style: TextStyle(fontSize: 22)),
+                      style: TextStyle(fontSize: 20)),
                 ),
               ],
             ),

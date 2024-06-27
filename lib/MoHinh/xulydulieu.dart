@@ -65,15 +65,16 @@ class cManThuThach {
   late int sogoiy;
   late int thoigian;
   late List<List<int>> bang;
+  late List<List<int>> banggiai;
 
-  cManThuThach({
-    required this.maman,
-    required this.tenman,
-    this.soloi = 0,
-    this.sogoiy = 0,
-    this.thoigian = 0,
-    required this.bang,
-  });
+  cManThuThach(
+      {required this.maman,
+      required this.tenman,
+      this.soloi = 0,
+      this.sogoiy = 0,
+      this.thoigian = 0,
+      required this.bang,
+      required this.banggiai});
 
   factory cManThuThach.fromJson(String key, Map<dynamic, dynamic> json) {
     List<List<int>> bang = (json['bang'] as List<dynamic>? ?? [])
@@ -81,15 +82,20 @@ class cManThuThach {
             .map((cell) => cell as int? ?? 0)
             .toList())
         .toList();
+    List<List<int>> banggiai = (json['banggiai'] as List<dynamic>? ?? [])
+        .map((row) => (row as List<dynamic>? ?? [])
+            .map((cell) => cell as int? ?? 0)
+            .toList())
+        .toList();
 
     return cManThuThach(
-      maman: json['maman'] ?? 0,
-      tenman: json['tenman'] ?? "",
-      soloi: json['soloi'] ?? 0,
-      sogoiy: json['sogoiy'] ?? 0,
-      thoigian: json['thoigian'] ?? 0,
-      bang: bang,
-    );
+        maman: json['maman'] ?? 0,
+        tenman: json['tenman'] ?? "",
+        soloi: json['soloi'] ?? 0,
+        sogoiy: json['sogoiy'] ?? 0,
+        thoigian: json['thoigian'] ?? 0,
+        bang: bang,
+        banggiai: banggiai);
   }
 
   Map<String, dynamic> toJson() {
@@ -103,6 +109,7 @@ class cManThuThach {
     };
   }
 
+// thử thách
   static DatabaseReference dsThuThach() {
     return FirebaseDatabase.instance.ref().child('thuthach');
   }
@@ -128,11 +135,13 @@ class cmucDo {
   int mamucdo;
   String tenmucdo;
   int soan;
+  int diem;
 
   cmucDo({
     required this.mamucdo,
     required this.tenmucdo,
     required this.soan,
+    required this.diem,
   });
 
   factory cmucDo.fromJson(String key, Map<dynamic, dynamic> json) {
@@ -140,6 +149,9 @@ class cmucDo {
       mamucdo: json['mamucdo'] ?? 0,
       tenmucdo: json['tenmucdo'] ?? "",
       soan: json['soan'] ?? 0,
+      diem: json['diem'] is int
+          ? json['diem']
+          : int.tryParse(json['diem'].toString()) ?? 0,
     );
   }
 
@@ -163,7 +175,7 @@ class cmucDo {
     }
 
     List<cmucDo> lmucdo = [];
-    values!.forEach((key, value) {
+    values.forEach((key, value) {
       print("Processing key: $key, value: $value");
       lmucdo.add(cmucDo.fromJson(key, value as Map<dynamic, dynamic>));
     });
