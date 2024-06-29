@@ -19,34 +19,44 @@ class DangNhapState extends State<DangNhap> {
 
   // Hàm thực hiện đăng nhập
   Future<void> _dangNhap() async {
-    String taiKhoan = _TaiKhoan.text
-        .trim(); // Lấy giá trị tài khoản từ TextField và xóa khoảng trắng ở đầu và cuối chuỗi
-    String matKhau = _MatKhau.text
-        .trim(); // Lấy giá trị mật khẩu từ TextField và xóa khoảng trắng ở đầu và cuối chuỗi
+    String taiKhoan = _TaiKhoan.text.trim();
+    String matKhau = _MatKhau.text.trim();
 
-    // Kiểm tra nếu tài khoản hoặc mật khẩu rỗng
     if (taiKhoan.isEmpty || matKhau.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
-              "Bạn chưa nhập Tài khoản hoặc Mật khẩu"), // Hiển thị thông báo
+          content: Text("Bạn chưa nhập Tài khoản hoặc Mật khẩu"),
         ),
       );
-      return; // Kết thúc hàm nếu tài khoản hoặc mật khẩu rỗng
+      return;
     }
 
-    // Gọi hàm đăng nhập từ lớp ctaiKhoan và nhận kết quả
     bool isAuthenticated = await ctaiKhoan.dangNhap(taiKhoan, matKhau);
 
-    // Kiểm tra kết quả đăng nhập
+    // Kiểm tra kết quả đăng nhập và chỉ chuyển hướng nếu thành công
     if (isAuthenticated) {
-      // Nếu đăng nhập thành công, chuyển hướng đến màn hình chính
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const ManHinhChinh()),
-      );
+      ctaiKhoan? ttTaiKhoan =
+          await ctaiKhoan.thongTindangNhap(taiKhoan, matKhau);
+
+      if (ttTaiKhoan != null) {
+        if (mounted) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ManHinhChinh(
+                ttTaiKhoan: ttTaiKhoan,
+              ),
+            ),
+          );
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Lấy thông tin tài khoản thất bại"),
+          ),
+        );
+      }
     } else {
-      // Nếu đăng nhập thất bại, hiển thị thông báo
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("Đăng nhập thất bại"),

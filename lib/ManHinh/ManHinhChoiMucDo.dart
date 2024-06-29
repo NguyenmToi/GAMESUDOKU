@@ -101,6 +101,7 @@ class _ManhinhchoimucdoState extends State<Manhinhchoimucdo> {
               }
             } else {
               loiSai++; // Tăng số lỗi nếu điền sai vào ô khởi tạo
+              kiemTraLoiSai();
             }
           }
         }
@@ -116,6 +117,65 @@ class _ManhinhchoimucdoState extends State<Manhinhchoimucdo> {
         hangDuocChon = null;
         cotDuocChon = null;
       });
+    }
+  }
+
+  void xuLyThuaTroChoi() {
+    // Thực hiện logic khi trò chơi hoàn thành
+    showDialog(
+      context: context,
+      barrierDismissible:
+          false, // Không cho phép đóng hộp thoại bằng cách nhấn bên ngoài
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Thông báo!'),
+          content: Text('Bạn đã thua, bạn muốn chơi ván mới?'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                Navigator.of(context).pop(); // Quay lại màn hình trước đó
+              },
+              child: Text('Thoát'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                resetGame(); // Hàm để reset màn hình lại
+              },
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void resetGame() {
+    setState(() {
+      // Khởi tạo lại bảng Sudoku
+      bangSudoku = List.generate(9, (_) => List.generate(9, (_) => 0));
+      oKhoiTao = List.generate(9, (_) => List.generate(9, (_) => false));
+      mangTam = List.generate(9, (_) => List.generate(9, (_) => 0));
+
+      // Đặt lại các biến trạng thái
+      hangDuocChon = null;
+      cotDuocChon = null;
+      loiSai = 0;
+      giay = 0;
+
+      // Tạo bảng Sudoku mới
+      xoaONgauNhien();
+
+      // Khởi động lại bộ đếm thời gian
+      thoiGian.cancel();
+      batDauThoiGian();
+    });
+  }
+
+  void kiemTraLoiSai() {
+    if (loiSai >= 5) {
+      xuLyThuaTroChoi();
     }
   }
 

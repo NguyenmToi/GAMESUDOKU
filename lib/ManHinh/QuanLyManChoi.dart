@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sudoku/ManHinh/ManHinhChinh.dart';
 import 'package:sudoku/ManHinh/TaoDoKho.dart';
 import 'package:sudoku/ManHinh/TaoManChoi.dart';
 import 'package:sudoku/ThanhPhan/QuanLyMucDo.dart';
@@ -24,7 +25,13 @@ class _QuanLyManChoi extends State<QuanLyManChoi> {
           icon: const Icon(Icons.arrow_back_ios),
           color: Colors.grey,
           onPressed: () {
-            Navigator.pop(context);
+            // Navigator.push(
+            //   context,
+            //   MaterialPageRoute(
+            //       builder: (context) => const ManHinhChinh(
+            //             taikhoan: '',
+            //           )),
+            // );
           },
         ),
         title: const Stack(

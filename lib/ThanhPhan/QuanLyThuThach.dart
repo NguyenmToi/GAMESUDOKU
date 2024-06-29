@@ -20,16 +20,10 @@ class _QuanLyThuThachState extends State<QuanLyThuThach> {
     await manChoi.remove();
   }
 
-  void xoaLoiGiaiManChoi(String maman) async {
-    DatabaseReference manChoi =
-        FirebaseDatabase.instance.ref().child('loigiai').child(maman);
-    await manChoi.remove();
-  }
-
   @override
   void initState() {
     super.initState();
-    _dsManThuThach = cManThuThach.taiDanhSachMan();
+    taiLaiDanhSachMan();
   }
 
   Future<void> taiLaiDanhSachMan() async {
@@ -49,8 +43,10 @@ class _QuanLyThuThachState extends State<QuanLyThuThach> {
             future: _dsManThuThach,
             builder: (BuildContext context,
                 AsyncSnapshot<List<cManThuThach>> snapshot) {
+              // Kiểm tra trạng thái kết nối của snapshot
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(child: CircularProgressIndicator());
+                //biểu tượng tải lại
               } else if (snapshot.hasError) {
                 return Center(child: Text('Lỗi: ${snapshot.error}'));
               } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
@@ -158,9 +154,10 @@ class _QuanLyThuThachState extends State<QuanLyThuThach> {
               child: const Text('Đồng ý'),
               onPressed: () {
                 xoaManChoi(maman);
-                xoaLoiGiaiManChoi(maman);
                 Navigator.of(context).pop();
-                setState(() {});
+                setState(() {
+                  taiLaiDanhSachMan();
+                });
               },
             ),
           ],

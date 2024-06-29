@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:sudoku/ManHinh/ChonManChoi.dart';
 import 'package:sudoku/ManHinh/LichSuChoi.dart';
+import 'package:sudoku/ManHinh/ManHinhChinh.dart';
 
 class ManHinhChoiThuThach extends StatefulWidget {
   const ManHinhChoiThuThach(
@@ -55,11 +57,11 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
     });
   }
 
-  // @override
-  // void dispose() {
-  //   thoiGian.cancel();
-  //   super.dispose();
-  // }
+  @override
+  void dispose() {
+    thoiGian.cancel();
+    super.dispose();
+  }
 
   String dinhDangThoiGian(int timeInSeconds) {
     int phut = timeInSeconds ~/ 60;
@@ -102,15 +104,16 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
             ),
           );
           mauSo[hangDuocChon][cotDuocChon] = Colors.red;
-          setState(() {
-            if (soloi == 0) {
-              thongBaoThua();
-            } else {
-              soloi -= 1;
-            }
 
-            widget.bang[hangDuocChon][cotDuocChon] = 0;
-          });
+          if (soloi == 0) {
+            setState(() {
+              thongBaoThua();
+            });
+          } else {
+            soloi -= 1;
+          }
+
+          widget.bang[hangDuocChon][cotDuocChon] = 0;
         }
         kiemTraBangHoanThanh();
       });
@@ -301,11 +304,13 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
                         borderRadius: BorderRadius.circular(20),
                         child: IconButton(
                           onPressed: () {
-                            widget.bang[hangDuocChon][cotDuocChon] =
-                                widget.banggiai[hangDuocChon][cotDuocChon];
-                            if (goiy <= 0) {
-                              thongBaoHetGoiY();
+                            if (goiy == 0) {
+                              setState(() {
+                                thongBaoHetGoiY();
+                              });
                             } else {
+                              widget.bang[hangDuocChon][cotDuocChon] =
+                                  widget.banggiai[hangDuocChon][cotDuocChon];
                               goiy -= 1;
                             }
                           },
@@ -340,15 +345,22 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
             TextButton(
               child: const Text('Thoát'),
               onPressed: () {
-                Navigator.of(context).pop();
-                Navigator.of(context).pop();
+                setState(() {
+                  Navigator.pop(context);
+                });
               },
             ),
             TextButton(
               child: const Text('Đồng ý'),
               onPressed: () {
-                Navigator.of(context).pop();
-                Navigator.of(context).pop();
+                lamMoiBangSuDoKu();
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ChonManChoi(),
+                  ),
+                );
+
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -387,8 +399,22 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
             TextButton(
               child: const Text('Đồng ý'),
               onPressed: () {
-                Navigator.of(context).pop();
-                Navigator.of(context).pop();
+                // Navigator.pushAndRemoveUntil(
+                //   context,
+                //   MaterialPageRoute(
+                //       builder: (context) => const ManHinhChinh(
+                //             taikhoan: '',
+                //           )),
+                //   (Route<dynamic> route) =>
+                //       false, // Loại bỏ tất cả các trang trước đó
+                // );
+
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ChonManChoi(),
+                  ),
+                );
               },
             ),
             TextButton(
@@ -474,18 +500,45 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
         barrierDismissible: false,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: const Text(
-              'THÀNH CÔNG',
-              style: TextStyle(fontSize: 25),
-              textAlign: TextAlign.center,
+            title: const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.star, color: Colors.yellow),
+                SizedBox(width: 8),
+                Text(
+                  'HOÀN THÀNH',
+                  style: TextStyle(fontSize: 25),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(width: 8),
+                Icon(Icons.star, color: Colors.yellow),
+              ],
             ),
-            content: const Text('Chúc mừng bạn đã hoàn thành màn chơi !'),
+            content: const Text(
+              'Chúc mừng bạn đã hoàn thành màn chơi !\n\n'
+              'Khám phá màn chơi mới được mở khóa nào',
+              style: TextStyle(fontSize: 16),
+            ),
             actions: <Widget>[
               TextButton(
                 child: const Text('Đóng'),
                 onPressed: () {
-                  Navigator.of(context).pop();
-                  Navigator.of(context).pop();
+                  // Navigator.pushAndRemoveUntil(
+                  //   context,
+                  //   MaterialPageRoute(
+                  //       builder: (context) => const ManHinhChinh(
+                  //             taikhoan: '',
+                  //           )),
+                  //   (Route<dynamic> route) =>
+                  //       false, // Loại bỏ tất cả các trang trước đó
+                  // );
+
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ChonManChoi(),
+                    ),
+                  );
                 },
               ),
             ],
@@ -493,5 +546,14 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
         },
       );
     }
+  }
+
+  void lamMoiBangSuDoKu() {
+    for (int i = 0; i < 9; i++) {
+      for (int j = 0; j < 9; j++) {
+        bangSudoku[i][j] = 0;
+      }
+    }
+    setState(() {});
   }
 }

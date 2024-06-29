@@ -1,3 +1,4 @@
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:sudoku/ManHinh/ChonManChoi.dart';
 import 'package:sudoku/ManHinh/ManHinhChoiMucDo.dart';
@@ -9,7 +10,8 @@ import 'package:sudoku/ManHinh/QuanLyTaiKhoan.dart';
 import 'package:sudoku/MoHinh/xulydulieu.dart';
 
 class ManHinhChinh extends StatefulWidget {
-  const ManHinhChinh({Key? key}) : super(key: key);
+  const ManHinhChinh({Key? key, required this.ttTaiKhoan}) : super(key: key);
+  final ctaiKhoan ttTaiKhoan;
 
   @override
   State<ManHinhChinh> createState() => _ManHinhChinhState();
@@ -18,12 +20,6 @@ class ManHinhChinh extends StatefulWidget {
 class _ManHinhChinhState extends State<ManHinhChinh> {
   int _currentIndex = 0;
   late Future<List<cmucDo>> _dsmucDo;
-
-  final List<Widget> _pages = [
-    HomeScreen(),
-    XepHang(),
-    ThongKe(),
-  ];
 
   @override
   void initState() {
@@ -35,33 +31,6 @@ class _ManHinhChinhState extends State<ManHinhChinh> {
     setState(() {
       _currentIndex = index;
     });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey[50],
-      body: _pages[_currentIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: _onTabTapped,
-        selectedItemColor: Colors.blue,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Màn Hình Chính',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.leaderboard),
-            label: 'Xếp Hạng',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.bar_chart),
-            label: 'Thống Kê',
-          ),
-        ],
-      ),
-    );
   }
 
   void HienThiMucDo(BuildContext context) {
@@ -88,14 +57,14 @@ class _ManHinhChinhState extends State<ManHinhChinh> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
-                    Text(
+                    const Text(
                       'Mức độ chơi',
                       style: TextStyle(
                         fontSize: 20.0,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    SizedBox(height: 10.0),
+                    const SizedBox(height: 10.0),
                     SingleChildScrollView(
                       child: ListView.builder(
                         shrinkWrap: true,
@@ -103,6 +72,7 @@ class _ManHinhChinhState extends State<ManHinhChinh> {
                         itemCount: mucDos.length,
                         itemBuilder: (context, index) {
                           cmucDo mucDo = mucDos[index];
+
                           return Padding(
                             padding: const EdgeInsets.symmetric(vertical: 8.0),
                             child: GestureDetector(
@@ -119,7 +89,7 @@ class _ManHinhChinhState extends State<ManHinhChinh> {
                                 child: Center(
                                   child: Text(
                                     mucDo.tenmucdo,
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                       color: Colors.black,
                                       fontSize: 18.0,
                                       fontWeight: FontWeight.w500,
@@ -142,29 +112,69 @@ class _ManHinhChinhState extends State<ManHinhChinh> {
     );
   }
 
+  @override
+  Widget build(BuildContext context) {
+    final List<Widget> _pages = [
+      TrangChu(ttTaiKhoan: widget.ttTaiKhoan),
+      const XepHang(),
+      const ThongKe(),
+    ];
+
+    return Scaffold(
+      backgroundColor: Colors.grey[50],
+      body: _pages[_currentIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        onTap: _onTabTapped,
+        selectedItemColor: Colors.blue,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Màn Hình Chính',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.leaderboard),
+            label: 'Xếp Hạng',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.bar_chart),
+            label: 'Thống Kê',
+          ),
+        ],
+      ),
+    );
+  }
+
   void _navigateToManHinhChoiMucDo(cmucDo mucDo) {
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => Manhinhchoimucdo(
-            mucdo: mucDo.tenmucdo, soan: mucDo.soan, diem: mucDo.diem),
+          mucdo: mucDo.tenmucdo,
+          soan: mucDo.soan,
+          diem: mucDo.diem,
+        ),
       ),
     );
   }
 }
 
-class HomeScreen extends StatelessWidget {
+class TrangChu extends StatelessWidget {
+  final ctaiKhoan ttTaiKhoan;
+
+  const TrangChu({Key? key, required this.ttTaiKhoan}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: EdgeInsets.fromLTRB(3, 25, 3, 3),
+      padding: const EdgeInsets.fromLTRB(3, 25, 3, 3),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               Container(
-                padding: EdgeInsets.all(8),
+                padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   color: Colors.grey[200],
                   borderRadius: BorderRadius.circular(10),
@@ -176,7 +186,15 @@ class HomeScreen extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => QuanLyThongTinCaNhan(),
+                            builder: (context) => QuanLyThongTinCaNhan(
+                              taikhoan: ttTaiKhoan.taikhoan,
+                              anh: ttTaiKhoan.anh,
+                              diem: ttTaiKhoan.diem,
+                              man: ttTaiKhoan.man,
+                              tentaikhoan: ttTaiKhoan.tentaikhoan,
+
+                              // ttTaiKhoan: ttTaiKhoan.anh,,
+                            ),
                           ),
                         );
                       },
@@ -191,15 +209,15 @@ class HomeScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Phạm Tuân',
-                          style: TextStyle(
+                          ttTaiKhoan.tentaikhoan,
+                          style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         Text(
-                          'Màn 22',
-                          style: TextStyle(
+                          'Màn ${ttTaiKhoan.man}',
+                          style: const TextStyle(
                             fontSize: 16,
                             color: Colors.grey,
                           ),
@@ -209,18 +227,20 @@ class HomeScreen extends StatelessWidget {
                   ],
                 ),
               ),
-              Spacer(),
+              const Spacer(),
               IconButton(
                 icon: Icon(
                   Icons.question_mark,
                   size: 35,
                   color: Colors.green[200],
                 ),
-                onPressed: () {},
+                onPressed: () {
+                  luatChoi(context);
+                },
               ),
             ],
           ),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
           Align(
             alignment: Alignment.center,
             child: Column(
@@ -234,26 +254,26 @@ class HomeScreen extends StatelessWidget {
                     color: Colors.grey[600],
                   ),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Image.asset(
                   'assets/image/logo.png',
                   width: 220,
                   height: 200,
                 ),
-                SizedBox(height: 60),
+                const SizedBox(height: 60),
                 ElevatedButton(
                   onPressed: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const ChonManCHoi(),
+                        builder: (context) => const ChonManChoi(),
                       ),
                     );
                   },
                   style: ElevatedButton.styleFrom(
                     foregroundColor: Colors.white,
                     backgroundColor: Colors.blueAccent,
-                    minimumSize: Size(280, 50),
+                    minimumSize: const Size(280, 50),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(25),
                     ),
@@ -325,6 +345,44 @@ class HomeScreen extends StatelessWidget {
           )
         ],
       ),
+    );
+  }
+
+  void luatChoi(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Luật Chơi'),
+          content: const SingleChildScrollView(
+            child: Column(
+              children: <Widget>[
+                Text(
+                  'Luật chơi Sudoku:\n\n'
+                  'Sudoku là câu đố trí tuệ có hình dạng lưới gồm 9x9 ô trống.\n\n'
+                  'Bạn chỉ có thể sử dụng các số từ 1 đến 9.\n\n'
+                  'Mỗi khối gồm 3×3 ô trống chỉ có thể chứa các số từ 1 đến 9.\n\n'
+                  'Mỗi hàng dọc chỉ có thể chứa các số từ 1 đến 9.\n\n'
+                  'Mỗi hàng ngang chỉ có thể chứa các số từ 1 đến 9.\n\n'
+                  'Mỗi số trong khối 3×3, hàng dọc hoặc hàng ngang không được trùng nhau.\n\n'
+                  'Câu đố được giải khi điền đúng hết tất cả các số trên toàn bộ lưới Sudoku.\n\n'
+                  'Chúc bạn chơi vui vẻ!',
+                  textAlign: TextAlign.justify,
+                ),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Sửa'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                // Thêm hàm xử lý sự kiện khi nhấn nút "Sửa" ở đây nếu cần
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }

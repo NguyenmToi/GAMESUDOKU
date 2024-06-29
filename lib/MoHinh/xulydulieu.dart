@@ -2,62 +2,6 @@ import 'dart:convert';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-class taiKhoan {
-  String id;
-  String taikhoan;
-  String matkhau;
-  bool chucvu;
-  bool trangthai;
-  String anh;
-
-  taiKhoan({
-    required this.id,
-    required this.taikhoan,
-    required this.matkhau,
-    required this.chucvu,
-    required this.trangthai,
-    required this.anh,
-  });
-
-  factory taiKhoan.fromSnapshot(DataSnapshot snapshot) {
-    Map<dynamic, dynamic> data = snapshot.value as Map<dynamic, dynamic>;
-    return taiKhoan(
-      taikhoan: data['displayName'] ?? "",
-      matkhau: data['email'] ?? "",
-      chucvu: data['persission'] ?? false,
-      trangthai: data['status'] ?? true,
-      anh: data['image'] ?? "",
-      id: data['id'].toString(),
-    );
-  }
-
-  Future<void> updateInformation(String newUsername, String newPassword,
-      bool newRole, bool newStatus, String newImage, String id) async {
-    DatabaseReference userReference =
-        FirebaseDatabase.instance.ref().child('taikhoan').child(id);
-    await userReference.update({
-      'displayName': newUsername,
-      'email': newPassword,
-      'persission': newRole,
-      'status': newStatus,
-      'image': newImage,
-    });
-  }
-
-  static Future<taiKhoan> fetchUser(String userId) async {
-    DatabaseReference reference =
-        FirebaseDatabase.instance.ref().child("taikhoan").child(userId);
-    DatabaseEvent event = await reference.once();
-    DataSnapshot snapshot = event.snapshot;
-
-    if (snapshot.value != null) {
-      return taiKhoan.fromSnapshot(snapshot);
-    } else {
-      throw Exception("User not found");
-    }
-  }
-}
-
 class cManThuThach {
   late int maman;
   late String tenman;
@@ -187,20 +131,20 @@ class cmucDo {
 class ctaiKhoan {
   int diem;
   int man;
-  String taiKhoan;
-  String tenTaiKhoan;
+  String taikhoan;
+  String tentaikhoan;
   String matkhau;
-  bool quanLy;
+  bool quanly;
   bool trangthai;
   String anh;
 
   ctaiKhoan({
     required this.diem,
     required this.man,
-    required this.taiKhoan,
-    required this.tenTaiKhoan,
+    required this.taikhoan,
+    required this.tentaikhoan,
     required this.matkhau,
-    required this.quanLy,
+    required this.quanly,
     required this.trangthai,
     required this.anh,
   });
@@ -210,34 +154,34 @@ class ctaiKhoan {
     return ctaiKhoan(
       diem: data['diem'] ?? 0,
       man: data['man'] ?? 0,
-      taiKhoan: data['taiKhoan'] ?? "",
-      tenTaiKhoan: data['tenTaiKhoan'] ?? "",
+      taikhoan: data['taikhoan'] ?? "",
+      tentaikhoan: data['tentaikhoan'] ?? "",
       matkhau: data['matkhau'] ?? "",
-      quanLy: data['quanLy'] ?? false,
+      quanly: data['quanly'] ?? false,
       trangthai: data['trangthai'] ?? true,
       anh: data['anh'] ?? "",
     );
   }
 
-  Future<void> capNhat(int diem, int man, String taiKhoan, String tenTaiKhoan,
-      String matKhau, bool quanLy, bool trangThai, String anh) async {
+  Future<void> capNhat(int diem, int man, String taikhoan, String tentaikhoan,
+      String matkhau, bool quanly, bool trangthai, String anh) async {
     DatabaseReference userReference =
-        FirebaseDatabase.instance.ref().child('taikhoan').child(taiKhoan);
+        FirebaseDatabase.instance.ref().child('taikhoan').child(taikhoan);
     await userReference.update({
       'diem': diem,
       'man': man,
-      'taikhoan': taiKhoan,
-      'tentaikhoan': tenTaiKhoan,
-      'matkhau': matKhau,
-      'quanly': quanLy,
-      'trangthai': trangThai,
+      'taikhoan': taikhoan,
+      'tentaikhoan': tentaikhoan,
+      'matkhau': matkhau,
+      'quanly': quanly,
+      'trangthai': trangthai,
       'anh': anh
     });
   }
 
-  static Future<ctaiKhoan> fetchUser(String userId) async {
+  static Future<ctaiKhoan> layThongTinTaiKhoan(String userId) async {
     DatabaseReference reference =
-        FirebaseDatabase.instance.ref().child("taiKhoan").child(userId);
+        FirebaseDatabase.instance.ref().child("taikhoan").child(userId);
     DatabaseEvent event = await reference.once();
     DataSnapshot snapshot = event.snapshot;
 
@@ -248,10 +192,10 @@ class ctaiKhoan {
     }
   }
 
-  static Future<void> ThemTaiKhoan(String ten, String matKhau) async {
-    final quanLy = false;
+  static Future<void> ThemTaiKhoan(String ten, String matkhau) async {
+    final quanly = false;
     final anh = '';
-    final trangThai = true;
+    final trangthai = true;
     final diem = 0;
     final man = 1;
 
@@ -267,9 +211,9 @@ class ctaiKhoan {
         'taikhoan': ten,
         'tentaikhoan': ten,
         'anh': anh,
-        'trangthai': trangThai,
-        'quanly': quanLy,
-        'matkhau': matKhau,
+        'trangthai': trangthai,
+        'quanly': quanly,
+        'matkhau': matkhau,
       };
 
       await productsRef.child(productId).set(productData);
@@ -284,7 +228,6 @@ class ctaiKhoan {
     DatabaseReference ref = FirebaseDatabase.instance.ref().child('taikhoan');
     DatabaseEvent event =
         await ref.orderByChild('taikhoan').equalTo(ten).once();
-
     DataSnapshot snapshot = event.snapshot;
 
     return snapshot.value != null;
@@ -306,6 +249,34 @@ class ctaiKhoan {
       }
     }
     return false;
+  }
+
+  static Future<ctaiKhoan?> thongTindangNhap(
+      String taiKhoan, String matKhau) async {
+    DatabaseReference ref = FirebaseDatabase.instance.ref().child('taikhoan');
+    DatabaseEvent event =
+        await ref.orderByChild('taikhoan').equalTo(taiKhoan).once();
+    DataSnapshot snapshot = event.snapshot;
+
+    if (snapshot.value != null) {
+      Map<dynamic, dynamic> userData = snapshot.value as Map<dynamic, dynamic>;
+      for (var user in userData.values) {
+        if (user['matkhau'] == matKhau) {
+          // Tạo đối tượng ctaiKhoan từ dữ liệu Firebase
+          return ctaiKhoan(
+            diem: user['diem'] ?? 0,
+            man: user['man'] ?? 0,
+            taikhoan: user['taikhoan'] ?? "",
+            tentaikhoan: user['tentaikhoan'] ?? "",
+            matkhau: user['matkhau'] ?? "",
+            quanly: user['quanly'] ?? false,
+            trangthai: user['trangthai'] ?? true,
+            anh: user['anh'] ?? "",
+          );
+        }
+      }
+    }
+    return null;
   }
 }
 

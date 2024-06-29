@@ -3,9 +3,21 @@ import 'package:sudoku/ManHinh/DangNhap.dart';
 import 'dart:io';
 
 import 'package:sudoku/ManHinh/LichSuChoi.dart';
+import 'package:sudoku/MoHinh/xulydulieu.dart';
 
 class QuanLyThongTinCaNhan extends StatefulWidget {
-  const QuanLyThongTinCaNhan({super.key});
+  QuanLyThongTinCaNhan(
+      {super.key,
+      required this.tentaikhoan,
+      required this.taikhoan,
+      required this.anh,
+      required this.diem,
+      required this.man});
+  final String taikhoan;
+  final String tentaikhoan;
+  final int man;
+  final String anh;
+  final int diem;
 
   @override
   State<QuanLyThongTinCaNhan> createState() => _QuanLyThongTinCaNhanState();
@@ -14,7 +26,7 @@ class QuanLyThongTinCaNhan extends StatefulWidget {
 class _QuanLyThongTinCaNhanState extends State<QuanLyThongTinCaNhan> {
   File? _image;
 
-  void _changeNameDialog(BuildContext context) {
+  void thayDoiTen(BuildContext context) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -86,13 +98,33 @@ class _QuanLyThongTinCaNhanState extends State<QuanLyThongTinCaNhan> {
                 ),
               ),
             ),
-            SizedBox(height: 20),
-            _xayDungDong('Tên người chơi', 'John Doe'),
-            SizedBox(height: 10),
-            _xayDungDong('Màn', 'Màn 22'),
-            SizedBox(height: 10),
-            _xayDungDong('Điểm', '35'),
-            SizedBox(height: 10),
+            const SizedBox(height: 25),
+            // _xayDungDong('Tên người chơi', widget.tentaikhoan),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Tên người chơi',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                Row(children: [
+                  Text(
+                    widget.tentaikhoan,
+                    style: const TextStyle(
+                      fontSize: 18,
+                    ),
+                  ),
+                  IconButton(
+                      icon: const Icon(Icons.edit),
+                      onPressed: () => {thayDoiTen(context)}),
+                ])
+              ],
+            ),
+            const SizedBox(height: 15),
+            _xayDungDong('Màn', 'Màn ${widget.man}'),
+            const SizedBox(height: 15),
+            _xayDungDong('Điểm', '${widget.diem}'),
+            const SizedBox(height: 15),
             GestureDetector(
               onTap: () {
                 Navigator.push(
@@ -100,7 +132,7 @@ class _QuanLyThongTinCaNhanState extends State<QuanLyThongTinCaNhan> {
                   MaterialPageRoute(builder: (context) => const LichSuaChoi()),
                 );
               },
-              child: Row(
+              child: const Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
@@ -127,9 +159,8 @@ class _QuanLyThongTinCaNhanState extends State<QuanLyThongTinCaNhan> {
                 style: ElevatedButton.styleFrom(
                   foregroundColor: Colors.red,
                   backgroundColor: Colors.white,
-                  minimumSize: Size(220, 50),
+                  minimumSize: const Size(220, 50),
                 ),
-                // child: Text('Đăng Xuất', style: TextStyle(fontSize: 22)),
                 child: const Icon(
                   Icons.exit_to_app,
                   size: 30,
@@ -149,20 +180,12 @@ class _QuanLyThongTinCaNhanState extends State<QuanLyThongTinCaNhan> {
       children: [
         Text(
           label,
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
-        Container(
-          decoration: BoxDecoration(
-            border: Border(
-              bottom: BorderSide(width: 1, color: Colors.black),
-            ),
-          ),
-          child: Text(
-            value,
-            style: TextStyle(
-              fontSize: 18,
-              decoration: TextDecoration.underline,
-            ),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 18,
           ),
         ),
       ],
