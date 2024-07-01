@@ -20,7 +20,7 @@ class _ManHinhChinhState extends State<ManHinhChinh> {
   late Future<List<cmucDo>> _dsmucDo;
 
   final List<Widget> _pages = [
-    HomeScreen(),
+    TrangChu(),
     XepHang(),
     ThongKe(),
   ];
@@ -78,7 +78,7 @@ class _ManHinhChinhState extends State<ManHinhChinh> {
               return Center(child: Text('Không có dữ liệu'));
             } else {
               List<cmucDo> mucDos = snapshot.data!;
-              mucDos.sort((a, b) => a.mamucdo.compareTo(b.mamucdo));
+              mucDos.sort((a, b) => a.soan.compareTo(b.soan));
               return Container(
                 padding: EdgeInsets.all(20.0),
                 child: Column(
@@ -149,7 +149,7 @@ class _ManHinhChinhState extends State<ManHinhChinh> {
 
 }
 
-class HomeScreen extends StatelessWidget {
+class TrangChu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(

@@ -2,17 +2,35 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:sudoku/MoHinh/xulydulieu.dart';
 
-class TaoDoKho extends StatefulWidget {
-  const TaoDoKho({Key? key}) : super(key: key);
+class SuaMucDoChoi extends StatefulWidget {
+  SuaMucDoChoi({
+    Key? key,
+    required this.mamucdo,
+    required this.tenmucdo,
+    required this.soan,
+    required this.diem,
+  }) : super(key: key);
 
+  final int mamucdo;
+  final String tenmucdo;
+  final int soan;
+  final int diem;
   @override
-  State<TaoDoKho> createState() => TaoDoKhoState();
+  State<SuaMucDoChoi> createState() => _SuaMucDoChoiState();
 }
 
-class TaoDoKhoState extends State<TaoDoKho> {
+class _SuaMucDoChoiState extends State<SuaMucDoChoi> {
   final TextEditingController TenMucDo = TextEditingController();
   final TextEditingController SoOAn = TextEditingController();
   final TextEditingController diem = TextEditingController();
+
+    @override
+  void initState() {
+    super.initState();
+    TenMucDo.text = widget.tenmucdo;
+    SoOAn.text = widget.soan.toString();
+    diem.text = widget.diem.toString();
+  }
 
   final ChuNhapHopLe = FilteringTextInputFormatter.deny(RegExp(r'[\u0300-\u036f]'));
 
@@ -126,67 +144,68 @@ class TaoDoKhoState extends State<TaoDoKho> {
     return false;
   }
 
-  void ThemMucDo() async {
-    if (TenMucDo.text.isEmpty || SoOAn.text.isEmpty || diem.text.isEmpty) {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Thiếu thông tin'),
-          content: const Text('Vui lòng điền đầy đủ thông tin.'),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text('OK'),
-            ),
-          ],
-        ),
-      );
-      return;
-    }
-
-    int hiddenCells = int.tryParse(SoOAn.text) ?? 0;
-    int hints = int.tryParse(diem.text) ?? 0;
-
-    if (hiddenCells <= 0 || hiddenCells > 81) {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text('Thông tin không hợp lệ'),
-          content: Text('Số ô ẩn phải từ 1 đến 81.'),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text('OK'),
-            ),
-          ],
-        ),
-      );
-    } else {
-      try {
-        int mamucdo = await cmucDo.LayMaMucDoLonNhat() + 1;
-        await cmucDo.themMucDoChoi(mamucdo, TenMucDo.text, hiddenCells, hints);
-        print('Tên: ${TenMucDo.text}');
-        print('Số ô ẩn: $hiddenCells');
-        print('Số điểm: $hints');
-
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('Thành công'),
-            content: const Text('Đã thêm mức độ thành công.'),
-            actions: <Widget>[
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text('OK'),
-              ),
-            ],
+void CapNhatDuLieu() async {
+  if (TenMucDo.text.isEmpty || SoOAn.text.isEmpty || diem.text.isEmpty) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Thiếu thông tin'),
+        content: const Text('Vui lòng điền đầy đủ thông tin.'),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('OK'),
           ),
-        );
-      } catch (e) {
-        print('Lỗi: $e');
-      }
+        ],
+      ),
+    );
+    return;
+  }
+
+  int SoAn = int.tryParse(SoOAn.text) ?? 0;
+  int DiemSo = int.tryParse(diem.text) ?? 0;
+
+  if (SoAn <= 0 || SoAn > 81) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Thông tin không hợp lệ'),
+        content: Text('Số ô ẩn phải từ 1 đến 81.'),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('OK'),
+          ),
+        ],
+      ),
+    );
+  } else {
+    try {
+      int mamucdo = widget.mamucdo;
+      await cmucDo.capNhatMucDoChoi(mamucdo, TenMucDo.text, SoAn, DiemSo);
+      print('Tên: ${TenMucDo.text}');
+      print('Số ô ẩn: $SoAn');
+      print('Số điểm: $DiemSo');
+
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Thành công'),
+          content: const Text('Đã cập nhật mức độ thành công.'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('OK'),
+            ),
+          ],
+        ),
+      );
+    } catch (e) {
+      print('Lỗi: $e');
     }
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -201,7 +220,7 @@ class TaoDoKhoState extends State<TaoDoKho> {
           },
         ),
         title: const Text(
-          'Tạo mức độ chơi',
+          'Cập nhật mức độ chơi',
           style: TextStyle(color: Colors.black, fontSize: 25),
         ),
       ),
@@ -295,7 +314,7 @@ class TaoDoKhoState extends State<TaoDoKho> {
                   width: double.infinity,
                   height: 50,
                   child: ElevatedButton(
-                    onPressed: ThemMucDo,
+                    onPressed: CapNhatDuLieu,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue,
                       shape: RoundedRectangleBorder(
@@ -303,7 +322,7 @@ class TaoDoKhoState extends State<TaoDoKho> {
                       ),
                     ),
                     child: const Text(
-                      'Thêm mức độ',
+                      'Cập nhật mức độ',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 18,
