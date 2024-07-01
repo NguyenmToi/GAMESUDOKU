@@ -1,4 +1,5 @@
-import 'package:firebase_database/firebase_database.dart';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:sudoku/ManHinh/ChonManChoi.dart';
 import 'package:sudoku/ManHinh/ManHinhChoiMucDo.dart';
@@ -50,7 +51,7 @@ class _ManHinhChinhState extends State<ManHinhChinh> {
               return Center(child: Text('Không có dữ liệu'));
             } else {
               List<cmucDo> mucDos = snapshot.data!;
-              mucDos.sort((a, b) => a.mamucdo.compareTo(b.mamucdo));
+              mucDos.sort((a, b) => a.soan.compareTo(b.soan));
               return Container(
                 padding: EdgeInsets.all(20.0),
                 child: Column(
@@ -192,15 +193,13 @@ class TrangChu extends StatelessWidget {
                               diem: ttTaiKhoan.diem,
                               man: ttTaiKhoan.man,
                               tentaikhoan: ttTaiKhoan.tentaikhoan,
-
-                              // ttTaiKhoan: ttTaiKhoan.anh,,
                             ),
                           ),
                         );
                       },
                       child: CircleAvatar(
                         radius: 25,
-                        backgroundImage: AssetImage('assets/image/avt1.jpg'),
+                        backgroundImage: FileImage(File(ttTaiKhoan.anh!)),
                         backgroundColor: Colors.transparent,
                       ),
                     ),
@@ -228,6 +227,18 @@ class TrangChu extends StatelessWidget {
                 ),
               ),
               const Spacer(),
+              // if (ttTaiKhoan.quanly)
+              //   IconButton(
+              //     icon: Icon(
+              //       Icons.settings,
+              //       size: 35,
+              //       color: Colors.green[200],
+              //     ),
+              //     onPressed: () {
+              //       huongDanChoi(context);
+              //     },
+              //   )
+              // else
               IconButton(
                 icon: Icon(
                   Icons.question_mark,
@@ -235,9 +246,9 @@ class TrangChu extends StatelessWidget {
                   color: Colors.green[200],
                 ),
                 onPressed: () {
-                  luatChoi(context);
+                  huongDanChoi(context);
                 },
-              ),
+              )
             ],
           ),
           const SizedBox(height: 20),
@@ -299,47 +310,49 @@ class TrangChu extends StatelessWidget {
                       const Text('Ngẫu nhiên', style: TextStyle(fontSize: 20)),
                 ),
                 const SizedBox(height: 15),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => QuanLyManChoi(),
+                if (ttTaiKhoan.quanly == true)
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => QuanLyManChoi(),
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.blueAccent,
+                      minimumSize: Size(280, 50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25),
                       ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    backgroundColor: Colors.blueAccent,
-                    minimumSize: Size(280, 50),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(25),
                     ),
+                    child: const Text('Quản lý màn chơi',
+                        style: TextStyle(fontSize: 20)),
                   ),
-                  child: const Text('Quản lý màn chơi',
-                      style: TextStyle(fontSize: 20)),
-                ),
                 const SizedBox(height: 15),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const QuanLyTaiKhoan(),
+                if (ttTaiKhoan.quanly == true)
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const QuanLyTaiKhoan(),
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.blueAccent,
+                      minimumSize: Size(280, 50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25),
                       ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    backgroundColor: Colors.blueAccent,
-                    minimumSize: Size(280, 50),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(25),
                     ),
+                    child: const Text('Quản lý tài khoản',
+                        style: TextStyle(fontSize: 20)),
                   ),
-                  child: const Text('Quản lý tài khoản',
-                      style: TextStyle(fontSize: 20)),
-                ),
               ],
             ),
           )
@@ -348,7 +361,7 @@ class TrangChu extends StatelessWidget {
     );
   }
 
-  void luatChoi(BuildContext context) {
+  void huongDanChoi(BuildContext context) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -358,7 +371,7 @@ class TrangChu extends StatelessWidget {
             child: Column(
               children: <Widget>[
                 Text(
-                  'Luật chơi Sudoku:\n\n'
+                  'Hướng dẫn chơi Sudoku:\n\n'
                   'Sudoku là câu đố trí tuệ có hình dạng lưới gồm 9x9 ô trống.\n\n'
                   'Bạn chỉ có thể sử dụng các số từ 1 đến 9.\n\n'
                   'Mỗi khối gồm 3×3 ô trống chỉ có thể chứa các số từ 1 đến 9.\n\n'
@@ -373,13 +386,14 @@ class TrangChu extends StatelessWidget {
             ),
           ),
           actions: <Widget>[
-            TextButton(
-              child: Text('Sửa'),
-              onPressed: () {
-                Navigator.of(context).pop();
-                // Thêm hàm xử lý sự kiện khi nhấn nút "Sửa" ở đây nếu cần
-              },
-            ),
+            if (ttTaiKhoan.quanly == true)
+              TextButton(
+                child: Text('Sửa'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  //
+                },
+              ),
           ],
         );
       },

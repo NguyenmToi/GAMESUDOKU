@@ -2,20 +2,38 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:sudoku/MoHinh/xulydulieu.dart';
 
-class TaoDoKho extends StatefulWidget {
-  const TaoDoKho({Key? key}) : super(key: key);
+class SuaMucDoChoi extends StatefulWidget {
+  SuaMucDoChoi({
+    Key? key,
+    required this.mamucdo,
+    required this.tenmucdo,
+    required this.soan,
+    required this.diem,
+  }) : super(key: key);
 
+  final int mamucdo;
+  final String tenmucdo;
+  final int soan;
+  final int diem;
   @override
-  State<TaoDoKho> createState() => TaoDoKhoState();
+  State<SuaMucDoChoi> createState() => _SuaMucDoChoiState();
 }
 
-class TaoDoKhoState extends State<TaoDoKho> {
+class _SuaMucDoChoiState extends State<SuaMucDoChoi> {
   final TextEditingController TenMucDo = TextEditingController();
   final TextEditingController SoOAn = TextEditingController();
   final TextEditingController diem = TextEditingController();
 
-  final ChuNhapHopLe =
-      FilteringTextInputFormatter.deny(RegExp(r'[\u0300-\u036f]'));
+  @override
+  void initState() {
+    super.initState();
+    TenMucDo.text = widget.tenmucdo;
+    SoOAn.text = widget.soan.toString();
+    diem.text = widget.diem.toString();
+  }
+
+  // final ChuNhapHopLe =
+  //     FilteringTextInputFormatter.deny(RegExp(r'[\u0300-\u036f]'));
 
   // Khởi tạo bảng Sudoku
   List<List<int>> BangSudoku =
@@ -130,7 +148,7 @@ class TaoDoKhoState extends State<TaoDoKho> {
     return false;
   }
 
-  void ThemMucDo() async {
+  void CapNhatDuLieu() async {
     if (TenMucDo.text.isEmpty || SoOAn.text.isEmpty || diem.text.isEmpty) {
       showDialog(
         context: context,
@@ -148,10 +166,10 @@ class TaoDoKhoState extends State<TaoDoKho> {
       return;
     }
 
-    int hiddenCells = int.tryParse(SoOAn.text) ?? 0;
-    int hints = int.tryParse(diem.text) ?? 0;
+    int SoAn = int.tryParse(SoOAn.text) ?? 0;
+    int DiemSo = int.tryParse(diem.text) ?? 0;
 
-    if (hiddenCells <= 0 || hiddenCells > 81) {
+    if (SoAn <= 0 || SoAn > 81) {
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
@@ -167,17 +185,17 @@ class TaoDoKhoState extends State<TaoDoKho> {
       );
     } else {
       try {
-        int mamucdo = await cmucDo.LayMaMucDoLonNhat() + 1;
-        await cmucDo.themMucDoChoi(mamucdo, TenMucDo.text, hiddenCells, hints);
+        int mamucdo = widget.mamucdo;
+        await cmucDo.capNhatMucDoChoi(mamucdo, TenMucDo.text, SoAn, DiemSo);
         print('Tên: ${TenMucDo.text}');
-        print('Số ô ẩn: $hiddenCells');
-        print('Số điểm: $hints');
+        print('Số ô ẩn: $SoAn');
+        print('Số điểm: $DiemSo');
 
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
             title: const Text('Thành công'),
-            content: const Text('Đã thêm mức độ thành công.'),
+            content: const Text('Đã cập nhật mức độ thành công.'),
             actions: <Widget>[
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
@@ -205,7 +223,7 @@ class TaoDoKhoState extends State<TaoDoKho> {
           },
         ),
         title: const Text(
-          'Tạo mức độ chơi',
+          'Cập nhật mức độ chơi',
           style: TextStyle(color: Colors.black, fontSize: 25),
         ),
       ),
@@ -220,7 +238,7 @@ class TaoDoKhoState extends State<TaoDoKho> {
                   TextField(
                     controller: TenMucDo,
                     decoration: const InputDecoration(labelText: 'Tên mức độ'),
-                    inputFormatters: [ChuNhapHopLe],
+                    // inputFormatters: [ChuNhapHopLe],
                   ),
                   TextField(
                     controller: SoOAn,
@@ -299,7 +317,7 @@ class TaoDoKhoState extends State<TaoDoKho> {
                   width: double.infinity,
                   height: 50,
                   child: ElevatedButton(
-                    onPressed: ThemMucDo,
+                    onPressed: CapNhatDuLieu,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue,
                       shape: RoundedRectangleBorder(
@@ -307,7 +325,7 @@ class TaoDoKhoState extends State<TaoDoKho> {
                       ),
                     ),
                     child: const Text(
-                      'Thêm mức độ',
+                      'Cập nhật mức độ',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 18,

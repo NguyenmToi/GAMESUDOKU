@@ -100,9 +100,7 @@ class _QuanLyThuThachState extends State<QuanLyThuThach> {
         title: Text(
           title,
           style: const TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.normal,
-          ),
+              color: Colors.black, fontWeight: FontWeight.normal, fontSize: 16),
         ),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,

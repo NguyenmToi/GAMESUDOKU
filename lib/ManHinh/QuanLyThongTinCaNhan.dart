@@ -1,9 +1,15 @@
+import 'dart:math';
+import 'dart:typed_data';
+
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:sudoku/ManHinh/DangNhap.dart';
 import 'dart:io';
-
+import 'package:file_picker/file_picker.dart';
 import 'package:sudoku/ManHinh/LichSuChoi.dart';
 import 'package:sudoku/MoHinh/xulydulieu.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:image_picker/image_picker.dart';
 
 class QuanLyThongTinCaNhan extends StatefulWidget {
   QuanLyThongTinCaNhan(
@@ -14,9 +20,9 @@ class QuanLyThongTinCaNhan extends StatefulWidget {
       required this.diem,
       required this.man});
   final String taikhoan;
-  final String tentaikhoan;
+  late String tentaikhoan;
   final int man;
-  final String anh;
+  late String anh;
   final int diem;
 
   @override
@@ -24,7 +30,58 @@ class QuanLyThongTinCaNhan extends StatefulWidget {
 }
 
 class _QuanLyThongTinCaNhanState extends State<QuanLyThongTinCaNhan> {
-  File? _image;
+  File? anh;
+  String? duongdananh;
+  String? dulieuanh;
+
+  final TextEditingController _tenController = TextEditingController();
+
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      setState(() {
+        widget.anh = pickedFile.path;
+      });
+
+      FirebaseStorage storage = FirebaseStorage.instance;
+      try {
+        await storage.ref('anh/${widget.taikhoan}.png').delete();
+      } catch (error) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Lỗi xóa ảnh: $error')),
+        );
+      }
+
+      File imageFile = File(pickedFile.path);
+      Uint8List imageBytes = await imageFile.readAsBytes();
+
+      String tenanh = widget.taikhoan!;
+
+      Reference reference = storage.ref().child('anh/$tenanh.png');
+
+      // Tải ảnh lên Firebase Storage
+      await reference.putData(imageBytes);
+
+      // Lấy URL của ảnh đã tải lên
+      // String diachianh = await reference.getDownloadURL();
+
+      setState(() {
+        duongdananh = pickedFile.path;
+        databaseReference.child('taikhoan').child(widget.taikhoan).update({
+          'anh': duongdananh.toString(),
+        }).then((_) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Đã thay đổi ảnh thành công'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        });
+      });
+    }
+  }
 
   void thayDoiTen(BuildContext context) {
     showDialog(
@@ -33,6 +90,7 @@ class _QuanLyThongTinCaNhanState extends State<QuanLyThongTinCaNhan> {
         return AlertDialog(
           title: Text('Thay Đổi Tên'),
           content: TextField(
+            controller: _tenController,
             onChanged: (value) {},
             decoration: InputDecoration(
               hintText: 'Nhập tên mới',
@@ -48,14 +106,44 @@ class _QuanLyThongTinCaNhanState extends State<QuanLyThongTinCaNhan> {
             TextButton(
               child: Text('Lưu'),
               onPressed: () {
-                setState(() {});
-                Navigator.of(context).pop();
+                thucHienThayDoiTen();
+                setState(() {
+                  widget.tentaikhoan = _tenController.text.toString();
+                });
+                Navigator.pop(context);
               },
             ),
           ],
         );
       },
     );
+  }
+
+  final databaseReference = FirebaseDatabase.instance.reference();
+  Future<void> thucHienThayDoiTen() async {
+    if (_tenController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Vui lòng điền đầy đủ thông tin'),
+        ),
+      );
+      return;
+    }
+    databaseReference.child('taikhoan').child(widget.taikhoan).update({
+      'tentaikhoan': _tenController.text.toString(),
+    }).then((_) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Đã thay đổi tên thành công'),
+        ),
+      );
+    }).catchError((error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Lỗi : $error'),
+        ),
+      );
+    });
   }
 
   @override
@@ -83,23 +171,31 @@ class _QuanLyThongTinCaNhanState extends State<QuanLyThongTinCaNhan> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             GestureDetector(
-              onTap: null, //_pickImage,
-              child: Center(
-                child: CircleAvatar(
-                  radius: 80,
-                  backgroundImage: null,
-                  child: _image == null
-                      ? Icon(
-                          Icons.camera_alt,
+              onTap: _pickImage,
+              child: Container(
+                height: 150,
+                width: MediaQuery.of(context).size.width,
+                decoration: widget.anh.isNotEmpty
+                    ? BoxDecoration(
+                        image: DecorationImage(
+                          image: FileImage(File(widget.anh!)),
+                          fit: BoxFit.contain,
+                        ),
+                      )
+                    : BoxDecoration(
+                        border: Border.all(color: Colors.grey),
+                      ),
+                child: widget.anh.isEmpty
+                    ? Center(
+                        child: Icon(
+                          Icons.image,
                           size: 50,
-                          color: Colors.grey[700],
-                        )
-                      : null,
-                ),
+                        ),
+                      )
+                    : null,
               ),
             ),
-            const SizedBox(height: 25),
-            // _xayDungDong('Tên người chơi', widget.tentaikhoan),
+            const SizedBox(height: 50),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -120,7 +216,7 @@ class _QuanLyThongTinCaNhanState extends State<QuanLyThongTinCaNhan> {
                 ])
               ],
             ),
-            const SizedBox(height: 15),
+            const SizedBox(height: 7),
             _xayDungDong('Màn', 'Màn ${widget.man}'),
             const SizedBox(height: 15),
             _xayDungDong('Điểm', '${widget.diem}'),

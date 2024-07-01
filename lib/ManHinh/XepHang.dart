@@ -29,12 +29,6 @@ class XepHangState extends State<XepHang> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
         title: Text('Bảng xếp hạng'),
       ),
       body: SingleChildScrollView(

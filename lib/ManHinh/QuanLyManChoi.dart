@@ -25,13 +25,7 @@ class _QuanLyManChoi extends State<QuanLyManChoi> {
           icon: const Icon(Icons.arrow_back_ios),
           color: Colors.grey,
           onPressed: () {
-            // Navigator.push(
-            //   context,
-            //   MaterialPageRoute(
-            //       builder: (context) => const ManHinhChinh(
-            //             taikhoan: '',
-            //           )),
-            // );
+            Navigator.pop(context);
           },
         ),
         title: const Stack(
@@ -56,7 +50,7 @@ class _QuanLyManChoi extends State<QuanLyManChoi> {
             color: Colors.black,
           ),
           SizedBox(
-            height: 40,
+            height: 45,
             child: Row(
               children: [
                 Expanded(
@@ -77,7 +71,7 @@ class _QuanLyManChoi extends State<QuanLyManChoi> {
                         )),
                     child: const Text(
                       'Thử thách',
-                      style: TextStyle(color: Colors.black, fontSize: 17),
+                      style: TextStyle(color: Colors.black, fontSize: 20),
                     ),
                   ),
                 ),
@@ -102,7 +96,7 @@ class _QuanLyManChoi extends State<QuanLyManChoi> {
                         )),
                     child: const Text(
                       'Mức độ',
-                      style: TextStyle(color: Colors.black, fontSize: 17),
+                      style: TextStyle(color: Colors.black, fontSize: 20),
                     ),
                   ),
                 ),

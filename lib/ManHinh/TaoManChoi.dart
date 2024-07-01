@@ -117,22 +117,14 @@ class _TaoManChoiState extends State<TaoManChoi> {
           icon: const Icon(Icons.arrow_back_ios),
           color: Colors.grey,
           onPressed: () {
-            // Navigator.pushAndRemoveUntil(
+            Navigator.pop(context);
+
+            // Navigator.push(
             //   context,
             //   MaterialPageRoute(
-            //       builder: (context) => const ManHinhChinh(
-            //             taikhoan: '',
-            //           )),
-            //   (Route<dynamic> route) =>
-            //       false, // Loại bỏ tất cả các trang trước đó
+            //     builder: (context) => const QuanLyManChoi(),
+            //   ),
             // );
-
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const QuanLyManChoi(),
-              ),
-            );
           },
         ),
         title: const Stack(
