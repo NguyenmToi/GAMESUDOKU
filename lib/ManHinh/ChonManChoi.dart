@@ -4,7 +4,14 @@ import 'package:sudoku/ManHinh/ManHinhChoiThuThach.dart';
 import 'package:sudoku/MoHinh/xulydulieu.dart';
 
 class ChonManChoi extends StatefulWidget {
-  const ChonManChoi({super.key});
+  ChonManChoi(
+      {super.key,
+      required this.man,
+      required this.matkhau,
+      required this.taikhoan});
+  final String taikhoan;
+  final String matkhau;
+  final int man;
 
   @override
   State<ChonManChoi> createState() => _ChonManCHoiState();
@@ -12,6 +19,7 @@ class ChonManChoi extends StatefulWidget {
 
 class _ChonManCHoiState extends State<ChonManChoi> {
   late Future<List<cManThuThach>> _dsManThuThach;
+  bool _thongBao = false;
 
   @override
   void initState() {
@@ -80,22 +88,30 @@ class _ChonManCHoiState extends State<ChonManChoi> {
                   int goiyc = dsManThuThach[index].sogoiy;
                   int soloic = dsManThuThach[index].soloi;
                   int thoigianc = dsManThuThach[index].thoigian;
+                  int maman = dsManThuThach[index].maman;
 
                   return GestureDetector(
                     onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ManHinhChoiThuThach(
-                            tenMan: manThuThach.tenman,
-                            bang: bangc,
-                            soloi: soloic,
-                            goiy: goiyc,
-                            thoigian: thoigianc,
-                            banggiai: banggiaic,
+                      if (widget.man >= maman) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ManHinhChoiThuThach(
+                                tenMan: manThuThach.tenman,
+                                bang: bangc,
+                                soloi: soloic,
+                                goiy: goiyc,
+                                thoigian: thoigianc,
+                                banggiai: banggiaic,
+                                maman: maman,
+                                taikhoan: widget.taikhoan,
+                                matkhau: widget.matkhau,
+                                mannguoichoi: widget.man),
                           ),
-                        ),
-                      );
+                        );
+                      } else {
+                        thongBao();
+                      }
                     },
                     child: Container(
                       decoration: BoxDecoration(
@@ -121,5 +137,23 @@ class _ChonManCHoiState extends State<ChonManChoi> {
         ),
       ),
     );
+  }
+
+  void thongBao() {
+    if (!_thongBao) {
+      _thongBao = true;
+
+      final snackbar = SnackBar(
+        content: Text(
+            'Hãy hoàn thành màn chơi ${widget.man} để mở khóa màn chơi mới'),
+        duration: Duration(seconds: 2),
+      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(snackbar)
+          .closed
+          .then((reason) {
+        _thongBao = false;
+      });
+    }
   }
 }

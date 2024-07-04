@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -53,7 +54,7 @@ class cManThuThach {
     };
   }
 
-// thử thách
+// lấy danh sách
   static DatabaseReference dsThuThach() {
     return FirebaseDatabase.instance.ref().child('thuthach');
   }
@@ -73,10 +74,33 @@ class cManThuThach {
     }
     return man;
   }
+
+  static Future<cManThuThach?> layThongTinBang(int maman) async {
+    DatabaseReference reference = dsThuThach().child('man' + maman.toString());
+    DatabaseEvent event = await reference.once();
+    DataSnapshot dataSnapshot = event.snapshot;
+
+    if (dataSnapshot.exists) {
+      return cManThuThach.fromJson(
+          dataSnapshot.key!, dataSnapshot.value as Map<dynamic, dynamic>);
+    } else {
+      return null;
+    }
+  }
+
+  // Lấy dữ liệu bảng thử thách
+  static Future<List<List<int>>?> layDuLieuBang(int maman) async {
+    cManThuThach? thongTinBang = await layThongTinBang(maman);
+    if (thongTinBang != null) {
+      return thongTinBang.bang;
+    } else {
+      return null;
+    }
+  }
 }
 
 class cmucDo {
-  String key; // Firebase key
+  String key;
   int mamucdo;
   String tenmucdo;
   int soan;
@@ -213,6 +237,13 @@ class ctaiKhoan {
   bool quanly;
   bool trangthai;
   String anh;
+  late int mdsovandachoi;
+  late int mdsovanthang;
+  late int mdsovanthangkhongloi;
+  late String mdtilethang;
+  late int ttsovandachoi;
+  late int ttsovanthangkhongloi;
+  late int tttilemokhoamanmoi;
 
   ctaiKhoan({
     required this.diem,
@@ -223,10 +254,16 @@ class ctaiKhoan {
     required this.quanly,
     required this.trangthai,
     required this.anh,
+    required this.mdsovandachoi,
+    required this.mdsovanthang,
+    required this.mdsovanthangkhongloi,
+    required this.mdtilethang,
+    required this.ttsovandachoi,
+    required this.ttsovanthangkhongloi,
+    required this.tttilemokhoamanmoi,
   });
 
-  factory ctaiKhoan.fromSnapshot(DataSnapshot snapshot) {
-    Map<dynamic, dynamic> data = snapshot.value as Map<dynamic, dynamic>;
+  factory ctaiKhoan.fromMap(Map<dynamic, dynamic> data) {
     return ctaiKhoan(
       diem: data['diem'] ?? 0,
       man: data['man'] ?? 0,
@@ -236,7 +273,70 @@ class ctaiKhoan {
       quanly: data['quanly'] ?? false,
       trangthai: data['trangthai'] ?? true,
       anh: data['anh'] ?? "",
+      mdsovandachoi: data['mdsovandachoi'] ?? 0,
+      mdsovanthang: data['mdsovanthang'] ?? 0,
+      mdsovanthangkhongloi: data['mdsovanthangkhongloi'] ?? 0,
+      mdtilethang: data['mdtilethang'] ?? '',
+      ttsovandachoi: data['ttsovandachoi'] ?? 0,
+      ttsovanthangkhongloi: data['ttsovanthangkhongloi'] ?? 0,
+      tttilemokhoamanmoi: data['tttilemokhoamanmoi'] ?? 0,
     );
+  }
+
+  static Future<bool> kiemTraTrangThaiTaiKhoan(String taikhoan) async {
+    DatabaseReference reference =
+        FirebaseDatabase.instance.ref().child("taikhoan").child(taikhoan);
+    DatabaseEvent event = await reference.once();
+    DataSnapshot snapshot = event.snapshot;
+
+    if (snapshot.value != null) {
+      Map<dynamic, dynamic> map = snapshot.value as Map<dynamic, dynamic>;
+      ctaiKhoan TaiKhoan = ctaiKhoan.fromMap(map);
+      return TaiKhoan.trangthai;
+    } else {
+      throw Exception("Không lấy được tài khoản");
+    }
+  }
+
+  static Future<void> capNhatTrangThai(
+      String taikhoan, bool trangThaiMoi) async {
+    DatabaseReference userReference =
+        FirebaseDatabase.instance.ref().child('taikhoan').child(taikhoan);
+
+    try {
+      await userReference.update({
+        'trangthai': trangThaiMoi,
+      });
+      print(
+          'Đã cập nhật trạng thái thành công cho tài khoản $trangThaiMoi, $taikhoan');
+    } catch (e) {
+      print(
+          'Lỗi khi cập nhật trạng thái của tài khoản $trangThaiMoi ,$taikhoan: $e');
+      throw Exception('Không thể cập nhật trạng thái của tài khoản $taikhoan');
+    }
+  }
+
+  static Future<int> layDiemTaiKhoan(String taikhoan) async {
+    DatabaseReference reference =
+        FirebaseDatabase.instance.ref().child('taikhoan').child(taikhoan);
+    DatabaseEvent event = await reference.once();
+    DataSnapshot snapshot = event.snapshot;
+
+    if (snapshot.value != null) {
+      Map<dynamic, dynamic> map = snapshot.value as Map<dynamic, dynamic>;
+      ctaiKhoan TaiKhoan = ctaiKhoan.fromMap(map);
+      return TaiKhoan.diem;
+    } else {
+      throw Exception("Không lấy được dữ liệu");
+    }
+  }
+
+  static Future<void> capNhatDiem(String taikhoan, int diemMoi) async {
+    DatabaseReference userReference =
+        FirebaseDatabase.instance.ref().child('taikhoan').child(taikhoan);
+    await userReference.update({
+      'diem': diemMoi,
+    });
   }
 
   Future<void> capNhat(int diem, int man, String taikhoan, String tentaikhoan,
@@ -255,26 +355,20 @@ class ctaiKhoan {
     });
   }
 
-  static Future<ctaiKhoan> layThongTinTaiKhoan(String userId) async {
-    DatabaseReference reference =
-        FirebaseDatabase.instance.ref().child("taikhoan").child(userId);
-    DatabaseEvent event = await reference.once();
-    DataSnapshot snapshot = event.snapshot;
-
-    if (snapshot.value != null) {
-      return ctaiKhoan.fromSnapshot(snapshot);
-    } else {
-      throw Exception("User not found");
-    }
-  }
-
   static Future<void> ThemTaiKhoan(String ten, String matkhau) async {
     final quanly = false;
     final anh = '';
     final trangthai = true;
     final diem = 0;
     final man = 1;
-    final matkhau = '';
+
+    final mdsovandachoi = 0;
+    final mdsovanthang = 0;
+    final mdsovanthangkhongloi = 0;
+    final mdtilethang = '';
+    final ttsovandachoi = 0;
+    final ttsovanthangkhongloi = 0;
+    final tttilemokhoamanmoi = 0;
 
     try {
       DatabaseReference productsRef =
@@ -289,9 +383,17 @@ class ctaiKhoan {
         'trangthai': trangthai,
         'quanly': quanly,
         'matkhau': matkhau,
+        'mucdosovandachoi': mdsovandachoi,
+        'mucdosovanthang': mdsovanthang,
+        'mucdosovanthangkhongloi': mdsovanthangkhongloi,
+        'mucdotilethang': mdtilethang,
+        'thuthachsovandachoi': ttsovandachoi,
+        'thuthachsovanthangkhongloi': ttsovanthangkhongloi,
+        'thuthachtilemokhoamanmoi': tttilemokhoamanmoi,
       };
 
       await productsRef.child(ten).set(productData);
+
       print('Tài khoản đã được thêm thành công.');
     } catch (error) {
       print('Lỗi khi thêm tài khoản: $error');
@@ -326,6 +428,68 @@ class ctaiKhoan {
     return false;
   }
 
+  static Future<List<ctaiKhoan>> layTatCaTaiKhoan() async {
+    DatabaseReference reference =
+        FirebaseDatabase.instance.ref().child("taikhoan");
+    DatabaseEvent event = await reference.once();
+    DataSnapshot snapshot = event.snapshot;
+
+    if (snapshot.value != null) {
+      List<ctaiKhoan> accounts = [];
+      Map<dynamic, dynamic> map = snapshot.value as Map<dynamic, dynamic>;
+      map.forEach((key, value) {
+        ctaiKhoan account = ctaiKhoan.fromMap(value);
+        if (!account.quanly) {
+          accounts.add(account);
+        }
+      });
+      return accounts;
+    } else {
+      throw Exception("không lấy được dữ liệu");
+    }
+  }
+
+  static Future<List<ctaiKhoan>> layDSTaiKhoan(
+      {required bool SapXepDiem}) async {
+    DatabaseReference ref = FirebaseDatabase.instance.ref().child('taikhoan');
+    DatabaseEvent event = await ref.once();
+    DataSnapshot snapshot = event.snapshot;
+
+    List<ctaiKhoan> accounts = [];
+    if (snapshot.value != null) {
+      Map<dynamic, dynamic> data = snapshot.value as Map<dynamic, dynamic>;
+      data.forEach((key, value) {
+        ctaiKhoan account = ctaiKhoan(
+          diem: value['diem'] ?? 0,
+          man: value['man'] ?? 0,
+          taikhoan: value['taikhoan'] ?? "",
+          tentaikhoan: value['tentaikhoan'] ?? "",
+          matkhau: value['matkhau'] ?? "",
+          quanly: value['quanly'] ?? false,
+          trangthai: value['trangthai'] ?? true,
+          anh: value['anh'] ?? "",
+          mdsovandachoi: value['mdsovandachoi'] ?? 0,
+          mdsovanthang: value['mdsovanthang'] ?? 0,
+          mdsovanthangkhongloi: value['mdsovanthangkhongloi'] ?? 0,
+          mdtilethang: value['mdtilethang'] ?? '',
+          ttsovandachoi: value['ttsovandachoi'] ?? 0,
+          ttsovanthangkhongloi: value['ttsovanthangkhongloi'] ?? 0,
+          tttilemokhoamanmoi: value['tttilemokhoamanmoi'] ?? 0,
+        );
+        accounts.add(account);
+      });
+
+      if (SapXepDiem) {
+        accounts.sort((a, b) => b.diem.compareTo(a.diem));
+      } else {
+        accounts.sort((a, b) => b.man.compareTo(a.man));
+      }
+    }
+
+    return accounts.take(10).toList();
+  }
+
+// lấy thông tin trong tài khoản
   static Future<ctaiKhoan?> thongTindangNhap(
       String taiKhoan, String matKhau) async {
     DatabaseReference ref = FirebaseDatabase.instance.ref().child('taikhoan');
@@ -347,6 +511,13 @@ class ctaiKhoan {
             quanly: user['quanly'] ?? false,
             trangthai: user['trangthai'] ?? true,
             anh: user['anh'] ?? "",
+            mdsovandachoi: user['mdsovandachoi'] ?? 0,
+            mdsovanthang: user['mdsovanthang'] ?? 0,
+            mdsovanthangkhongloi: user['mdsovanthangkhongloi'] ?? 0,
+            mdtilethang: user['mdtilethang'] ?? '',
+            ttsovandachoi: user['ttsovandachoi'] ?? 0,
+            ttsovanthangkhongloi: user['ttsovanthangkhongloi'] ?? 0,
+            tttilemokhoamanmoi: user['tttilemokhoamanmoi'] ?? 0,
           );
         }
       }
@@ -411,21 +582,73 @@ class GiaiSudoku {
   }
 }
 
-//kiểm tra màn chơi đã tồn tại chưa
-Future<bool> kiemTraManChoi(String maman) async {
-  DatabaseEvent event = await FirebaseDatabase.instance
-      .reference()
-      .child('thuthach')
-      .orderByKey()
-      .equalTo(maman)
-      .once();
+bool kiemTraBangSudoku(List<List<int>> bang) {
+  // Kiểm tra từng hàng
+  for (int dong = 0; dong < 9; dong++) {
+    if (!kiemTraHang(bang, dong)) {
+      return false;
+    }
+  }
 
-  DataSnapshot snapshot = event.snapshot;
+  // Kiểm tra từng cột
+  for (int cot = 0; cot < 9; cot++) {
+    if (!kiemTraCot(bang, cot)) {
+      return false;
+    }
+  }
 
-  return snapshot.value != null;
+  // Kiểm tra từng ô vuông 3x3
+  for (int batDauDong = 0; batDauDong < 9; batDauDong += 3) {
+    for (int batDauCot = 0; batDauCot < 9; batDauCot += 3) {
+      if (!kiemTraOvuong(bang, batDauDong, batDauCot)) {
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
+bool kiemTraHang(List<List<int>> bang, int dong) {
+  Set<int> set = Set<int>();
+  for (int cot = 0; cot < 9; cot++) {
+    if (bang[dong][cot] != 0) {
+      if (!set.add(bang[dong][cot])) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+bool kiemTraCot(List<List<int>> bang, int cot) {
+  Set<int> set = Set<int>();
+  for (int dong = 0; dong < 9; dong++) {
+    if (bang[dong][cot] != 0) {
+      if (!set.add(bang[dong][cot])) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+bool kiemTraOvuong(List<List<int>> bang, int batDauDong, int batDauCot) {
+  Set<int> set = Set<int>();
+  for (int dong = batDauDong; dong < batDauDong + 3; dong++) {
+    for (int cot = batDauCot; cot < batDauCot + 3; cot++) {
+      if (bang[dong][cot] != 0) {
+        if (!set.add(bang[dong][cot])) {
+          return false;
+        }
+      }
+    }
+  }
+  return true;
 }
 
 class cMucDoChoiNgauNhien {
+  late String taikhoan;
   late String tenman;
   late int soloi;
   late DateTime ngay;
@@ -434,6 +657,7 @@ class cMucDoChoiNgauNhien {
   late List<List<int>> bang;
 
   cMucDoChoiNgauNhien({
+    this.taikhoan = "",
     required this.tenman,
     this.soloi = 0,
     required this.ngay,
@@ -450,6 +674,7 @@ class cMucDoChoiNgauNhien {
         .toList();
 
     return cMucDoChoiNgauNhien(
+      taikhoan: json['taikhoan'] ?? "",
       tenman: json['tenman'] ?? "",
       soloi: json['soloi'] ?? 0,
       ngay:
@@ -462,6 +687,7 @@ class cMucDoChoiNgauNhien {
 
   Map<String, dynamic> toJson() {
     return {
+      'taikhoan': taikhoan,
       'tenman': tenman,
       'soloi': soloi,
       'ngay': ngay.toIso8601String(),
@@ -471,15 +697,23 @@ class cMucDoChoiNgauNhien {
     };
   }
 
-  static Future<void> themManChoiNgauNhien(String tenman, int soloi,
-      DateTime ngay, int thoigian, int diem, List<List<int>> bang) async {
+  static Future<void> themManChoiNgauNhien(
+      String taikhoan,
+      String tenman,
+      int soloi,
+      DateTime ngay,
+      int thoigian,
+      int diem,
+      List<List<int>> bang) async {
     try {
       DatabaseReference manRef =
           FirebaseDatabase.instance.ref().child('manchoingaunhien');
 
-      String manId = manRef.push().key!; // Tạo khóa ngẫu nhiên cho mỗi mục
+      String ManID =
+          taikhoan + Random().nextInt(100000).toString().padLeft(8, '0');
 
       Map<String, dynamic> manData = {
+        'taikhoan': taikhoan,
         'tenman': tenman,
         'soloi': soloi,
         'ngay': ngay.toIso8601String(),
@@ -488,7 +722,7 @@ class cMucDoChoiNgauNhien {
         'bang': bang,
       };
 
-      await manRef.child(manId).set(manData);
+      await manRef.child(ManID).set(manData);
       print('Mục đã được thêm thành công.');
     } catch (error) {
       print('Lỗi khi thêm mục: $error');
@@ -500,7 +734,8 @@ class cMucDoChoiNgauNhien {
     return FirebaseDatabase.instance.ref().child('manchoingaunhien');
   }
 
-  static Future<List<cMucDoChoiNgauNhien>> taiDanhSachMan() async {
+  static Future<List<cMucDoChoiNgauNhien>> taiDanhSachMan(
+      String taiKhoan) async {
     DatabaseReference reference = dsManChoiNgauNhien();
     DatabaseEvent event = await reference.once();
     DataSnapshot dataSnapshot = event.snapshot;
@@ -510,7 +745,13 @@ class cMucDoChoiNgauNhien {
     List<cMucDoChoiNgauNhien> man = [];
     if (values != null) {
       values.forEach((key, value) {
-        man.add(cMucDoChoiNgauNhien.fromJson(key, value));
+        cMucDoChoiNgauNhien ManID = cMucDoChoiNgauNhien.fromJson(key, value);
+        if (ManID.taikhoan.replaceFirst(RegExp(r'\d{8}$'), '') == taiKhoan) {
+          String updatedTaikhoan =
+              ManID.taikhoan.replaceFirst(RegExp(r'\d{8}$'), '');
+          ManID.taikhoan = updatedTaikhoan;
+          man.add(ManID);
+        }
       });
     }
     return man;

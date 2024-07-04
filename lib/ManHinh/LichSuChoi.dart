@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:sudoku/MoHinh/xulydulieu.dart';
 
 class LichSuaChoi extends StatefulWidget {
-  const LichSuaChoi({super.key});
+  const LichSuaChoi({super.key, required this.taikhoan});
+  final String taikhoan;
 
   @override
   State<LichSuaChoi> createState() => LichSuaChoiState();
@@ -15,19 +16,21 @@ class LichSuaChoiState extends State<LichSuaChoi> {
   @override
   void initState() {
     super.initState();
-    loadData();
+    DanhSachManChoiNgauNhien();
   }
 
-  Future<void> loadData() async {
+  Future<void> DanhSachManChoiNgauNhien() async {
     try {
       List<cMucDoChoiNgauNhien> man =
-          await cMucDoChoiNgauNhien.taiDanhSachMan();
+          await cMucDoChoiNgauNhien.taiDanhSachMan(widget.taikhoan);
+      man.sort((a, b) => b.ngay.compareTo(a.ngay));
+
       setState(() {
         sudokuList = man;
         isLoading = false;
       });
     } catch (e) {
-      print('lỗi hiển thị dữ liệu: $e');
+      print('Error loading data: $e');
       setState(() {
         isLoading = false;
       });
@@ -95,11 +98,11 @@ class LichSuaChoiState extends State<LichSuaChoi> {
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  SizedBox(height: 20),
+                                  SizedBox(height: 5),
                                   Row(
                                     children: [
                                       Icon(Icons.star_border, size: 25),
-                                      SizedBox(width: 5),
+                                      // SizedBox(width: 5),
                                       Text(
                                         'Mức độ: ${sudoku.tenman} ',
                                         style: TextStyle(
@@ -108,7 +111,7 @@ class LichSuaChoiState extends State<LichSuaChoi> {
                                       ),
                                     ],
                                   ),
-                                  SizedBox(height: 20),
+                                  SizedBox(height: 15),
                                   Row(
                                     children: [
                                       Icon(Icons.timer_outlined, size: 25),
@@ -121,7 +124,7 @@ class LichSuaChoiState extends State<LichSuaChoi> {
                                       ),
                                     ],
                                   ),
-                                  SizedBox(height: 20),
+                                  SizedBox(height: 15),
                                   Row(
                                     children: [
                                       Icon(Icons.error_outline_outlined,
@@ -135,7 +138,7 @@ class LichSuaChoiState extends State<LichSuaChoi> {
                                       ),
                                     ],
                                   ),
-                                  SizedBox(height: 20),
+                                  SizedBox(height: 15),
                                   Row(
                                     children: [
                                       Icon(Icons.add_chart_rounded, size: 25),
@@ -170,7 +173,7 @@ class BangSudoku extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     double kichThuocBang =
-        MediaQuery.of(context).size.width * 0.5; // Lấy 55% chiều rộng màn hình
+        MediaQuery.of(context).size.width * 0.4; // Lấy 50% chiều rộng màn hình
     return Container(
       width: kichThuocBang,
       height: kichThuocBang,
@@ -222,7 +225,7 @@ class BangSudoku extends StatelessWidget {
             child: Center(
               child: Text(
                 '${bang[hang][cot]}',
-                style: TextStyle(fontSize: 16),
+                style: TextStyle(fontSize: 12),
               ),
             ),
           );

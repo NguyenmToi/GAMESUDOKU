@@ -1,24 +1,35 @@
 import 'dart:async';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:sudoku/ManHinh/ChonManChoi.dart';
 import 'package:sudoku/ManHinh/LichSuChoi.dart';
 import 'package:sudoku/ManHinh/ManHinhChinh.dart';
 
+import '../MoHinh/xulydulieu.dart';
+
 class ManHinhChoiThuThach extends StatefulWidget {
-  const ManHinhChoiThuThach(
+  ManHinhChoiThuThach(
       {super.key,
       required this.tenMan,
       required this.bang,
       required this.banggiai,
       required this.soloi,
       required this.goiy,
-      required this.thoigian});
-  final List bang;
+      required this.thoigian,
+      required this.maman,
+      required this.taikhoan,
+      required this.matkhau,
+      required this.mannguoichoi});
+  late final List bang;
   final List banggiai;
   final String tenMan;
   final int soloi;
   final int thoigian;
   final int goiy;
+  late int maman;
+  final taikhoan;
+  final matkhau;
+  late final mannguoichoi;
 
   @override
   State<ManHinhChoiThuThach> createState() => _ManHinhChoiThuThachState();
@@ -37,6 +48,7 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
   void initState() {
     super.initState();
     batDauThoiGian();
+
     mauSo = List.generate(
       widget.bang.length,
       (i) => List.generate(widget.bang[i].length, (j) => Colors.white),
@@ -63,14 +75,11 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
     super.dispose();
   }
 
-  String dinhDangThoiGian(int timeInSeconds) {
-    int phut = timeInSeconds ~/ 60;
-    int giay = timeInSeconds % 60;
+  String dinhDangThoiGian(int thoiGian) {
+    int phut = thoiGian ~/ 60;
+    int giay = thoiGian % 60;
     return '${phut.toString().padLeft(1, '0')}:${giay.toString().padLeft(2, '0')}';
   }
-
-  List<List<int>> bangSudoku =
-      List.generate(9, (_) => List.generate(9, (_) => 0));
 
   void xuLyChonO(int hang, int cot) {
     setState(() {
@@ -100,7 +109,7 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
             const SnackBar(
               content: Text('Sai!'),
               backgroundColor: Colors.red,
-              duration: Duration(seconds: 1),
+              duration: Duration(milliseconds: 500),
             ),
           );
           mauSo[hangDuocChon][cotDuocChon] = Colors.red;
@@ -308,10 +317,14 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
                               setState(() {
                                 thongBaoHetGoiY();
                               });
+                            } else if (widget.bang[hangDuocChon][cotDuocChon] ==
+                                widget.banggiai[hangDuocChon][cotDuocChon]) {
+                              return;
                             } else {
                               widget.bang[hangDuocChon][cotDuocChon] =
                                   widget.banggiai[hangDuocChon][cotDuocChon];
                               goiy -= 1;
+                              kiemTraBangHoanThanh();
                             }
                           },
                           color: Colors.black,
@@ -344,36 +357,81 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
           actions: <Widget>[
             TextButton(
               child: const Text('Thoát'),
-              onPressed: () {
+              onPressed: () async {
+                ctaiKhoan? ttTaiKhoan = await ctaiKhoan.thongTindangNhap(
+                    widget.taikhoan, widget.matkhau);
                 setState(() {
-                  Navigator.pop(context);
+                  if (ttTaiKhoan != null) {
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => ManHinhChinh(
+                                ttTaiKhoan: ttTaiKhoan,
+                              )),
+                      (Route<dynamic> route) => false,
+                    );
+                  }
+
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => ChonManChoi(
+                              man: widget.maman,
+                              taikhoan: widget.taikhoan,
+                              matkhau: widget.matkhau,
+                            )),
+                  );
                 });
               },
             ),
             TextButton(
               child: const Text('Đồng ý'),
-              onPressed: () {
-                lamMoiBangSuDoKu();
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ChonManChoi(),
-                  ),
-                );
+              onPressed: () async {
+                ctaiKhoan? ttTaiKhoan = await ctaiKhoan.thongTindangNhap(
+                    widget.taikhoan, widget.matkhau);
+                List<List<int>>? bang =
+                    await cManThuThach.layDuLieuBang(widget.maman);
+                setState(() {
+                  if (ttTaiKhoan != null) {
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => ManHinhChinh(
+                                ttTaiKhoan: ttTaiKhoan,
+                              )),
+                      (Route<dynamic> route) => false,
+                    );
+                  }
 
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ManHinhChoiThuThach(
-                      tenMan: widget.tenMan,
-                      bang: widget.bang,
-                      soloi: widget.soloi,
-                      thoigian: widget.thoigian,
-                      goiy: widget.goiy,
-                      banggiai: widget.banggiai,
-                    ),
-                  ),
-                );
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => ChonManChoi(
+                              man: widget.maman,
+                              taikhoan: widget.taikhoan,
+                              matkhau: widget.matkhau,
+                            )),
+                  );
+
+                  if (bang != null) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ManHinhChoiThuThach(
+                            tenMan: widget.tenMan,
+                            bang: bang,
+                            soloi: widget.soloi,
+                            goiy: widget.goiy,
+                            thoigian: widget.thoigian,
+                            banggiai: widget.banggiai,
+                            maman: widget.maman,
+                            taikhoan: widget.taikhoan,
+                            matkhau: widget.matkhau,
+                            mannguoichoi: widget.mannguoichoi),
+                      ),
+                    );
+                  }
+                });
               },
             ),
           ],
@@ -398,23 +456,31 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
           actions: <Widget>[
             TextButton(
               child: const Text('Đồng ý'),
-              onPressed: () {
-                // Navigator.pushAndRemoveUntil(
-                //   context,
-                //   MaterialPageRoute(
-                //       builder: (context) => const ManHinhChinh(
-                //             taikhoan: '',
-                //           )),
-                //   (Route<dynamic> route) =>
-                //       false, // Loại bỏ tất cả các trang trước đó
-                // );
+              onPressed: () async {
+                ctaiKhoan? ttTaiKhoan = await ctaiKhoan.thongTindangNhap(
+                    widget.taikhoan, widget.matkhau);
+                setState(() {
+                  if (ttTaiKhoan != null) {
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => ManHinhChinh(
+                                ttTaiKhoan: ttTaiKhoan,
+                              )),
+                      (Route<dynamic> route) => false,
+                    );
+                  }
 
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const ChonManChoi(),
-                  ),
-                );
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => ChonManChoi(
+                              man: widget.mannguoichoi,
+                              taikhoan: widget.taikhoan,
+                              matkhau: widget.matkhau,
+                            )),
+                  );
+                });
               },
             ),
             TextButton(
@@ -494,6 +560,16 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
       }
     }
     if (bangHoanThanh) {
+      if (widget.maman == widget.mannguoichoi) {
+        widget.mannguoichoi += 1;
+
+        final databaseReference = FirebaseDatabase.instance.reference();
+        databaseReference
+            .child('taikhoan')
+            .child(widget.taikhoan)
+            .update({'man': widget.mannguoichoi});
+      }
+
       thoiGian.cancel();
       showDialog(
         context: context,
@@ -522,23 +598,32 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
             actions: <Widget>[
               TextButton(
                 child: const Text('Đóng'),
-                onPressed: () {
-                  // Navigator.pushAndRemoveUntil(
-                  //   context,
-                  //   MaterialPageRoute(
-                  //       builder: (context) => const ManHinhChinh(
-                  //             taikhoan: '',
-                  //           )),
-                  //   (Route<dynamic> route) =>
-                  //       false, // Loại bỏ tất cả các trang trước đó
-                  // );
+                onPressed: () async {
+                  ctaiKhoan? ttTaiKhoan = await ctaiKhoan.thongTindangNhap(
+                      widget.taikhoan, widget.matkhau);
 
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const ChonManChoi(),
-                    ),
-                  );
+                  setState(() {
+                    if (ttTaiKhoan != null) {
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => ManHinhChinh(
+                                  ttTaiKhoan: ttTaiKhoan,
+                                )),
+                        (Route<dynamic> route) => false,
+                      );
+                    }
+
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => ChonManChoi(
+                                man: widget.mannguoichoi,
+                                taikhoan: widget.taikhoan,
+                                matkhau: widget.matkhau,
+                              )),
+                    );
+                  });
                 },
               ),
             ],
@@ -546,14 +631,5 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
         },
       );
     }
-  }
-
-  void lamMoiBangSuDoKu() {
-    for (int i = 0; i < 9; i++) {
-      for (int j = 0; j < 9; j++) {
-        bangSudoku[i][j] = 0;
-      }
-    }
-    setState(() {});
   }
 }

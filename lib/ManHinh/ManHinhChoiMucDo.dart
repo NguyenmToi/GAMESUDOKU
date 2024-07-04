@@ -1,12 +1,18 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:sudoku/MoHinh/xulydulieu.dart';
 
 class Manhinhchoimucdo extends StatefulWidget {
   const Manhinhchoimucdo(
-      {Key? key, required this.mucdo, required this.soan, required this.diem})
+      {Key? key,
+      required this.taikhoan,
+      required this.mucdo,
+      required this.soan,
+      required this.diem})
       : super(key: key);
 
+  final String taikhoan;
   final String mucdo;
   final int soan;
   final int diem;
@@ -20,7 +26,7 @@ class _ManhinhchoimucdoState extends State<Manhinhchoimucdo> {
   late Timer thoiGian; // Đối tượng Timer để đếm thời gian
   int? hangDuocChon; // Chỉ số hàng được chọn
   int? cotDuocChon; // Chỉ số cột được chọn
-  int loiSai = 0; // Biến đếm số lần lỗi
+  int loiSai = 5;
 
   // Khởi tạo bảng Sudoku
   List<List<int>> bangSudoku =
@@ -80,15 +86,13 @@ class _ManhinhchoimucdoState extends State<Manhinhchoimucdo> {
       setState(() {
         if (oKhoiTao[hangDuocChon!][cotDuocChon!]) {
           // Chỉ cho phép điền vào ô khởi tạo
-          if (so >= 1 && so <= 9) {
-            if (NuocDiHopLe(hangDuocChon!, cotDuocChon!, so)) {
-              // Lưu vị trí hàng và cột
-              int hang = hangDuocChon!;
-              int cot = cotDuocChon!;
+          int hang = hangDuocChon!;
+          int cot = cotDuocChon!;
 
+          if (so >= 1 && so <= 9) {
+            if (NuocDiHopLe(hang, cot, so)) {
               // Thực hiện thay đổi giá trị
               bangSudoku[hang][cot] = so;
-
               // Đánh dấu là số khởi tạo
               oKhoiTao[hang][cot] = true;
 
@@ -100,8 +104,8 @@ class _ManhinhchoimucdoState extends State<Manhinhchoimucdo> {
                 xuLyHoanThanhTroChoi();
               }
             } else {
-              loiSai++; // Tăng số lỗi nếu điền sai vào ô khởi tạo
-              kiemTraLoiSai();
+              loiSai--;
+              kiemTraLoiSai(); // thong bao ket thuc
             }
           }
         }
@@ -118,6 +122,82 @@ class _ManhinhchoimucdoState extends State<Manhinhchoimucdo> {
         cotDuocChon = null;
       });
     }
+  }
+
+  bool NuocDiHopLe(int hang, int cot, int so) {
+    // Kiểm tra nếu số đã tồn tại trong hàng hiện tại
+    for (int i = 0; i < 9; i++) {
+      if (bangSudoku[hang][i] == so) {
+        return false;
+      }
+    }
+    // Kiểm tra nếu số đã tồn tại trong cột hiện tại
+    for (int i = 0; i < 9; i++) {
+      if (bangSudoku[i][cot] == so) {
+        return false;
+      }
+    }
+    // Kiểm tra nếu số đã tồn tại trong lưới 3x3 hiện tại
+    int batDauHang = (hang ~/ 3) * 3;
+    int batDauCot = (cot ~/ 3) * 3;
+    for (int i = batDauHang; i < batDauHang + 3; i++) {
+      for (int j = batDauCot; j < batDauCot + 3; j++) {
+        if (bangSudoku[i][j] == so) {
+          return false;
+        }
+      }
+    }
+
+    return true;
+  }
+
+  bool kiemTraBangDayDu() {
+    // Kiểm tra nếu tất cả các ô đã được điền đầy đủ (không có ô nào bằng 0)
+    for (int i = 0; i < 9; i++) {
+      for (int j = 0; j < 9; j++) {
+        if (bangSudoku[i][j] == 0) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  void capNhatDiemVaThemManChoi() async {
+    try {
+      // Sử dụng await để đợi hàm layDiemTaiKhoan hoàn thành
+      int DiemCu = await ctaiKhoan.layDiemTaiKhoan(widget.taikhoan);
+      int diem = DiemCu + widget.diem;
+
+      cMucDoChoiNgauNhien.themManChoiNgauNhien(widget.taikhoan, widget.mucdo,
+          5 - loiSai, DateTime.now(), giay, widget.diem, bangSudoku);
+
+      await ctaiKhoan.capNhatDiem(widget.taikhoan, diem);
+    } catch (e) {
+      print("Lỗi khi cập nhật điểm và thêm màn chơi: $e");
+    }
+  }
+
+  void xuLyHoanThanhTroChoi() {
+    capNhatDiemVaThemManChoi();
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Chúc mừng!'),
+          content: Text(
+              'Giải thành công câu đố Sudoku bạn được cộng ${widget.diem} điểm'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void xuLyThuaTroChoi() {
@@ -174,70 +254,9 @@ class _ManhinhchoimucdoState extends State<Manhinhchoimucdo> {
   }
 
   void kiemTraLoiSai() {
-    if (loiSai >= 5) {
+    if (loiSai <= 0) {
       xuLyThuaTroChoi();
     }
-  }
-
-  bool NuocDiHopLe(int hang, int cot, int so) {
-    // Kiểm tra nếu số đã tồn tại trong hàng hiện tại
-    for (int i = 0; i < 9; i++) {
-      if (bangSudoku[hang][i] == so) {
-        return false;
-      }
-    }
-    // Kiểm tra nếu số đã tồn tại trong cột hiện tại
-    for (int i = 0; i < 9; i++) {
-      if (bangSudoku[i][cot] == so) {
-        return false;
-      }
-    }
-    // Kiểm tra nếu số đã tồn tại trong lưới 3x3 hiện tại
-    int batDauHang = (hang ~/ 3) * 3;
-    int batDauCot = (cot ~/ 3) * 3;
-    for (int i = batDauHang; i < batDauHang + 3; i++) {
-      for (int j = batDauCot; j < batDauCot + 3; j++) {
-        if (bangSudoku[i][j] == so) {
-          return false;
-        }
-      }
-    }
-
-    return true; // Số hợp lệ trong vị trí này
-  }
-
-  bool kiemTraBangDayDu() {
-    // Kiểm tra nếu tất cả các ô đã được điền đầy đủ (không có ô nào bằng 0)
-    for (int i = 0; i < 9; i++) {
-      for (int j = 0; j < 9; j++) {
-        if (bangSudoku[i][j] == 0) {
-          return false;
-        }
-      }
-    }
-    return true;
-  }
-
-  void xuLyHoanThanhTroChoi() {
-    // Thực hiện logic khi trò chơi hoàn thành
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Chúc mừng!'),
-          content: Text(
-              'Giải thành công câu đố Sudoku bạn được cộng ${widget.diem} điểm'),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('OK'),
-            ),
-          ],
-        );
-      },
-    );
   }
 
   @override
@@ -284,30 +303,28 @@ class _ManhinhchoimucdoState extends State<Manhinhchoimucdo> {
                     Row(
                       children: [
                         Icon(
-                          Icons.error, // Icon cho lỗi
+                          Icons.error,
                           color: Colors.red,
-                          size: 24,
+                          size: 20,
                         ),
-                        const SizedBox(width: 5),
+                        SizedBox(width: 5),
                         Text(
                           '$loiSai',
-                          style:
-                              const TextStyle(color: Colors.red, fontSize: 20),
+                          style: TextStyle(color: Colors.red, fontSize: 20),
                         ),
                       ],
                     ),
                     Row(
                       children: [
                         Icon(
-                          Icons.access_time, // Icon cho thời gian
+                          Icons.timer,
                           color: Colors.black,
-                          size: 24,
+                          size: 20,
                         ),
-                        const SizedBox(width: 5),
+                        SizedBox(width: 5),
                         Text(
                           dinhDang(giay),
-                          style: const TextStyle(
-                              color: Colors.black, fontSize: 20),
+                          style: TextStyle(color: Colors.black, fontSize: 20),
                         ),
                       ],
                     ),
@@ -328,6 +345,8 @@ class _ManhinhchoimucdoState extends State<Manhinhchoimucdo> {
                           [cot]; // Kiểm tra ô có phải là ô khởi tạo không
                       bool daDien = bangSudoku[hang][cot] !=
                           0; // Kiểm tra ô đã có số hay chưa
+                      bool coLoi =
+                          mangTam[hang][cot] == -1; // Kiểm tra nếu có lỗi
 
                       // Tạo đường viền cho ô
                       Border border = Border(
@@ -365,6 +384,11 @@ class _ManhinhchoimucdoState extends State<Manhinhchoimucdo> {
                         ),
                       );
 
+                      // Chọn màu chữ dựa trên giá trị trong oKhoiTao và mangTam
+                      Color mauChu = coLoi
+                          ? Colors.red
+                          : (laKhoiTao ? Colors.blue : Colors.black);
+
                       return InkWell(
                         onTap: () => xuLyOChon(
                             hang, cot), // Gọi hàm xử lý khi ô được chọn
@@ -382,10 +406,7 @@ class _ManhinhchoimucdoState extends State<Manhinhchoimucdo> {
                                   : '', // Hiển thị số trong ô nếu đã điền
                               style: TextStyle(
                                 fontSize: 24,
-                                color: laKhoiTao
-                                    ? Colors.blue
-                                    : Colors
-                                        .black, // Màu sắc cho ô khởi tạo (xanh) và ô đã điền số (đen)
+                                color: mauChu, // Sử dụng màu chữ được chọn
                               ),
                             ),
                           ),

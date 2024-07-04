@@ -32,6 +32,18 @@ class _QuanLyThuThachState extends State<QuanLyThuThach> {
     });
   }
 
+  int demSoLuongSo0(List<dynamic> bang) {
+    int soLuongSo0 = 0;
+    for (var row in bang) {
+      for (var cell in row) {
+        if (cell == 0) {
+          soLuongSo0++;
+        }
+      }
+    }
+    return soLuongSo0;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -53,26 +65,41 @@ class _QuanLyThuThachState extends State<QuanLyThuThach> {
                 return const Center(child: Text('Không có dữ liệu màn chơi'));
               } else {
                 List<cManThuThach> dsManThuThach = snapshot.data!;
-
                 dsManThuThach.sort((a, b) => a.maman.compareTo(b.maman));
                 return ListView.builder(
                   itemCount: dsManThuThach.length,
                   itemBuilder: (BuildContext context, int index) {
                     cManThuThach manThuThach = dsManThuThach[index];
-                    int mamanxoa = dsManThuThach[index].maman;
+                    int maman = dsManThuThach[index].maman;
+                    int soluongoan = demSoLuongSo0(dsManThuThach[index].bang);
+
+                    List bang = dsManThuThach[index].bang;
+                    List banggiai = dsManThuThach[index].banggiai;
+                    int soloi = dsManThuThach[index].soloi;
+                    int thoigian = dsManThuThach[index].maman;
+                    int goiy = dsManThuThach[index].sogoiy;
+
                     return _xayDungCacThanhPhan(
                       title: manThuThach.tenman,
+                      sl: soluongoan,
                       color: Colors.lightBlue[100]!,
                       onTapEdit: () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => CapNhatManChoi(),
+                            builder: (context) => CapNhatManChoi(
+                              bang: bang,
+                              banggiai: banggiai,
+                              goiy: goiy,
+                              maman: maman,
+                              soloi: soloi,
+                              thoigian: thoigian,
+                            ),
                           ),
                         );
                       },
                       onTapDelete: () {
-                        thongBaoXoaManChoi('man${mamanxoa.toString()}');
+                        thongBaoXoaManChoi('man${maman.toString()}');
                       },
                     );
                   },
@@ -87,6 +114,7 @@ class _QuanLyThuThachState extends State<QuanLyThuThach> {
 
   Widget _xayDungCacThanhPhan({
     required String title,
+    required int sl,
     required Color color,
     VoidCallback? onTapEdit,
     VoidCallback? onTapDelete,
@@ -100,6 +128,11 @@ class _QuanLyThuThachState extends State<QuanLyThuThach> {
         title: Text(
           title,
           style: const TextStyle(
+              color: Colors.black, fontWeight: FontWeight.normal, fontSize: 16),
+        ),
+        subtitle: Text(
+          'Số ô ẩn: ' + sl.toString(),
+          style: TextStyle(
               color: Colors.black, fontWeight: FontWeight.normal, fontSize: 16),
         ),
         trailing: Row(

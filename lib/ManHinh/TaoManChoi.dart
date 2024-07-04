@@ -29,7 +29,7 @@ class _TaoManChoiState extends State<TaoManChoi> {
       List.generate(9, (_) => List.generate(9, (_) => 0));
   List<List<int>> bangLoiGiaiSudoku =
       List.generate(9, (_) => List.generate(9, (_) => 0));
-
+  bool _thongbaokiemtra = false;
   void giaiSudoku() {
     GiaiSudoku sdk = GiaiSudoku(bangSudoku);
     if (sdk.giai()) {
@@ -39,6 +39,20 @@ class _TaoManChoiState extends State<TaoManChoi> {
         const SnackBar(content: Text("Không thể giải bảng Sudoku")),
       );
     }
+  }
+
+//kiểm tra màn chơi đã tồn tại chưa
+  Future<bool> kiemTraManChoi(String maman) async {
+    DatabaseEvent event = await FirebaseDatabase.instance
+        .reference()
+        .child('thuthach')
+        .orderByKey()
+        .equalTo(maman)
+        .once();
+
+    DataSnapshot snapshot = event.snapshot;
+
+    return snapshot.value != null;
   }
 
 // kiểm tra và thực hiện thêm màn chơi
@@ -69,6 +83,7 @@ class _TaoManChoiState extends State<TaoManChoi> {
       );
       return;
     }
+
     databaseReference
         .child('thuthach')
         .child('man${_tenManChoiController.text.toString()}')
@@ -85,6 +100,7 @@ class _TaoManChoiState extends State<TaoManChoi> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Đã thêm màn chơi thành công'),
+          duration: Duration(milliseconds: 500),
         ),
       );
     }).catchError((error) {
@@ -118,13 +134,6 @@ class _TaoManChoiState extends State<TaoManChoi> {
           color: Colors.grey,
           onPressed: () {
             Navigator.pop(context);
-
-            // Navigator.push(
-            //   context,
-            //   MaterialPageRoute(
-            //     builder: (context) => const QuanLyManChoi(),
-            //   ),
-            // );
           },
         ),
         title: const Stack(
@@ -144,14 +153,14 @@ class _TaoManChoiState extends State<TaoManChoi> {
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(5, 3, 5, 5),
+          padding: const EdgeInsets.all(7),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
                   const Text(
-                    'Tên màn chơi:',
+                    'Màn chơi:',
                     style: TextStyle(fontSize: 16),
                   ),
                   const SizedBox(width: 10),
@@ -163,12 +172,14 @@ class _TaoManChoiState extends State<TaoManChoi> {
                         borderRadius: BorderRadius.circular(5),
                       ),
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal:
+                                10), //khoảng cách điền so với bên trái của ô
                         child: TextFormField(
                           keyboardType: TextInputType.number,
                           inputFormatters: <TextInputFormatter>[
                             FilteringTextInputFormatter.digitsOnly,
-                          ],
+                          ], // chỉ cho phép số
                           controller: _tenManChoiController,
                           decoration: const InputDecoration(
                             border: InputBorder.none,
@@ -182,7 +193,7 @@ class _TaoManChoiState extends State<TaoManChoi> {
                     'Số lỗi:',
                     style: TextStyle(fontSize: 16),
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 25),
                   Expanded(
                     child: Container(
                       height: 35,
@@ -323,18 +334,21 @@ class _TaoManChoiState extends State<TaoManChoi> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: IconButton(
-                      onPressed: () {
-                        // Xử lý khi nhấn nút Hiện
-                      },
-                      color: Colors.black,
-                      icon: const Icon(Icons.visibility),
-                    ),
+                        onPressed: () {
+                          if (kiemTraBangSudoku(bangSudoku) == true) {
+                            thongBaoBangHopLe();
+                          } else {
+                            thongBaoBangKhongHopLe();
+                          }
+                        },
+                        color: Colors.black,
+                        icon: const Icon(Icons.check_circle, size: 24.0)),
                   ),
                 ],
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 20),
               SizedBox(
-                height: MediaQuery.of(context).size.height * 0.46,
+                height: MediaQuery.of(context).size.height * 0.47,
                 child: GridView.builder(
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 9,
@@ -404,7 +418,7 @@ class _TaoManChoiState extends State<TaoManChoi> {
                   itemCount: 81,
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 20),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
@@ -446,8 +460,9 @@ class _TaoManChoiState extends State<TaoManChoi> {
                   ),
                   child: TextButton(
                     onPressed: () {
-                      themManChoiLenFireBase();
-                      lamMoiBangSuDoKu();
+                      setState(() {
+                        themManChoiLenFireBase();
+                      });
                     },
                     style: TextButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 15),
@@ -574,6 +589,41 @@ class _TaoManChoiState extends State<TaoManChoi> {
           duration: Duration(seconds: 1),
         ),
       );
+    }
+  }
+
+  void thongBaoBangHopLe() {
+    if (!_thongbaokiemtra) {
+      _thongbaokiemtra = true;
+
+      final snackbar = SnackBar(
+        content: Text('Màn chơi hợp lệ'),
+        duration: Duration(seconds: 2),
+      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(snackbar)
+          .closed
+          .then((reason) {
+        _thongbaokiemtra = false;
+      });
+    }
+  }
+
+  void thongBaoBangKhongHopLe() {
+    if (!_thongbaokiemtra) {
+      _thongbaokiemtra = true;
+
+      final snackbar = SnackBar(
+        content: Text('Màn chơi không hợp lệ'),
+        duration: Duration(seconds: 2),
+        backgroundColor: Colors.red,
+      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(snackbar)
+          .closed
+          .then((reason) {
+        _thongbaokiemtra = false;
+      });
     }
   }
 

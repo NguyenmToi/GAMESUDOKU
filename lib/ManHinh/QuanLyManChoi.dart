@@ -136,8 +136,8 @@ class _QuanLyManChoi extends State<QuanLyManChoi> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(0), // Bo tròn góc
               ),
-              backgroundColor: Colors.blue, // Màu nền xanh
-              side: BorderSide.none, // Xóa viền
+              backgroundColor: Colors.blue,
+              side: BorderSide.none,
             ),
           ),
         ],

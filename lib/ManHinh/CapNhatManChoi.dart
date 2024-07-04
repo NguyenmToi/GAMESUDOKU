@@ -1,21 +1,136 @@
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+import '../MoHinh/xulydulieu.dart';
 
 class CapNhatManChoi extends StatefulWidget {
-  const CapNhatManChoi({super.key});
+  CapNhatManChoi(
+      {super.key,
+      required this.bang,
+      required this.banggiai,
+      required this.goiy,
+      required this.maman,
+      required this.soloi,
+      required this.thoigian});
+  final List bang;
+  final List banggiai;
+
+  final int soloi;
+  final int thoigian;
+  final int goiy;
+  late int maman;
 
   @override
   State<CapNhatManChoi> createState() => _CapNhatManChoiState();
 }
 
 class _CapNhatManChoiState extends State<CapNhatManChoi> {
+  int? hangDuocChon;
+  int? cotDuocChon;
+  final TextEditingController _ManChoiController = TextEditingController();
+  final TextEditingController _thoiGianController = TextEditingController();
+  final TextEditingController _soGoiYController = TextEditingController();
+  final TextEditingController _soLoiController = TextEditingController();
   List<List<int>> bangSudoku =
       List.generate(9, (_) => List.generate(9, (_) => 0));
+  List<List<int>> bangChoiSudoku =
+      List.generate(9, (_) => List.generate(9, (_) => 0));
+  List<List<int>> bangLoiGiaiSudoku =
+      List.generate(9, (_) => List.generate(9, (_) => 0));
+  bool _thongbaokiemtra = false;
+
+  void giaiSudoku() {
+    GiaiSudoku sdk = GiaiSudoku(bangSudoku);
+    if (sdk.giai()) {
+      setState(() {});
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Không thể giải bảng Sudoku")),
+      );
+    }
+  }
+
+//kiểm tra màn chơi đã tồn tại chưa
+  Future<bool> kiemTraManChoi(String maman) async {
+    DatabaseEvent event = await FirebaseDatabase.instance
+        .reference()
+        .child('thuthach')
+        .orderByKey()
+        .equalTo(maman)
+        .once();
+
+    DataSnapshot snapshot = event.snapshot;
+
+    return snapshot.value != null;
+  }
+
+//hàm cập nhật màn chơi
+  final databaseReference = FirebaseDatabase.instance.reference();
+  Future<void> CapNhatManChoi() async {
+    if (_ManChoiController.text.isEmpty ||
+        _soGoiYController.text.isEmpty ||
+        _soLoiController.text.isEmpty ||
+        _thoiGianController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Vui lòng điền đầy đủ thông tin'),
+        ),
+      );
+      return;
+    }
+
+    databaseReference.child('thuthach').child('man${widget.maman}').update({
+      'bang': bangSudoku,
+      'thoigian': int.parse(_thoiGianController.text.toString()),
+      'soloi': int.parse(_soLoiController.text.toString()),
+      'sogoiy': int.parse(_soGoiYController.text.toString()),
+      'trangthai': true,
+      'thoigiantao': DateTime.now().toString(),
+    }).then((_) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Đã cập nhật màn chơi thành công'),
+          duration: Duration(milliseconds: 500),
+        ),
+      );
+    }).catchError((error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Lỗi khi thêm màn chơi: $error'),
+        ),
+      );
+    });
+
+    giaiSudoku();
+    bangLoiGiaiSudoku = bangSudoku;
+    databaseReference
+        .child('thuthach')
+        .child('man${widget.maman}')
+        .update({'banggiai': bangLoiGiaiSudoku});
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    setState(() {});
+    _soGoiYController.text = widget.goiy.toString();
+    _soLoiController.text = widget.soloi.toString();
+    _thoiGianController.text = widget.thoigian.toString();
+    _ManChoiController.text = widget.maman.toString();
+    bangSudoku = widget.bang as List<List<int>>;
+  }
 
   @override
   Widget build(BuildContext context) {
+    // cố định màn hình ứng dụng ở chế độ dọc
+    // SystemChrome.setPreferredOrientations([
+    //   DeviceOrientation.portraitUp,
+    //   DeviceOrientation.portraitDown,
+    // ]);
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.yellow[200], // Màu nền appbar
+        backgroundColor: Colors.yellow[200],
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios),
           color: Colors.grey,
@@ -38,310 +153,397 @@ class _CapNhatManChoiState extends State<CapNhatManChoi> {
           ],
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.fromLTRB(5, 3, 5, 5),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Dòng 1: Tên màn chơi và ô nhập thông tin
-            Row(
-              children: [
-                Text(
-                  'Tên màn chơi:',
-                  style: TextStyle(fontSize: 16),
-                ),
-                SizedBox(width: 10),
-                Expanded(
-                  child: Container(
-                    height: 35,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey), // Viền xám
-                      borderRadius: BorderRadius.circular(5), // Bo tròn góc
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                      child: TextFormField(
-                        decoration: InputDecoration(
-                          border: InputBorder
-                              .none, // Loại bỏ viền của TextFormField
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(7),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Text(
+                    'Màn chơi:',
+                    style: TextStyle(fontSize: 16),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Container(
+                      height: 35,
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey),
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal:
+                                10), //khoảng cách điền so với bên trái của ô
+                        child: TextFormField(
+                          enabled: false,
+                          keyboardType: TextInputType.number,
+                          inputFormatters: <TextInputFormatter>[
+                            FilteringTextInputFormatter.digitsOnly,
+                          ], // chỉ cho phép số
+                          controller: _ManChoiController,
+                          decoration: const InputDecoration(
+                            border: InputBorder.none,
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              ],
-            ),
-            SizedBox(
-              height: 5,
-            ),
-            Row(
-              children: [
-                Text(
-                  'Thời gian:',
-                  style: TextStyle(fontSize: 16),
-                ),
-                SizedBox(width: 10),
-                Expanded(
-                  child: Container(
-                    height: 35,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey), // Viền xám
-                      borderRadius: BorderRadius.circular(5), // Bo tròn góc
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                      child: TextFormField(
-                        decoration: InputDecoration(
-                          border: InputBorder
-                              .none, // Loại bỏ viền của TextFormField
+                  const SizedBox(width: 10),
+                  const Text(
+                    'Số lỗi:',
+                    style: TextStyle(fontSize: 16),
+                  ),
+                  const SizedBox(width: 25),
+                  Expanded(
+                    child: Container(
+                      height: 35,
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey),
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        child: TextFormField(
+                          keyboardType: TextInputType.number,
+                          inputFormatters: <TextInputFormatter>[
+                            FilteringTextInputFormatter.digitsOnly,
+                          ],
+                          controller: _soLoiController,
+                          decoration: const InputDecoration(
+                            border: InputBorder.none,
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-                SizedBox(width: 10),
-                Text(
-                  'Số gợi ý:',
-                  style: TextStyle(fontSize: 16),
-                ),
-                SizedBox(width: 10),
-                Expanded(
-                  child: Container(
-                    height: 35,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey), // Viền xám
-                      borderRadius: BorderRadius.circular(5), // Bo tròn góc
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                      child: TextFormField(
-                        decoration: InputDecoration(
-                          border: InputBorder
-                              .none, // Loại bỏ viền của TextFormField
+                ],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  const Text(
+                    'Thời gian:',
+                    style: TextStyle(fontSize: 16),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Container(
+                      height: 35,
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey),
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        child: TextFormField(
+                          keyboardType: TextInputType.number,
+                          inputFormatters: <TextInputFormatter>[
+                            FilteringTextInputFormatter.digitsOnly,
+                          ],
+                          controller: _thoiGianController,
+                          decoration: const InputDecoration(
+                            border: InputBorder.none,
+                          ),
                         ),
                       ),
                     ),
                   ),
+                  const SizedBox(width: 10),
+                  const Text(
+                    'Số gợi ý:',
+                    style: TextStyle(fontSize: 16),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Container(
+                      height: 35,
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey),
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        child: TextFormField(
+                          keyboardType: TextInputType.number,
+                          inputFormatters: <TextInputFormatter>[
+                            FilteringTextInputFormatter.digitsOnly,
+                          ],
+                          controller: _soGoiYController,
+                          decoration: const InputDecoration(
+                            border: InputBorder.none,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.blue[100],
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: TextButton(
+                      onPressed: () {
+                        giaiSudoku();
+                      },
+                      child: const Text(
+                        'Giải trò chơi',
+                        style: TextStyle(color: Colors.black, fontSize: 16),
+                      ),
+                    ),
+                  ),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.blue[100],
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: TextButton(
+                      onPressed: () {
+                        _maTranNgauNhien();
+                      },
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.all(10),
+                      ),
+                      child: const Text(
+                        'Ngẫu nhiên',
+                        style: TextStyle(color: Colors.black, fontSize: 16),
+                      ),
+                    ),
+                  ),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.blue[100],
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: IconButton(
+                      onPressed: () {
+                        xoaODangChon();
+                      },
+                      color: Colors.black,
+                      icon: const Icon(Icons.visibility_off),
+                    ),
+                  ),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.blue[100],
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: IconButton(
+                        onPressed: () {
+                          if (kiemTraBangSudoku(bangSudoku) == true) {
+                            thongBaoBangHopLe();
+                          } else {
+                            thongBaoBangKhongHopLe();
+                          }
+                        },
+                        color: Colors.black,
+                        icon: const Icon(Icons.check_circle, size: 24.0)),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                height: MediaQuery.of(context).size.height * 0.47,
+                child: GridView.builder(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 9,
+                    childAspectRatio: 1,
+                  ),
+                  itemBuilder: (context, index) {
+                    int hang = index ~/ 9;
+                    int cot = index % 9;
+                    bool isSelected =
+                        hang == hangDuocChon && cot == cotDuocChon;
+
+                    Border border = Border(
+                      top: BorderSide(
+                        color: hang == 0
+                            ? Colors.black
+                            : (hang % 3 == 0)
+                                ? Colors.black
+                                : Colors.grey,
+                        width: hang == 0 ? 1.0 : 1.0,
+                      ),
+                      left: BorderSide(
+                        color: cot == 0
+                            ? Colors.black
+                            : (cot % 3 == 0)
+                                ? Colors.black
+                                : Colors.grey,
+                        width: cot == 0 ? 1.0 : 1.0,
+                      ),
+                      bottom: BorderSide(
+                        color: hang == 8
+                            ? Colors.black
+                            : ((hang + 1) % 3 == 0)
+                                ? Colors.black
+                                : Colors.grey,
+                        width: hang == 8 ? 1.0 : 1.0,
+                      ),
+                      right: BorderSide(
+                        color: cot == 8
+                            ? Colors.black
+                            : ((cot + 1) % 3 == 0)
+                                ? Colors.black
+                                : Colors.grey,
+                        width: cot == 8 ? 1.0 : 1.0,
+                      ),
+                    );
+
+                    return InkWell(
+                      onTap: () => xuLyNhan(hang, cot),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: isSelected ? Colors.blue[100] : null,
+                          border: border,
+                        ),
+                        child: Center(
+                          child: Text(
+                            bangSudoku[hang][cot] == 0
+                                ? ''
+                                : bangSudoku[hang][cot].toString(),
+                            style: const TextStyle(
+                              fontSize: 24,
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                  itemCount: 81,
                 ),
-              ],
-            ),
-            SizedBox(
-              height: 10,
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Container(
+              ),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  for (int i = 1; i <= 5; i++) xayDungSo(i),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  for (int i = 6; i <= 9; i++) xayDungSo(i),
+                  Ink(
+                    height: 45,
+                    width: 60,
+                    decoration: BoxDecoration(
+                      color: Colors.blue[50],
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(20),
+                      child: IconButton(
+                        onPressed: () {
+                          lamMoiBangSuDoKu();
+                        },
+                        color: Colors.black,
+                        icon: const Icon(Icons.rotate_left),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 15),
+              Center(
+                child: Container(
+                  width: double.infinity,
                   decoration: BoxDecoration(
-                    color: Colors.blue[100],
-                    borderRadius: BorderRadius.circular(8),
+                    color: Colors.blue,
+                    borderRadius: BorderRadius.circular(15),
                   ),
                   child: TextButton(
                     onPressed: () {
-                      // Xử lý khi nhấn nút Giải trò chơi
-                    },
-                    child: Text(
-                      'Giải trò chơi',
-                      style: TextStyle(color: Colors.black, fontSize: 16),
-                    ),
-                  ),
-                ),
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.blue[100],
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: TextButton(
-                    onPressed: () {
-                      _randomMatrix();
+                      setState(() {
+                        CapNhatManChoi();
+                      });
                     },
                     style: TextButton.styleFrom(
-                      padding: EdgeInsets.all(10),
+                      padding: const EdgeInsets.symmetric(vertical: 15),
                     ),
-                    child: Text(
-                      'Ngẫu nhiên',
-                      style: TextStyle(color: Colors.black, fontSize: 16),
+                    child: const Text(
+                      'Cập nhật màn chơi',
+                      style: TextStyle(color: Colors.white, fontSize: 18),
                     ),
-                  ),
-                ),
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.blue[100],
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: IconButton(
-                    onPressed: () {
-                      // Xử lý khi nhấn nút Ẩn
-                    },
-                    color: Colors.black,
-                    icon: Icon(Icons.visibility_off),
-                  ),
-                ),
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.blue[100],
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: IconButton(
-                    onPressed: () {
-                      // Xử lý khi nhấn nút Hiện
-                    },
-                    color: Colors.black,
-                    icon: Icon(Icons.visibility),
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 5), // Khoảng cách giữa các dòng
-            // GridView và các nút chức năng
-            Expanded(
-              child: GridView.builder(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 9, // số lượng cột trong lưới
-                  childAspectRatio: 0.85, // tỉ lệ giữa chiều rộng và cao
-                ),
-                itemBuilder: (context, index) {
-                  int row = index ~/ 9; // lấy chỉ số hàng, chia lấy nguyên
-                  int col = index %
-                      9; // lấy chỉ số cột, chia lấy dư, vd ô 27%9 = 3 dư 0: hàng 3 cột 0
-                  return GestureDetector(
-                    // widget phát hiện cử chỉ tương tác với ứng dụng
-                    onTap: () {},
-                    child: Container(
-                      color: null,
-                      decoration: BoxDecoration(
-                        border: Border(
-                          top: BorderSide(
-                            color: (row % 3 == 0) ? Colors.black : Colors.grey,
-                            width: 1.0,
-                          ),
-                          left: BorderSide(
-                            color: (col % 3 == 0) ? Colors.black : Colors.grey,
-                            width: 1.0,
-                          ),
-                          bottom: BorderSide(
-                            color: ((row + 1) % 3 == 0)
-                                ? Colors.black
-                                : Colors.grey,
-                            width: 1.0,
-                          ),
-                          right: BorderSide(
-                            color: ((col + 1) % 3 == 0)
-                                ? Colors.black
-                                : Colors.grey,
-                            width: 1.0,
-                          ),
-                        ),
-                      ),
-                      child: Center(
-                        child: Text(
-                          bangSudoku[row][col] == 0
-                              ? ''
-                              : bangSudoku[row][col].toString(),
-                          style: const TextStyle(
-                            fontSize: 24,
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                },
-                itemCount: 81,
-              ),
-            ),
-            SizedBox(
-                height: 10), // Khoảng cách giữa GridView và các nút chức năng
-            // Dòng nút chức năng
-
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                xaydungso(1),
-                xaydungso(2),
-                xaydungso(3),
-                xaydungso(4),
-                xaydungso(5),
-              ],
-            ),
-            SizedBox(height: 3), // Khoảng cách giữa các dòng nút chức năng
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                xaydungso(6),
-                xaydungso(7),
-                xaydungso(8),
-                xaydungso(9),
-                Ink(
-                  decoration: ShapeDecoration(
-                      shape: const CircleBorder(), color: Colors.blue[100]),
-                  child: IconButton(
-                      onPressed: () {},
-                      color: Colors.black,
-                      icon: Icon(Icons.rotate_left_rounded)),
-                ),
-              ],
-            ),
-            SizedBox(
-                height:
-                    15), // Khoảng cách giữa dòng nút chức năng và nút "Thêm màn chơi"
-            // Nút "Thêm màn chơi"
-            Center(
-              child: Container(
-                width: double
-                    .infinity, // Chiều rộng bằng toàn bộ không gian có sẵn
-                decoration: BoxDecoration(
-                  color: Colors.blue, // Màu nền xanh
-                  borderRadius: BorderRadius.circular(15), // Bo tròn góc
-                ),
-                child: TextButton(
-                  onPressed: () {
-                    // Xử lý khi nhấn nút
-                  },
-                  style: TextButton.styleFrom(
-                    padding: EdgeInsets.symmetric(
-                        vertical: 10), // Khoảng cách lề trên và dưới
-                  ),
-                  child: Text(
-                    'Thêm màn chơi',
-                    style: TextStyle(
-                        color: Colors.white, fontSize: 18), // Màu chữ đen
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
-  bool _fillRandomSudoku(int row, int col) {
-    // Trường hợp cơ sở: nếu chúng ta đã điền tất cả các ô thành công
-    if (row == 9) {
+  void xyLyNhanSo(int so) {
+    if (hangDuocChon != null && cotDuocChon != null) {
+      setState(() {
+        bangSudoku[hangDuocChon!][cotDuocChon!] = so;
+        hangDuocChon = null;
+        cotDuocChon = null;
+      });
+    }
+  }
+
+  void xuLyNhan(int hang, int cot) {
+    setState(() {
+      hangDuocChon = hang;
+      cotDuocChon = cot;
+    });
+  }
+
+  void xoaODangChon() {
+    if (hangDuocChon != null && cotDuocChon != null) {
+      setState(() {
+        bangSudoku[hangDuocChon!][cotDuocChon!] = 0;
+      });
+    }
+  }
+
+  void lamMoiBangSuDoKu() {
+    for (int i = 0; i < 9; i++) {
+      for (int j = 0; j < 9; j++) {
+        bangSudoku[i][j] = 0;
+      }
+    }
+    setState(() {});
+  }
+
+  bool _ngauNhienSudoku(int hang, int cot) {
+    if (hang == 9) {
       return true; // Đã điền đầy đủ Sudoku thành công
     }
 
     // Tính toán hàng và cột tiếp theo
-    int nextRow = (col == 8) ? (row + 1) : row;
-    int nextCol = (col + 1) % 9;
+    int hangtieptheo = (cot == 8) ? (hang + 1) : hang;
+    int cottieptheo = (cot + 1) % 9;
 
     // Xáo trộn các số từ 1 đến 9 để ngẫu nhiên hóa quá trình sinh ra Sudoku
-    List<int> nums = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-    nums.shuffle();
+    List<int> dsso = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+    dsso.shuffle();
 
-    // Thử điền ô (row, col) với từng số trong nums
-    for (int num in nums) {
-      if (_isValid(row, col, num)) {
+    // Thử điền ô hàng,cột từng số
+    for (int so in dsso) {
+      if (_hopLe(hang, cot, so)) {
         // Đặt số nếu số đó hợp lệ
-        bangSudoku[row][col] = num;
+        bangSudoku[hang][cot] = so;
 
         // Điền đệ quy ô tiếp theo
-        if (_fillRandomSudoku(nextRow, nextCol)) {
+        if (_ngauNhienSudoku(hangtieptheo, cottieptheo)) {
           return true;
         }
 
         // Nếu điền ô tiếp theo thất bại, backtrack
-        bangSudoku[row][col] = 0;
+        bangSudoku[hang][cot] = 0;
       }
     }
 
@@ -349,67 +551,107 @@ class _CapNhatManChoiState extends State<CapNhatManChoi> {
     return false;
   }
 
-  bool _isValid(int row, int col, int num) {
-    // Check if num is already in the current row or column
+  bool _hopLe(int hang, int cot, int so) {
+    //kiểm tra số đã tồn tại trong hàng, cột
     for (int i = 0; i < 9; i++) {
-      if (bangSudoku[row][i] == num || bangSudoku[i][col] == num) {
+      if (bangSudoku[hang][i] == so || bangSudoku[i][cot] == so) {
         return false;
       }
     }
 
-    // Check if num is already in the current 3x3 sub-grid
-    int startRow = (row ~/ 3) * 3;
-    int startCol = (col ~/ 3) * 3;
-    for (int i = startRow; i < startRow + 3; i++) {
-      for (int j = startCol; j < startCol + 3; j++) {
-        if (bangSudoku[i][j] == num) {
+    //kiểm tra số đã tồn tại trong bảng 3x3
+    int dhang = (hang ~/ 3) * 3;
+    int dcot = (cot ~/ 3) * 3;
+    for (int i = dhang; i < dhang + 3; i++) {
+      for (int j = dcot; j < dcot + 3; j++) {
+        if (bangSudoku[i][j] == so) {
           return false;
         }
       }
     }
 
-    return true; // num is valid in this position
+    return true;
   }
 
-  void _randomMatrix() {
-    // Xóa bảng Sudoku hiện tại
+  void _maTranNgauNhien() {
     for (int i = 0; i < 9; i++) {
       for (int j = 0; j < 9; j++) {
         bangSudoku[i][j] = 0;
       }
     }
 
-    // Sinh ra một ma trận Sudoku ngẫu nhiên hợp lệ
-    if (_fillRandomSudoku(0, 0)) {
-      // Cập nhật giao diện bằng cách gọi setState
-      setState(() {
-        // Bảng đã được cập nhật bởi _fillRandomSudoku
-      });
+    // tạo bảng hợp lệ
+    if (_ngauNhienSudoku(0, 0)) {
+      // Cập nhật giao diện
+      setState(() {});
     } else {
-      // Xử lý trường hợp không tìm thấy giải pháp Sudoku hợp lệ
-      print("Không thể sinh ra giải pháp Sudoku.");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Không thể phát sinh ngẫu nhiên '),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 1),
+        ),
+      );
     }
   }
-}
 
-Widget xaydungso(int number) {
-  return Container(
-    width: 60,
-    height: 45,
-    decoration: BoxDecoration(
-      color: Colors.blue[100],
-      borderRadius: BorderRadius.circular(8),
-    ),
-    child: GestureDetector(
-      onTap: () {
-        print('Button $number pressed');
-      },
-      child: Center(
-        child: Text(
-          number.toString(),
-          style: TextStyle(color: Colors.black, fontSize: 20),
+  void thongBaoBangHopLe() {
+    if (!_thongbaokiemtra) {
+      _thongbaokiemtra = true;
+
+      final snackbar = SnackBar(
+        content: Text('Màn chơi hợp lệ'),
+        duration: Duration(seconds: 2),
+      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(snackbar)
+          .closed
+          .then((reason) {
+        _thongbaokiemtra = false;
+      });
+    }
+  }
+
+  void thongBaoBangKhongHopLe() {
+    if (!_thongbaokiemtra) {
+      _thongbaokiemtra = true;
+
+      final snackbar = SnackBar(
+        content: Text('Màn chơi không hợp lệ'),
+        duration: Duration(seconds: 2),
+        backgroundColor: Colors.red,
+      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(snackbar)
+          .closed
+          .then((reason) {
+        _thongbaokiemtra = false;
+      });
+    }
+  }
+
+  Widget xayDungSo(int so) {
+    return Ink(
+      decoration: BoxDecoration(
+        color: Colors.blue[50],
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: () {
+          xyLyNhanSo(so);
+        },
+        child: Container(
+          width: 60,
+          height: 45,
+          alignment: Alignment.center,
+          child: Text(
+            so.toString(),
+            style: const TextStyle(
+                color: Colors.black, fontSize: 20, fontWeight: FontWeight.w500),
+          ),
         ),
       ),
-    ),
-  );
+    );
+  }
 }

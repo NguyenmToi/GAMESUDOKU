@@ -1,35 +1,52 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:sudoku/MoHinh/xulydulieu.dart';
 
 class XepHang extends StatefulWidget {
-  const XepHang({super.key});
+  const XepHang({Key? key}) : super(key: key);
 
   @override
   State<XepHang> createState() => XepHangState();
 }
 
 class XepHangState extends State<XepHang> {
-  int selectedButton = 0; // Biến lưu trữ nút đang chọn
+  int NutChon = 0; // Biến lưu trữ nút đang chọn
 
-  // Danh sách người chơi cho từng nút
-  final List<Map<String, dynamic>> doKhoPlayers = List.generate(
-      10,
-      (index) => {
-            'name': 'Người chơi độ khó ${index + 1}',
-            'score': 1000 - index * 10,
-          });
+  List<ctaiKhoan> doKho = [];
+  List<ctaiKhoan> thuThach = [];
 
-  final List<Map<String, dynamic>> thuThachPlayers = List.generate(
-      10,
-      (index) => {
-            'name': 'Người chơi thử thách ${index + 1}',
-            'score': 900 - index * 10,
-          });
+  @override
+  void initState() {
+    super.initState();
+    NguoiChoiXepHang(SapXep: true); // Lấy người chơi sắp xếp theo điểm ban đầu
+  }
+
+  Future<void> NguoiChoiXepHang({required bool SapXep}) async {
+    List<ctaiKhoan> nguoichoi =
+        await ctaiKhoan.layDSTaiKhoan(SapXepDiem: SapXep);
+    setState(() {
+      if (SapXep) {
+        doKho = nguoichoi;
+      } else {
+        thuThach = nguoichoi;
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Bảng xếp hạng'),
+        title: Text(
+          'Bảng xếp hạng',
+          style: TextStyle(
+            fontSize: 25,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        centerTitle: true,
+        automaticallyImplyLeading: false,
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -50,18 +67,18 @@ class XepHangState extends State<XepHang> {
                   Expanded(
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: selectedButton == 0
+                        backgroundColor: NutChon == 0
                             ? Colors.blue
-                            : Colors.grey, // Đổi màu nền nút
+                            : Colors.grey, // Màu nền nút được chọn
                         shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(10), // Bo tròn góc nút
+                          borderRadius: BorderRadius.circular(10), // Bo góc nút
                         ),
                       ),
                       onPressed: () {
                         setState(() {
-                          selectedButton = 0;
+                          NutChon = 0;
                         });
+                        NguoiChoiXepHang(SapXep: true);
                       },
                       child: Text(
                         'Độ khó',
@@ -76,18 +93,18 @@ class XepHangState extends State<XepHang> {
                   Expanded(
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: selectedButton == 1
+                        backgroundColor: NutChon == 1
                             ? Colors.blue
-                            : Colors.grey, // Đổi màu nền nút
+                            : Colors.grey, // Màu nền nút được chọn
                         shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(10), // Bo tròn góc nút
+                          borderRadius: BorderRadius.circular(10), // Bo góc nút
                         ),
                       ),
                       onPressed: () {
                         setState(() {
-                          selectedButton = 1;
+                          NutChon = 1;
                         });
+                        NguoiChoiXepHang(SapXep: false);
                       },
                       child: Text(
                         'Thử thách',
@@ -101,31 +118,47 @@ class XepHangState extends State<XepHang> {
                 ],
               ),
               SizedBox(height: 10),
-              ListView.builder(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                itemCount: selectedButton == 0
-                    ? doKhoPlayers.length
-                    : thuThachPlayers.length,
-                itemBuilder: (context, index) {
-                  final player = selectedButton == 0
-                      ? doKhoPlayers[index]
-                      : thuThachPlayers[index];
-                  return ListTile(
-                    leading: CircleAvatar(
-                        backgroundImage: AssetImage(
-                            'assets/image/xephang.jpg') // Thay đổi đường dẫn ảnh avatar nếu cần
-                        ),
-                    title: Text(player['name']),
-                    subtitle: Text(
-                        'Điểm: ${player['score']}'), // Thay đổi điểm cho phù hợp
-                  );
-                },
-              ),
+              NutChon == 0 ? LuuDsNguoiChoi(doKho) : LuuDsNguoiChoi(thuThach),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget LuuDsNguoiChoi(List<ctaiKhoan> players) {
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: NeverScrollableScrollPhysics(),
+      itemCount: players.length,
+      itemBuilder: (context, index) {
+        final nguoichoi = players[index];
+        return ListTile(
+          leading: CircleAvatar(
+            radius: 25,
+            backgroundImage: NetworkImage(nguoichoi.anh!),
+            backgroundColor: Colors.black,
+          ),
+          title: Text(
+            nguoichoi.tentaikhoan,
+            style: TextStyle(
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
+          ),
+          subtitle: Text(
+            NutChon == 0
+                ? 'Điểm: ${nguoichoi.diem}' // Hiển thị điểm số cho Độ khó
+                : 'Màn: ${nguoichoi.man}',
+            style: TextStyle(
+              color: Colors.black,
+              fontSize: 17,
+            ),
+          ),
+          // Hiển thị số màn cho Thử thách
+        );
+      },
     );
   }
 }

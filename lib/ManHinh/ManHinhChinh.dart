@@ -1,7 +1,9 @@
 import 'dart:io';
 
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:sudoku/ManHinh/ChonManChoi.dart';
+import 'package:sudoku/ManHinh/LichSuChoi.dart';
 import 'package:sudoku/ManHinh/ManHinhChoiMucDo.dart';
 import 'package:sudoku/ManHinh/QuanLyManChoi.dart';
 import 'package:sudoku/ManHinh/QuanLyThongTinCaNhan.dart';
@@ -118,7 +120,7 @@ class _ManHinhChinhState extends State<ManHinhChinh> {
     final List<Widget> _pages = [
       TrangChu(ttTaiKhoan: widget.ttTaiKhoan),
       const XepHang(),
-      const ThongKe(),
+      ThongKe(),
     ];
 
     return Scaffold(
@@ -154,6 +156,18 @@ class _ManHinhChinhState extends State<ManHinhChinh> {
           mucdo: mucDo.tenmucdo,
           soan: mucDo.soan,
           diem: mucDo.diem,
+          taikhoan: widget.ttTaiKhoan.taikhoan,
+        ),
+      ),
+    );
+  }
+
+  void DuLieuLichSuCHoi() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => LichSuaChoi(
+          taikhoan: widget.ttTaiKhoan.taikhoan,
         ),
       ),
     );
@@ -193,14 +207,15 @@ class TrangChu extends StatelessWidget {
                               diem: ttTaiKhoan.diem,
                               man: ttTaiKhoan.man,
                               tentaikhoan: ttTaiKhoan.tentaikhoan,
+                              matkhau: ttTaiKhoan.matkhau,
                             ),
                           ),
                         );
                       },
                       child: CircleAvatar(
                         radius: 25,
-                        backgroundImage: FileImage(File(ttTaiKhoan.anh!)),
-                        backgroundColor: Colors.transparent,
+                        backgroundImage: NetworkImage(ttTaiKhoan.anh!),
+                        backgroundColor: Colors.black,
                       ),
                     ),
                     SizedBox(width: 10),
@@ -227,18 +242,6 @@ class TrangChu extends StatelessWidget {
                 ),
               ),
               const Spacer(),
-              // if (ttTaiKhoan.quanly)
-              //   IconButton(
-              //     icon: Icon(
-              //       Icons.settings,
-              //       size: 35,
-              //       color: Colors.green[200],
-              //     ),
-              //     onPressed: () {
-              //       huongDanChoi(context);
-              //     },
-              //   )
-              // else
               IconButton(
                 icon: Icon(
                   Icons.question_mark,
@@ -246,7 +249,7 @@ class TrangChu extends StatelessWidget {
                   color: Colors.green[200],
                 ),
                 onPressed: () {
-                  huongDanChoi(context);
+                  hienThiHuongDan(context);
                 },
               )
             ],
@@ -272,43 +275,6 @@ class TrangChu extends StatelessWidget {
                   height: 200,
                 ),
                 const SizedBox(height: 60),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const ChonManChoi(),
-                      ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    backgroundColor: Colors.blueAccent,
-                    minimumSize: const Size(280, 50),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(25),
-                    ),
-                  ),
-                  child: const Text('Chọn màn', style: TextStyle(fontSize: 20)),
-                ),
-                const SizedBox(height: 15),
-                ElevatedButton(
-                  onPressed: () {
-                    // Sử dụng hàm showDifficultyLevels thông qua _ManHinhChinhState
-                    (context.findAncestorStateOfType<_ManHinhChinhState>())
-                        ?.HienThiMucDo(context);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    backgroundColor: Colors.blueAccent,
-                    minimumSize: Size(280, 50),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(25),
-                    ),
-                  ),
-                  child:
-                      const Text('Ngẫu nhiên', style: TextStyle(fontSize: 20)),
-                ),
                 const SizedBox(height: 15),
                 if (ttTaiKhoan.quanly == true)
                   ElevatedButton(
@@ -353,6 +319,51 @@ class TrangChu extends StatelessWidget {
                     child: const Text('Quản lý tài khoản',
                         style: TextStyle(fontSize: 20)),
                   ),
+                if (ttTaiKhoan.quanly)
+                  const SizedBox(height: 15)
+                else
+                  const SizedBox(height: 130),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ChonManChoi(
+                          man: ttTaiKhoan.man,
+                          matkhau: ttTaiKhoan.matkhau,
+                          taikhoan: ttTaiKhoan.taikhoan,
+                        ),
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    backgroundColor: Colors.blueAccent,
+                    minimumSize: const Size(280, 50),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(25),
+                    ),
+                  ),
+                  child: const Text('Chọn màn', style: TextStyle(fontSize: 20)),
+                ),
+                const SizedBox(height: 15),
+                ElevatedButton(
+                  onPressed: () {
+                    // Sử dụng hàm showDifficultyLevels thông qua _ManHinhChinhState
+                    (context.findAncestorStateOfType<_ManHinhChinhState>())
+                        ?.HienThiMucDo(context);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    backgroundColor: Colors.blueAccent,
+                    minimumSize: Size(280, 50),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(25),
+                    ),
+                  ),
+                  child:
+                      const Text('Ngẫu nhiên', style: TextStyle(fontSize: 20)),
+                ),
               ],
             ),
           )
@@ -361,40 +372,64 @@ class TrangChu extends StatelessWidget {
     );
   }
 
-  void huongDanChoi(BuildContext context) {
+  Future<void> hienThiHuongDan(BuildContext context) async {
+    TextEditingController _noiDungcontroller = TextEditingController();
+
+    // Tham chiếu đến Firebase Realtime Database
+    DatabaseReference reference =
+        FirebaseDatabase.instance.ref('huongdanchoi/noidung');
+
+    // Lấy dữ liệu từ Firebase Realtime Database
+    DataSnapshot snapshot = await reference.get();
+
+    // Trích xuất dữ liệu và đặt vào controller
+    if (snapshot.value != null) {
+      Map<String, dynamic> data =
+          Map<String, dynamic>.from(snapshot.value as Map);
+      _noiDungcontroller.text = data['noidung'] ?? '';
+    } else {
+      _noiDungcontroller.text = '';
+    }
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Luật Chơi'),
-          content: const SingleChildScrollView(
-            child: Column(
-              children: <Widget>[
-                Text(
-                  'Hướng dẫn chơi Sudoku:\n\n'
-                  'Sudoku là câu đố trí tuệ có hình dạng lưới gồm 9x9 ô trống.\n\n'
-                  'Bạn chỉ có thể sử dụng các số từ 1 đến 9.\n\n'
-                  'Mỗi khối gồm 3×3 ô trống chỉ có thể chứa các số từ 1 đến 9.\n\n'
-                  'Mỗi hàng dọc chỉ có thể chứa các số từ 1 đến 9.\n\n'
-                  'Mỗi hàng ngang chỉ có thể chứa các số từ 1 đến 9.\n\n'
-                  'Mỗi số trong khối 3×3, hàng dọc hoặc hàng ngang không được trùng nhau.\n\n'
-                  'Câu đố được giải khi điền đúng hết tất cả các số trên toàn bộ lưới Sudoku.\n\n'
-                  'Chúc bạn chơi vui vẻ!',
-                  textAlign: TextAlign.justify,
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return AlertDialog(
+              title: Text('Hướng dẫn Chơi'),
+              content: SingleChildScrollView(
+                child: Column(
+                  children: <Widget>[
+                    TextField(
+                      controller: _noiDungcontroller,
+                      readOnly: ttTaiKhoan.quanly ? false : true,
+                      maxLines: null, // Cho phép nhiều dòng
+                      decoration: InputDecoration(
+                        hintText: 'Nhập nội dung hướng dẫn chơi',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              actions: <Widget>[
+                if (ttTaiKhoan.quanly)
+                  TextButton(
+                    child: Text('Cập nhật'),
+                    onPressed: () async {
+                      await reference.set({'noidung': _noiDungcontroller.text});
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                TextButton(
+                  child: Text('Đóng'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
                 ),
               ],
-            ),
-          ),
-          actions: <Widget>[
-            if (ttTaiKhoan.quanly == true)
-              TextButton(
-                child: Text('Sửa'),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  //
-                },
-              ),
-          ],
+            );
+          },
         );
       },
     );

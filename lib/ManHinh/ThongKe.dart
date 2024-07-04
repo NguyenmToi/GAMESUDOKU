@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:sudoku/MoHinh/xulydulieu.dart';
 
 class ThongKe extends StatefulWidget {
-  const ThongKe({super.key});
+  ThongKe({
+    super.key,
+  });
 
   @override
   State<ThongKe> createState() => _ThongKeState();
@@ -52,15 +55,17 @@ class _ThongKeState extends State<ThongKe> {
               ),
             ),
             SizedBox(height: 16),
-            buildStatContainer(
-                'Thời gian chơi trung bình',
-                '30 phút',
-                'Điểm cao nhất',
-                '2000',
-                'Số trận thua',
-                '50',
-                'Chuỗi thua dài nhất',
-                '5'),
+            buildStatContainer('Số ván đã chơi', '123', 'Số ván đã thắng', '75',
+                'Tỷ lệ thắng', '61%', 'Chuỗi thắng dài nhất', '10'),
+            // buildStatContainer2(
+            // 'Số ván đã chơi',
+            // widget.ttThongKe.ttsovandachoi.toString(),
+            // 'Số ván thắng không lỗi',
+            // widget.ttThongKe.ttsovanthangkhongloi.toString(),
+            // 'Tỉ lệ mở khóa màn mới',
+            // widget.ttThongKe.tttilemokhoamanmoi.toString()
+
+            // ),
           ],
         ),
       ),
@@ -92,6 +97,33 @@ class _ThongKeState extends State<ThongKe> {
           buildStatRow(label3, value3),
           buildDivider(),
           buildStatRow(label4, value4),
+        ],
+      ),
+    );
+  }
+
+  Widget buildStatContainer2(
+    String label1,
+    String value1,
+    String label2,
+    String value2,
+    String label3,
+    String value3,
+  ) {
+    return Container(
+      padding: EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey[300],
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          buildStatRow(label1, value1),
+          buildDivider(),
+          buildStatRow(label2, value2),
+          buildDivider(),
+          buildStatRow(label3, value3),
         ],
       ),
     );
