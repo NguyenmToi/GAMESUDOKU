@@ -18,52 +18,64 @@ class DangNhapState extends State<DangNhap> {
   bool temp = false; // Biến để điều khiển hiển thị mật khẩu
 
   // Hàm thực hiện đăng nhập
-  Future<void> _dangNhap() async {
-    String taiKhoan = _TaiKhoan.text.trim();
-    String matKhau = _MatKhau.text.trim();
+Future<void> _dangNhap() async {
+  String taiKhoan = _TaiKhoan.text.trim();
+  String matKhau = _MatKhau.text.trim();
 
-    if (taiKhoan.isEmpty || matKhau.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Bạn chưa nhập Tài khoản hoặc Mật khẩu"),
-        ),
-      );
-      return;
-    }
+  if (taiKhoan.isEmpty || matKhau.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        backgroundColor: Colors.red,
+        content: Text("Bạn chưa nhập Tài khoản hoặc Mật khẩu"),
+      ),
+    );
+    return;
+  }
 
-    bool isAuthenticated = await ctaiKhoan.dangNhap(taiKhoan, matKhau);
+  bool KiemTraKhoaTK = await ctaiKhoan.kiemTraTrangThaiTaiKhoan(taiKhoan);
+  if (!KiemTraKhoaTK) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        backgroundColor: Colors.red,
+        content: Text("Tài khoản này đang bị khóa!"),
+      ),
+    );
+    return;
+  }
 
-    // Kiểm tra kết quả đăng nhập và chỉ chuyển hướng nếu thành công
-    if (isAuthenticated) {
-      ctaiKhoan? ttTaiKhoan =
-          await ctaiKhoan.thongTindangNhap(taiKhoan, matKhau);
+  bool kiemTraDangNhap = await ctaiKhoan.dangNhap(taiKhoan, matKhau);
 
-      if (ttTaiKhoan != null) {
-        if (mounted) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ManHinhChinh(
-                ttTaiKhoan: ttTaiKhoan,
-              ),
+  if (kiemTraDangNhap) {
+    ctaiKhoan? ttTaiKhoan = await ctaiKhoan.thongTindangNhap(taiKhoan, matKhau);
+
+    if (ttTaiKhoan != null) {
+      if (mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ManHinhChinh(
+              ttTaiKhoan: ttTaiKhoan,
             ),
-          );
-        }
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Lấy thông tin tài khoản thất bại"),
           ),
         );
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text("Đăng nhập thất bại"),
+          backgroundColor: Colors.red,
+          content: Text("Lấy thông tin tài khoản thất bại"),
         ),
       );
     }
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        backgroundColor: Colors.red,
+        content: Text("Đăng nhập thất bại"),
+      ),
+    );
   }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -94,12 +106,12 @@ class DangNhapState extends State<DangNhap> {
                   controller:
                       _TaiKhoan, // Controller để lấy giá trị từ ô nhập tài khoản
                   decoration: const InputDecoration(
-                    labelText: 'Đăng Nhập', // Nhãn cho ô nhập tài khoản
+                    labelText: 'Đăng Nhập',
                     prefixIcon:
-                        Icon(Icons.person_4_sharp), // Biểu tượng trước ô nhập
+                        Icon(Icons.person_4_sharp),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.all(
-                          Radius.circular(15.0)), // Bo viền ô nhập
+                          Radius.circular(15.0)),
                     ),
                     contentPadding: EdgeInsets.symmetric(
                         vertical: 10,
@@ -107,7 +119,7 @@ class DangNhapState extends State<DangNhap> {
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Vui lòng nhập tên tài khoản'; // Kiểm tra hợp lệ khi submit Form
+                      return 'Vui lòng nhập tên tài khoản'; // Kiểm tra hợp lệ
                     }
                     return null;
                   },
@@ -127,8 +139,7 @@ class DangNhapState extends State<DangNhap> {
                       icon: Icon(
                         temp
                             ? Icons.visibility
-                            : Icons
-                                .visibility_off, // Biểu tượng ẩn hiện mật khẩu
+                            : Icons.visibility_off, // Biểu tượng ẩn hiện mật khẩu
                       ),
                       onPressed: () {
                         setState(() {
@@ -170,11 +181,11 @@ class DangNhapState extends State<DangNhap> {
                     ),
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
-                        _dangNhap(); // Gọi hàm đăng nhập khi Form hợp lệ
+                        _dangNhap(); // Gọi hàm đăng nhập
                       }
                     },
                     child: const Text(
-                      "Đăng nhập", // Nội dung của nút Đăng nhập
+                      "Đăng nhập",
                       style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,

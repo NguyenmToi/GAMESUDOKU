@@ -1,12 +1,6 @@
-import 'dart:convert';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:sudoku/ManHinh/ManHinhChinh.dart';
-import 'package:sudoku/ManHinh/ManHinhChoiMucDo.dart';
-import 'package:sudoku/ManHinh/QuanLyManChoi.dart';
-import 'package:sudoku/ThanhPhan/QuanLyThuThach.dart';
-
 import '../MoHinh/xulydulieu.dart';
 
 class TaoManChoi extends StatefulWidget {

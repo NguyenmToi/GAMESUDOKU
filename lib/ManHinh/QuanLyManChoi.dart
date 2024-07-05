@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:sudoku/ManHinh/ManHinhChinh.dart';
 import 'package:sudoku/ManHinh/TaoDoKho.dart';
 import 'package:sudoku/ManHinh/TaoManChoi.dart';
 import 'package:sudoku/ThanhPhan/QuanLyMucDo.dart';

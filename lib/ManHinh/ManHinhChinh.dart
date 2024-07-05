@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:sudoku/ManHinh/ChonManChoi.dart';
 import 'package:sudoku/ManHinh/ManHinhChoiMucDo.dart';
@@ -79,7 +78,7 @@ class _ManHinhChinhState extends State<ManHinhChinh> {
                             child: GestureDetector(
                               onTap: () {
                                 Navigator.pop(context);
-                                _navigateToManHinhChoiMucDo(mucDo);
+                                DuLieuManHinhChoiMucDo(mucDo);
                               },
                               child: Container(
                                 decoration: BoxDecoration(
@@ -117,8 +116,8 @@ class _ManHinhChinhState extends State<ManHinhChinh> {
   Widget build(BuildContext context) {
     final List<Widget> _pages = [
       TrangChu(ttTaiKhoan: widget.ttTaiKhoan),
-      const XepHang(),
-      const ThongKe(),
+      XepHang(),
+      //ThongKe(ttTaiKhoan: widget.ttTaiKhoan),
     ];
 
     return Scaffold(
@@ -146,7 +145,7 @@ class _ManHinhChinhState extends State<ManHinhChinh> {
     );
   }
 
-  void _navigateToManHinhChoiMucDo(cmucDo mucDo) {
+  void DuLieuManHinhChoiMucDo(cmucDo mucDo) {
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -154,11 +153,14 @@ class _ManHinhChinhState extends State<ManHinhChinh> {
           mucdo: mucDo.tenmucdo,
           soan: mucDo.soan,
           diem: mucDo.diem,
+          taikhoan: widget.ttTaiKhoan.taikhoan,
         ),
       ),
     );
   }
 }
+
+
 
 class TrangChu extends StatelessWidget {
   final ctaiKhoan ttTaiKhoan;
@@ -227,18 +229,6 @@ class TrangChu extends StatelessWidget {
                 ),
               ),
               const Spacer(),
-              // if (ttTaiKhoan.quanly)
-              //   IconButton(
-              //     icon: Icon(
-              //       Icons.settings,
-              //       size: 35,
-              //       color: Colors.green[200],
-              //     ),
-              //     onPressed: () {
-              //       huongDanChoi(context);
-              //     },
-              //   )
-              // else
               IconButton(
                 icon: Icon(
                   Icons.question_mark,

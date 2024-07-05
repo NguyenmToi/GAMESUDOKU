@@ -1,7 +1,6 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:sudoku/ManHinh/CapNhatManChoi.dart';
-import 'package:sudoku/ManHinh/TaoManChoi.dart';
 import 'package:sudoku/MoHinh/xulydulieu.dart';
 
 class QuanLyThuThach extends StatefulWidget {

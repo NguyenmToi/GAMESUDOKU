@@ -1,13 +1,9 @@
-import 'dart:math';
 import 'dart:typed_data';
-
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:sudoku/ManHinh/DangNhap.dart';
 import 'dart:io';
-import 'package:file_picker/file_picker.dart';
 import 'package:sudoku/ManHinh/LichSuChoi.dart';
-import 'package:sudoku/MoHinh/xulydulieu.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -225,7 +221,7 @@ class _QuanLyThongTinCaNhanState extends State<QuanLyThongTinCaNhan> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const LichSuaChoi()),
+                  MaterialPageRoute(builder: (context) => LichSuaChoi(taikhoan: widget.taikhoan),)
                 );
               },
               child: const Row(

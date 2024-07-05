@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:sudoku/ManHinh/TaoDoKho.dart';
 import 'package:sudoku/MoHinh/xulydulieu.dart';
 import 'package:sudoku/ThanhPhan/SuaMucDoChoi.dart';
 
@@ -34,26 +33,6 @@ class _QuanLyMucDoState extends State<QuanLyMucDo> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // ElevatedButton(
-            //   onPressed: () {
-            //     Navigator.push(
-            //       context,
-            //       MaterialPageRoute(builder: (context) => TaoDoKho()),
-            //     );
-            //   },
-            //   child: Text(
-            //     'Tạo mức độ chơi',
-            //     style: TextStyle(color: Colors.white, fontSize: 18),
-            //   ),
-            //   style: ElevatedButton.styleFrom(
-            //     minimumSize: Size(double.infinity, 50), // Co giãn theo màn hình
-            //     shape: RoundedRectangleBorder(
-            //       borderRadius: BorderRadius.circular(15), // Bo tròn góc
-            //     ),
-            //     backgroundColor: Colors.blue, // Màu nền xanh
-            //   ),
-            // ),
-            // const SizedBox(height: 20),
             Expanded(
               child: ListView.builder(
                 itemCount: MucDo.length,

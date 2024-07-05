@@ -32,10 +32,6 @@ class _SuaMucDoChoiState extends State<SuaMucDoChoi> {
     diem.text = widget.diem.toString();
   }
 
-  // final ChuNhapHopLe =
-  //     FilteringTextInputFormatter.deny(RegExp(r'[\u0300-\u036f]'));
-
-  // Khởi tạo bảng Sudoku
   List<List<int>> BangSudoku =
       List.generate(9, (_) => List.generate(9, (_) => 0));
   List<List<bool>> oKhoiTao =

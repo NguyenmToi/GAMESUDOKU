@@ -42,14 +42,14 @@ class DangKyState extends State<DangKy> {
                     _TaiKhoan, // Controller để lấy giá trị từ ô nhập tài khoản
                 decoration: InputDecoration(
                   labelText:
-                      'Tên tài khoản (3-15 kí tự)', // Nhãn cho ô nhập tài khoản
+                      'Tên tài khoản (3-15 kí tự)',
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Vui lòng nhập tên tài khoản'; // Kiểm tra hợp lệ khi submit Form
+                    return 'Vui lòng nhập tên tài khoản';
                   }
                   if (value.length < 3 || value.length > 15) {
-                    return 'Tên tài khoản phải có từ 3 đến 15 kí tự'; // Kiểm tra độ dài tài khoản
+                    return 'Tên tài khoản phải có từ 3 đến 15 kí tự';
                   }
                   return null;
                 },
@@ -109,6 +109,7 @@ class DangKyState extends State<DangKy> {
                         if (tonTai) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
+                                backgroundColor: Colors.red,
                                 content: Text(
                                     'Tên tài khoản đã được sử dụng')), // Hiển thị thông báo khi tài khoản đã tồn tại
                           );
@@ -117,6 +118,7 @@ class DangKyState extends State<DangKy> {
                               _MatKhau.text); // Thêm tài khoản mới vào Firebase
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
+                                backgroundColor: Colors.green,
                                 content: Text(
                                     'Đăng ký thành công')), // Hiển thị thông báo đăng ký thành công
                           );
@@ -124,6 +126,7 @@ class DangKyState extends State<DangKy> {
                       } catch (error) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
+                              backgroundColor: Colors.red,
                               content: Text(
                                   'Lỗi khi thêm tài khoản: $error')), // Hiển thị thông báo lỗi nếu có lỗi khi thêm tài khoản
                         );

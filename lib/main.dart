@@ -1,12 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:sudoku/ManHinh/ChonManChoi.dart';
 import 'package:sudoku/ManHinh/DangNhap.dart';
-import 'package:sudoku/ManHinh/ManHinhChinh.dart';
-import 'package:sudoku/ManHinh/ManHinhChoiThuThach.dart';
-import 'package:sudoku/ManHinh/QuanLyManChoi.dart';
-import 'package:sudoku/ManHinh/QuanLyThongTinCaNhan.dart';
-import 'package:sudoku/ManHinh/DangKy.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

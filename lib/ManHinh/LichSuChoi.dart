@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:sudoku/MoHinh/xulydulieu.dart';
 
 class LichSuaChoi extends StatefulWidget {
-  const LichSuaChoi({super.key});
+  const LichSuaChoi({super.key, required this.taikhoan});
+  final String taikhoan;
 
   @override
   State<LichSuaChoi> createState() => LichSuaChoiState();
@@ -15,24 +16,26 @@ class LichSuaChoiState extends State<LichSuaChoi> {
   @override
   void initState() {
     super.initState();
-    loadData();
+    DanhSachManChoiNgauNhien();
   }
 
-  Future<void> loadData() async {
-    try {
-      List<cMucDoChoiNgauNhien> man =
-          await cMucDoChoiNgauNhien.taiDanhSachMan();
-      setState(() {
-        sudokuList = man;
-        isLoading = false;
-      });
-    } catch (e) {
-      print('lỗi hiển thị dữ liệu: $e');
-      setState(() {
-        isLoading = false;
-      });
-    }
+Future<void> DanhSachManChoiNgauNhien() async {
+  try {
+    List<cMucDoChoiNgauNhien> man = await cMucDoChoiNgauNhien.taiDanhSachMan(widget.taikhoan);
+    man.sort((a, b) => b.ngay.compareTo(a.ngay));
+    
+    setState(() {
+      sudokuList = man;
+      isLoading = false;
+    });
+  } catch (e) {
+    print('Error loading data: $e');
+    setState(() {
+      isLoading = false;
+    });
   }
+}
+
 
   String dinhDang(int timeInSeconds) {
     int minutes = timeInSeconds ~/ 60;
@@ -170,7 +173,7 @@ class BangSudoku extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     double kichThuocBang =
-        MediaQuery.of(context).size.width * 0.5; // Lấy 55% chiều rộng màn hình
+        MediaQuery.of(context).size.width * 0.5; // Lấy 50% chiều rộng màn hình
     return Container(
       width: kichThuocBang,
       height: kichThuocBang,
