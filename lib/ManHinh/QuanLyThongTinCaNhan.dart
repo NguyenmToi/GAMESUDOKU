@@ -291,6 +291,7 @@ class _QuanLyThongTinCaNhanState extends State<QuanLyThongTinCaNhan> {
           'Thông Tin Cá Nhân',
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
         ),
+        backgroundColor: Colors.amber[100],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(15.0),

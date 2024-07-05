@@ -48,80 +48,77 @@ class XepHangState extends State<XepHang> {
         centerTitle: true,
         automaticallyImplyLeading: false,
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: EdgeInsets.all(5),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Image.asset(
+            "assets/image/xephang.jpg",
+            height: 250,
+            width: double.infinity,
+            fit: BoxFit.contain,
+          ),
+          SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              Image.asset(
-                "assets/image/xephang.jpg",
-                height: 250,
-                width: double.infinity,
-                fit: BoxFit.contain,
-              ),
-              SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: NutChon == 0
-                            ? Colors.blue
-                            : Colors.grey, // Màu nền nút được chọn
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10), // Bo góc nút
-                        ),
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          NutChon = 0;
-                        });
-                        NguoiChoiXepHang(SapXep: true);
-                      },
-                      child: Text(
-                        'Độ khó',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 17,
-                        ),
-                      ),
+              Expanded(
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: NutChon == 0 ? Colors.blue : Colors.grey,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                  SizedBox(width: 10),
-                  Expanded(
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: NutChon == 1
-                            ? Colors.blue
-                            : Colors.grey, // Màu nền nút được chọn
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10), // Bo góc nút
-                        ),
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          NutChon = 1;
-                        });
-                        NguoiChoiXepHang(SapXep: false);
-                      },
-                      child: Text(
-                        'Thử thách',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 17,
-                        ),
-                      ),
+                  onPressed: () {
+                    setState(() {
+                      NutChon = 0;
+                    });
+                    NguoiChoiXepHang(SapXep: true);
+                  },
+                  child: Text(
+                    'Độ khó',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 17,
                     ),
                   ),
-                ],
+                ),
               ),
-              SizedBox(height: 10),
-              NutChon == 0 ? LuuDsNguoiChoi(doKho) : LuuDsNguoiChoi(thuThach),
+              SizedBox(width: 10),
+              Expanded(
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: NutChon == 1 ? Colors.blue : Colors.grey,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      NutChon = 1;
+                    });
+                    NguoiChoiXepHang(SapXep: false);
+                  },
+                  child: Text(
+                    'Thử thách',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 17,
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
-        ),
+          SizedBox(height: 10),
+          Expanded(
+            child: SingleChildScrollView(
+              child: NutChon == 0
+                  ? LuuDsNguoiChoi(doKho)
+                  : LuuDsNguoiChoi(thuThach),
+            ),
+          ),
+        ],
       ),
     );
   }

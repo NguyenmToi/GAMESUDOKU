@@ -43,6 +43,7 @@ class _ManhinhchoimucdoState extends State<Manhinhchoimucdo> {
     super.initState();
     batDauThoiGian(); // Bắt đầu đếm thời gian
     xoaONgauNhien(); // Tạo bảng Sudoku ngẫu nhiên
+    ctaiKhoan.capNhatSoVanDaChoi(widget.taikhoan, 1);
   }
 
   void batDauThoiGian() {
@@ -168,7 +169,6 @@ class _ManhinhchoimucdoState extends State<Manhinhchoimucdo> {
       // Sử dụng await để đợi hàm layDiemTaiKhoan hoàn thành
       int DiemCu = await ctaiKhoan.layDiemTaiKhoan(widget.taikhoan);
       int diem = DiemCu + widget.diem;
-
       cMucDoChoiNgauNhien.themManChoiNgauNhien(widget.taikhoan, widget.mucdo,
           5 - loiSai, DateTime.now(), giay, widget.diem, bangSudoku);
 
@@ -180,6 +180,11 @@ class _ManhinhchoimucdoState extends State<Manhinhchoimucdo> {
 
   void xuLyHoanThanhTroChoi() {
     capNhatDiemVaThemManChoi();
+    ctaiKhoan.capNhatSoVanDaChoiThang(widget.taikhoan, 1);
+    if (loiSai == 5) {
+      ctaiKhoan.capNhatSoVanDaChoiThangKhongLoi(widget.taikhoan, 1);
+    }
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -201,7 +206,6 @@ class _ManhinhchoimucdoState extends State<Manhinhchoimucdo> {
   }
 
   void xuLyThuaTroChoi() {
-    // Thực hiện logic khi trò chơi hoàn thành
     showDialog(
       context: context,
       barrierDismissible:
@@ -237,16 +241,14 @@ class _ManhinhchoimucdoState extends State<Manhinhchoimucdo> {
       bangSudoku = List.generate(9, (_) => List.generate(9, (_) => 0));
       oKhoiTao = List.generate(9, (_) => List.generate(9, (_) => false));
       mangTam = List.generate(9, (_) => List.generate(9, (_) => 0));
-
+      ctaiKhoan.capNhatSoVanDaChoi(widget.taikhoan, 1);
       // Đặt lại các biến trạng thái
       hangDuocChon = null;
       cotDuocChon = null;
-      loiSai = 0;
+      loiSai = 5;
       giay = 0;
-
       // Tạo bảng Sudoku mới
       xoaONgauNhien();
-
       // Khởi động lại bộ đếm thời gian
       thoiGian.cancel();
       batDauThoiGian();

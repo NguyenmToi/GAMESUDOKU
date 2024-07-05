@@ -8,10 +8,16 @@ class ChonManChoi extends StatefulWidget {
       {super.key,
       required this.man,
       required this.matkhau,
-      required this.taikhoan});
+      required this.taikhoan,
+      required this.ttsovandachoi,
+      required this.ttsovanthangkhongloi,
+      required this.tttilemokhoamanmoi});
   final String taikhoan;
   final String matkhau;
   final int man;
+  late int ttsovandachoi;
+  final int ttsovanthangkhongloi;
+  final String tttilemokhoamanmoi;
 
   @override
   State<ChonManChoi> createState() => _ChonManCHoiState();
@@ -93,20 +99,27 @@ class _ChonManCHoiState extends State<ChonManChoi> {
                   return GestureDetector(
                     onTap: () {
                       if (widget.man >= maman) {
+                        int sovan = widget.ttsovandachoi += 1;
+                        ctaiKhoan.capNhatThongKeTTSoVanChoi(
+                            widget.taikhoan, sovan);
                         Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => ManHinhChoiThuThach(
-                                tenMan: manThuThach.tenman,
-                                bang: bangc,
-                                soloi: soloic,
-                                goiy: goiyc,
-                                thoigian: thoigianc,
-                                banggiai: banggiaic,
-                                maman: maman,
-                                taikhoan: widget.taikhoan,
-                                matkhau: widget.matkhau,
-                                mannguoichoi: widget.man),
+                              tenMan: manThuThach.tenman,
+                              bang: bangc,
+                              soloi: soloic,
+                              goiy: goiyc,
+                              thoigian: thoigianc,
+                              banggiai: banggiaic,
+                              maman: maman,
+                              taikhoan: widget.taikhoan,
+                              matkhau: widget.matkhau,
+                              mannguoichoi: widget.man,
+                              ttsovandachoi: widget.ttsovandachoi,
+                              ttsovanthangkhongloi: widget.ttsovanthangkhongloi,
+                              tttilemokhoamanmoi: widget.tttilemokhoamanmoi,
+                            ),
                           ),
                         );
                       } else {

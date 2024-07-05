@@ -19,7 +19,10 @@ class ManHinhChoiThuThach extends StatefulWidget {
       required this.maman,
       required this.taikhoan,
       required this.matkhau,
-      required this.mannguoichoi});
+      required this.mannguoichoi,
+      required this.ttsovandachoi,
+      required this.ttsovanthangkhongloi,
+      required this.tttilemokhoamanmoi});
   late final List bang;
   final List banggiai;
   final String tenMan;
@@ -30,6 +33,9 @@ class ManHinhChoiThuThach extends StatefulWidget {
   final taikhoan;
   final matkhau;
   late final mannguoichoi;
+  late int ttsovandachoi;
+  late final int ttsovanthangkhongloi;
+  final String tttilemokhoamanmoi;
 
   @override
   State<ManHinhChoiThuThach> createState() => _ManHinhChoiThuThachState();
@@ -360,6 +366,11 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
               onPressed: () async {
                 ctaiKhoan? ttTaiKhoan = await ctaiKhoan.thongTindangNhap(
                     widget.taikhoan, widget.matkhau);
+
+                double tilemoman =
+                    widget.maman.toDouble() / widget.ttsovandachoi.toDouble();
+                ctaiKhoan.capNhatThongKeTTTiLeMoKhoaManMoi(
+                    widget.taikhoan, tilemoman.toString());
                 setState(() {
                   if (ttTaiKhoan != null) {
                     Navigator.pushAndRemoveUntil(
@@ -379,6 +390,10 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
                               man: widget.maman,
                               taikhoan: widget.taikhoan,
                               matkhau: widget.matkhau,
+                              ttsovandachoi: ttTaiKhoan!.ttsovandachoi,
+                              ttsovanthangkhongloi:
+                                  ttTaiKhoan.mdsovanthangkhongloi,
+                              tttilemokhoamanmoi: ttTaiKhoan.tttilemokhoamanmoi,
                             )),
                   );
                 });
@@ -391,6 +406,9 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
                     widget.taikhoan, widget.matkhau);
                 List<List<int>>? bang =
                     await cManThuThach.layDuLieuBang(widget.maman);
+                // suawr lay thang
+                int sovan = ttTaiKhoan!.ttsovandachoi += 1;
+                ctaiKhoan.capNhatThongKeTTSoVanChoi(widget.taikhoan, sovan);
                 setState(() {
                   if (ttTaiKhoan != null) {
                     Navigator.pushAndRemoveUntil(
@@ -410,6 +428,10 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
                               man: widget.maman,
                               taikhoan: widget.taikhoan,
                               matkhau: widget.matkhau,
+                              ttsovandachoi: ttTaiKhoan!.ttsovandachoi,
+                              ttsovanthangkhongloi:
+                                  ttTaiKhoan.mdsovanthangkhongloi,
+                              tttilemokhoamanmoi: ttTaiKhoan.tttilemokhoamanmoi,
                             )),
                   );
 
@@ -418,16 +440,20 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
                       context,
                       MaterialPageRoute(
                         builder: (context) => ManHinhChoiThuThach(
-                            tenMan: widget.tenMan,
-                            bang: bang,
-                            soloi: widget.soloi,
-                            goiy: widget.goiy,
-                            thoigian: widget.thoigian,
-                            banggiai: widget.banggiai,
-                            maman: widget.maman,
-                            taikhoan: widget.taikhoan,
-                            matkhau: widget.matkhau,
-                            mannguoichoi: widget.mannguoichoi),
+                          tenMan: widget.tenMan,
+                          bang: bang,
+                          soloi: widget.soloi,
+                          goiy: widget.goiy,
+                          thoigian: widget.thoigian,
+                          banggiai: widget.banggiai,
+                          maman: widget.maman,
+                          taikhoan: widget.taikhoan,
+                          matkhau: widget.matkhau,
+                          mannguoichoi: widget.mannguoichoi,
+                          ttsovandachoi: widget.ttsovandachoi,
+                          ttsovanthangkhongloi: widget.ttsovanthangkhongloi,
+                          tttilemokhoamanmoi: widget.tttilemokhoamanmoi,
+                        ),
                       ),
                     );
                   }
@@ -478,6 +504,10 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
                               man: widget.mannguoichoi,
                               taikhoan: widget.taikhoan,
                               matkhau: widget.matkhau,
+                              ttsovandachoi: ttTaiKhoan!.ttsovandachoi,
+                              ttsovanthangkhongloi:
+                                  ttTaiKhoan.mdsovanthangkhongloi,
+                              tttilemokhoamanmoi: ttTaiKhoan.tttilemokhoamanmoi,
                             )),
                   );
                 });
@@ -562,12 +592,21 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
     if (bangHoanThanh) {
       if (widget.maman == widget.mannguoichoi) {
         widget.mannguoichoi += 1;
+        int soloiman = cManThuThach.layThongTinSoLoi(widget.maman) as int;
 
         final databaseReference = FirebaseDatabase.instance.reference();
         databaseReference
             .child('taikhoan')
             .child(widget.taikhoan)
             .update({'man': widget.mannguoichoi});
+
+        if (widget.soloi == soloiman) {
+          int sovan = widget.ttsovanthangkhongloi += 1;
+          ctaiKhoan.capNhatThongKeTTThangKhongLoi(widget.taikhoan, sovan);
+        }
+        int man = widget.maman;
+        String tilemoman = (man / widget.ttsovandachoi) as String;
+        ctaiKhoan.capNhatThongKeTTTiLeMoKhoaManMoi(widget.taikhoan, tilemoman);
       }
 
       thoiGian.cancel();
@@ -621,6 +660,11 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
                                 man: widget.mannguoichoi,
                                 taikhoan: widget.taikhoan,
                                 matkhau: widget.matkhau,
+                                ttsovandachoi: ttTaiKhoan!.ttsovandachoi,
+                                ttsovanthangkhongloi:
+                                    ttTaiKhoan.mdsovanthangkhongloi,
+                                tttilemokhoamanmoi:
+                                    ttTaiKhoan.tttilemokhoamanmoi,
                               )),
                     );
                   });

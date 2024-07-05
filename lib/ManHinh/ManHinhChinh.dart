@@ -120,7 +120,9 @@ class _ManHinhChinhState extends State<ManHinhChinh> {
     final List<Widget> _pages = [
       TrangChu(ttTaiKhoan: widget.ttTaiKhoan),
       const XepHang(),
-      ThongKe(),
+      ThongKe(
+        ttTaiKhoan: widget.ttTaiKhoan,
+      ),
     ];
 
     return Scaffold(
@@ -329,10 +331,13 @@ class TrangChu extends StatelessWidget {
                       context,
                       MaterialPageRoute(
                         builder: (context) => ChonManChoi(
-                          man: ttTaiKhoan.man,
-                          matkhau: ttTaiKhoan.matkhau,
-                          taikhoan: ttTaiKhoan.taikhoan,
-                        ),
+                            man: ttTaiKhoan.man,
+                            matkhau: ttTaiKhoan.matkhau,
+                            taikhoan: ttTaiKhoan.taikhoan,
+                            ttsovandachoi: ttTaiKhoan.ttsovandachoi,
+                            ttsovanthangkhongloi:
+                                ttTaiKhoan.ttsovanthangkhongloi,
+                            tttilemokhoamanmoi: ttTaiKhoan.tttilemokhoamanmoi),
                       ),
                     );
                   },
