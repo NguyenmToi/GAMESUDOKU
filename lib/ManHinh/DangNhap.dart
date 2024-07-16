@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:sudoku/ManHinh/DangKy.dart';
 import 'package:sudoku/ManHinh/ManHinhChinh.dart';
 import 'package:sudoku/MoHinh/xulydulieu.dart';
+import 'package:sudoku/ManHinh/ManHinhChoiNgay.dart';
 
 class DangNhap extends StatefulWidget {
   const DangNhap({super.key});
@@ -31,7 +32,17 @@ class DangNhapState extends State<DangNhap> {
       );
       return;
     }
-
+    RegExp KhongKiTuDacBiet = RegExp(r'[!@#$%^&*(),.?":{}|<>]');
+    if (KhongKiTuDacBiet.hasMatch(taiKhoan)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          backgroundColor: Colors.red,
+          content: Text("Tài khoản không được chứa ký tự đặc biệt"),
+        ),
+      );
+      return;
+    }
+    bool kiemTraDangNhap = await ctaiKhoan.dangNhap(taiKhoan, matKhau);
     bool KiemTraKhoaTK = await ctaiKhoan.kiemTraTrangThaiTaiKhoan(taiKhoan);
     if (!KiemTraKhoaTK) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -43,11 +54,8 @@ class DangNhapState extends State<DangNhap> {
       return;
     }
 
-    bool kiemTraDangNhap = await ctaiKhoan.dangNhap(taiKhoan, matKhau);
-
     if (kiemTraDangNhap) {
-      ctaiKhoan? ttTaiKhoan =
-          await ctaiKhoan.thongTindangNhap(taiKhoan, matKhau);
+      ctaiKhoan? ttTaiKhoan = await ctaiKhoan.thongTinDangNhap(taiKhoan);
 
       if (ttTaiKhoan != null) {
         if (mounted) {
@@ -76,6 +84,95 @@ class DangNhapState extends State<DangNhap> {
         ),
       );
     }
+  }
+
+  void HienThiMucDo() {
+    bool chonNgauNhien = false; // Trạng thái của checkbox
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return Wrap(
+              children: <Widget>[
+                ListTile(
+                  leading:
+                      Icon(Icons.sentiment_satisfied_alt, color: Colors.green),
+                  title: Text('Dễ'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _batDauChoi('Dễ', 20, chonNgauNhien);
+                  },
+                ),
+                ListTile(
+                  leading: Icon(Icons.sentiment_neutral, color: Colors.blue),
+                  title: Text('Trung bình'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _batDauChoi('Trung bình', 30, chonNgauNhien);
+                  },
+                ),
+                ListTile(
+                  leading:
+                      Icon(Icons.sentiment_dissatisfied, color: Colors.orange),
+                  title: Text('Khó'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _batDauChoi('Khó', 40, chonNgauNhien);
+                  },
+                ),
+                ListTile(
+                  leading: Icon(Icons.sentiment_very_dissatisfied,
+                      color: Colors.red),
+                  title: Text('Chuyên gia'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _batDauChoi('Chuyên gia', 50, chonNgauNhien);
+                  },
+                ),
+                ListTile(
+                  contentPadding: EdgeInsets.symmetric(horizontal: 16.0),
+                  leading: Icon(
+                    chonNgauNhien
+                        ? Icons.check_box
+                        : Icons.check_box_outline_blank,
+                    color: chonNgauNhien
+                        ? Colors.red
+                        : Colors.grey, // Thay đổi màu icon theo trạng thái
+                  ),
+                  title: Text(
+                    'Ngẫu nhiên',
+                    style: TextStyle(
+                        color: chonNgauNhien
+                            ? Colors.red
+                            : Colors.black), // Thay đổi màu chữ
+                  ),
+                  onTap: () {
+                    setState(() {
+                      chonNgauNhien = !chonNgauNhien;
+                    });
+                  },
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+// Hàm _batDauChoi được cập nhật với tham số ngẫu nhiên
+  void _batDauChoi(String tenMucDo, int soOAn, bool ngauNhien) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ManHinhChoiNgay(
+          tenMucDo: tenMucDo,
+          soOAn: soOAn,
+          ngauNhien: ngauNhien,
+        ),
+      ),
+    );
   }
 
   @override
@@ -123,17 +220,13 @@ class DangNhapState extends State<DangNhap> {
                     return null;
                   },
                 ),
-                const SizedBox(
-                    height:
-                        20), // Khoảng cách giữa ô nhập tài khoản và ô nhập mật khẩu
+                const SizedBox(height: 20),
                 TextFormField(
-                  controller:
-                      _MatKhau, // Controller để lấy giá trị từ ô nhập mật khẩu
+                  controller: _MatKhau,
                   obscureText: !temp, // Ẩn hiện mật khẩu khi nhập
                   decoration: InputDecoration(
-                    labelText: "Mật khẩu", // Nhãn cho ô nhập mật khẩu
-                    prefixIcon:
-                        const Icon(Icons.lock), // Biểu tượng trước ô nhập
+                    labelText: "Mật khẩu",
+                    prefixIcon: const Icon(Icons.lock),
                     suffixIcon: IconButton(
                       icon: Icon(
                         temp
@@ -148,16 +241,14 @@ class DangNhapState extends State<DangNhap> {
                       },
                     ),
                     border: const OutlineInputBorder(
-                      borderRadius: BorderRadius.all(
-                          Radius.circular(15.0)), // Bo viền ô nhập
+                      borderRadius: BorderRadius.all(Radius.circular(15.0)),
                     ),
                     contentPadding: const EdgeInsets.symmetric(
-                        vertical: 10,
-                        horizontal: 10), // Khoảng cách bên trong ô nhập
+                        vertical: 10, horizontal: 10),
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Vui lòng nhập mật khẩu'; // Kiểm tra hợp lệ khi submit Form
+                      return 'Vui lòng nhập mật khẩu';
                     }
                     return null;
                   },
@@ -166,8 +257,8 @@ class DangNhapState extends State<DangNhap> {
                     height:
                         30), // Khoảng cách giữa ô nhập mật khẩu và nút Đăng nhập
                 SizedBox(
-                  width: 250, // Độ rộng của nút Đăng nhập
-                  height: 40, // Chiều cao của nút Đăng nhập
+                  width: 280,
+                  height: 45,
                   child: ElevatedButton(
                     style: ButtonStyle(
                       shape: MaterialStateProperty.all<RoundedRectangleBorder>(
@@ -176,12 +267,11 @@ class DangNhapState extends State<DangNhap> {
                               15.0), // Bo góc của nút Đăng nhập
                         ),
                       ),
-                      backgroundColor: MaterialStateProperty.all(
-                          Colors.blue), // Màu nền của nút Đăng nhập
+                      backgroundColor: MaterialStateProperty.all(Colors.blue),
                     ),
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
-                        _dangNhap(); // Gọi hàm đăng nhập
+                        _dangNhap();
                       }
                     },
                     child: const Text(
@@ -194,18 +284,41 @@ class DangNhapState extends State<DangNhap> {
                     ),
                   ),
                 ),
+                const SizedBox(height: 20), // Khoảng cách giữa hai nút
+                SizedBox(
+                  width: 280,
+                  height: 45,
+                  child: ElevatedButton(
+                    style: ButtonStyle(
+                      shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                        RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(
+                              15.0), // Bo góc của nút Chơi ngay
+                        ),
+                      ),
+                      backgroundColor: MaterialStateProperty.all(Colors.blue),
+                    ),
+                    onPressed: HienThiMucDo,
+                    child: const Text(
+                      "Chơi ngay",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 17,
+                      ),
+                    ),
+                  ),
+                ),
                 Padding(
                   padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
                   child: RichText(
                     text: TextSpan(
-                      text: 'Bạn chưa có tài khoản? ', // Chữ trước link Đăng ký
+                      text: 'Bạn chưa có tài khoản? ',
                       style: const TextStyle(
-                          color: Colors.black,
-                          fontStyle:
-                              FontStyle.italic), // Kiểu chữ cho chữ trước
+                          color: Colors.black, fontStyle: FontStyle.italic),
                       children: <TextSpan>[
                         TextSpan(
-                          text: 'Đăng ký ngay', // Link Đăng ký
+                          text: 'Đăng ký ngay',
                           style: const TextStyle(
                               color: Colors.blue,
                               fontWeight: FontWeight.bold,

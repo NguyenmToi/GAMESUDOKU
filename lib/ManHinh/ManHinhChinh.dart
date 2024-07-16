@@ -1,7 +1,10 @@
 import 'dart:io';
 
 import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:sudoku/ManHinh/ChonManChoi.dart';
 import 'package:sudoku/ManHinh/LichSuChoi.dart';
 import 'package:sudoku/ManHinh/ManHinhChoiMucDo.dart';
@@ -117,11 +120,17 @@ class _ManHinhChinhState extends State<ManHinhChinh> {
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+    //đặt màn hình không thể xoay ngang
     final List<Widget> _pages = [
       TrangChu(ttTaiKhoan: widget.ttTaiKhoan),
       const XepHang(),
       ThongKe(
         ttTaiKhoan: widget.ttTaiKhoan,
+        key: UniqueKey(),
       ),
     ];
 
@@ -176,10 +185,66 @@ class _ManHinhChinhState extends State<ManHinhChinh> {
   }
 }
 
-class TrangChu extends StatelessWidget {
+class TrangChu extends StatefulWidget {
   final ctaiKhoan ttTaiKhoan;
 
-  const TrangChu({Key? key, required this.ttTaiKhoan}) : super(key: key);
+  TrangChu({Key? key, required this.ttTaiKhoan}) : super(key: key);
+
+  @override
+  _TrangChuState createState() => _TrangChuState();
+}
+
+class _TrangChuState extends State<TrangChu> {
+  File? anh;
+  String? dulieuanh;
+  bool nhan = false;
+  String? duongdananh;
+  String? anhhienthi;
+  final databaseReference = FirebaseDatabase.instance.reference();
+  Future<void> _chonAnh() async {
+    if (nhan) {
+      return;
+    }
+    nhan = true; // đang trong quá trình chọn ảnh
+
+    final picker = ImagePicker();
+    try {
+      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+      if (pickedFile != null) {
+        FirebaseStorage storage = FirebaseStorage.instance;
+
+        if (duongdananh != null && duongdananh!.isNotEmpty) {
+          try {
+            await storage.ref('anh/anhsukiensudoku').delete();
+          } catch (error) {
+            SnackBar(content: Text('Lỗi xóa ảnh: $error'));
+          }
+        }
+
+        File imageFile = File(pickedFile.path);
+        Uint8List imageBytes = await imageFile.readAsBytes();
+
+        Reference reference = storage.ref().child('anh/anhsukiensudoku');
+        await reference.putData(imageBytes);
+        setState(() {});
+      }
+    } catch (e) {
+      print('Lỗi khi chọn ảnh: $e');
+    } finally {
+      nhan = false; // quá trình chọn ảnh đã kết thúc
+    }
+  }
+
+  Future<String> taiAnhSuKien() async {
+    try {
+      Reference storageReference =
+          FirebaseStorage.instance.ref().child('anh/anhsukiensudoku');
+      return await storageReference.getDownloadURL();
+    } catch (e) {
+      return '';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -204,19 +269,19 @@ class TrangChu extends StatelessWidget {
                           context,
                           MaterialPageRoute(
                             builder: (context) => QuanLyThongTinCaNhan(
-                              taikhoan: ttTaiKhoan.taikhoan,
-                              anh: ttTaiKhoan.anh,
-                              diem: ttTaiKhoan.diem,
-                              man: ttTaiKhoan.man,
-                              tentaikhoan: ttTaiKhoan.tentaikhoan,
-                              matkhau: ttTaiKhoan.matkhau,
+                              taikhoan: widget.ttTaiKhoan.taikhoan,
+                              anh: widget.ttTaiKhoan.anh,
+                              diem: widget.ttTaiKhoan.diem,
+                              man: widget.ttTaiKhoan.man,
+                              tentaikhoan: widget.ttTaiKhoan.tentaikhoan,
+                              matkhau: widget.ttTaiKhoan.matkhau,
                             ),
                           ),
                         );
                       },
                       child: CircleAvatar(
                         radius: 25,
-                        backgroundImage: NetworkImage(ttTaiKhoan.anh!),
+                        backgroundImage: NetworkImage(widget.ttTaiKhoan.anh!),
                         backgroundColor: Colors.black,
                       ),
                     ),
@@ -225,14 +290,14 @@ class TrangChu extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          ttTaiKhoan.tentaikhoan,
+                          widget.ttTaiKhoan.tentaikhoan,
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         Text(
-                          'Màn ${ttTaiKhoan.man}',
+                          'Màn ${widget.ttTaiKhoan.man}',
                           style: const TextStyle(
                             fontSize: 16,
                             color: Colors.grey,
@@ -244,16 +309,27 @@ class TrangChu extends StatelessWidget {
                 ),
               ),
               const Spacer(),
-              IconButton(
-                icon: Icon(
-                  Icons.question_mark,
-                  size: 35,
-                  color: Colors.green[200],
-                ),
-                onPressed: () {
-                  hienThiHuongDan(context);
-                },
-              )
+              widget.ttTaiKhoan.quanly
+                  ? IconButton(
+                      icon: Icon(
+                        Icons.settings,
+                        size: 35,
+                        color: Colors.green[200],
+                      ),
+                      onPressed: () {
+                        hienThiHuongDan(context);
+                      },
+                    )
+                  : IconButton(
+                      icon: Icon(
+                        Icons.question_mark,
+                        size: 35,
+                        color: Colors.green[200],
+                      ),
+                      onPressed: () {
+                        hienThiHuongDan(context);
+                      },
+                    )
             ],
           ),
           const SizedBox(height: 20),
@@ -271,14 +347,45 @@ class TrangChu extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 20),
-                Image.asset(
-                  'assets/image/logo.png',
-                  width: 220,
-                  height: 200,
+                FutureBuilder<String>(
+                  future: taiAnhSuKien(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Container(
+                        height: 200,
+                        width: MediaQuery.of(context).size.width,
+                        child: Center(child: CircularProgressIndicator()),
+                      );
+                    } else if (snapshot.hasError ||
+                        !snapshot.hasData ||
+                        snapshot.data!.isEmpty) {
+                      return Container(
+                        height: 200,
+                        width: MediaQuery.of(context).size.width,
+                        child: Center(
+                          child: Image.asset(
+                            'assets/image/logo.png',
+                            fit: BoxFit.fill,
+                          ),
+                        ),
+                      );
+                    } else {
+                      return Container(
+                        height: 200,
+                        width: MediaQuery.of(context).size.width,
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                            image: NetworkImage(snapshot.data!),
+                            fit: BoxFit.fill,
+                          ),
+                          border: Border.all(color: Colors.grey),
+                        ),
+                      );
+                    }
+                  },
                 ),
-                const SizedBox(height: 60),
-                const SizedBox(height: 15),
-                if (ttTaiKhoan.quanly == true)
+                const SizedBox(height: 75),
+                if (widget.ttTaiKhoan.quanly == true)
                   ElevatedButton(
                     onPressed: () {
                       Navigator.push(
@@ -300,7 +407,7 @@ class TrangChu extends StatelessWidget {
                         style: TextStyle(fontSize: 20)),
                   ),
                 const SizedBox(height: 15),
-                if (ttTaiKhoan.quanly == true)
+                if (widget.ttTaiKhoan.quanly == true)
                   ElevatedButton(
                     onPressed: () {
                       Navigator.push(
@@ -321,7 +428,7 @@ class TrangChu extends StatelessWidget {
                     child: const Text('Quản lý tài khoản',
                         style: TextStyle(fontSize: 20)),
                   ),
-                if (ttTaiKhoan.quanly)
+                if (widget.ttTaiKhoan.quanly)
                   const SizedBox(height: 15)
                 else
                   const SizedBox(height: 130),
@@ -331,13 +438,13 @@ class TrangChu extends StatelessWidget {
                       context,
                       MaterialPageRoute(
                         builder: (context) => ChonManChoi(
-                            man: ttTaiKhoan.man,
-                            matkhau: ttTaiKhoan.matkhau,
-                            taikhoan: ttTaiKhoan.taikhoan,
-                            ttsovandachoi: ttTaiKhoan.ttsovandachoi,
-                            ttsovanthangkhongloi:
-                                ttTaiKhoan.ttsovanthangkhongloi,
-                            tttilemokhoamanmoi: ttTaiKhoan.tttilemokhoamanmoi),
+                          man: widget.ttTaiKhoan.man,
+                          matkhau: widget.ttTaiKhoan.matkhau,
+                          taikhoan: widget.ttTaiKhoan.taikhoan,
+                          ttsovandachoi: widget.ttTaiKhoan.ttsovandachoi,
+                          ttsovanthangkhongloi:
+                              widget.ttTaiKhoan.ttsovanthangkhongloi,
+                        ),
                       ),
                     );
                   },
@@ -389,9 +496,9 @@ class TrangChu extends StatelessWidget {
 
     // Trích xuất dữ liệu và đặt vào controller
     if (snapshot.value != null) {
-      Map<String, dynamic> data =
+      Map<String, dynamic> dulieu =
           Map<String, dynamic>.from(snapshot.value as Map);
-      _noiDungcontroller.text = data['noidung'] ?? '';
+      _noiDungcontroller.text = dulieu['noidung'] ?? '';
     } else {
       _noiDungcontroller.text = '';
     }
@@ -408,7 +515,7 @@ class TrangChu extends StatelessWidget {
                   children: <Widget>[
                     TextField(
                       controller: _noiDungcontroller,
-                      readOnly: ttTaiKhoan.quanly ? false : true,
+                      readOnly: widget.ttTaiKhoan.quanly ? false : true,
                       maxLines: null, // Cho phép nhiều dòng
                       decoration: InputDecoration(
                         hintText: 'Nhập nội dung hướng dẫn chơi',
@@ -418,7 +525,14 @@ class TrangChu extends StatelessWidget {
                 ),
               ),
               actions: <Widget>[
-                if (ttTaiKhoan.quanly)
+                TextButton(
+                  child: Text('Đổi ảnh sự kiện'),
+                  onPressed: () {
+                    _chonAnh();
+                    Navigator.pop(context);
+                  },
+                ),
+                if (widget.ttTaiKhoan.quanly)
                   TextButton(
                     child: Text('Cập nhật'),
                     onPressed: () async {
@@ -426,12 +540,6 @@ class TrangChu extends StatelessWidget {
                       Navigator.of(context).pop();
                     },
                   ),
-                TextButton(
-                  child: Text('Đóng'),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                ),
               ],
             );
           },

@@ -13,6 +13,7 @@ class QuanLyThuThach extends StatefulWidget {
 
 class _QuanLyThuThachState extends State<QuanLyThuThach> {
   late Future<List<cManThuThach>> _dsManThuThach;
+  bool thongbao = false;
 
   void xoaManChoi(String maman) async {
     DatabaseReference manChoi =
@@ -28,7 +29,7 @@ class _QuanLyThuThachState extends State<QuanLyThuThach> {
 
   Future<void> taiLaiDanhSachMan() async {
     setState(() {
-      _dsManThuThach = cManThuThach.taiDanhSachMan();
+      _dsManThuThach = cManThuThach.taiDanhSachManQuanLy();
     });
   }
 
@@ -76,14 +77,16 @@ class _QuanLyThuThachState extends State<QuanLyThuThach> {
                     List bang = dsManThuThach[index].bang;
                     List banggiai = dsManThuThach[index].banggiai;
                     int soloi = dsManThuThach[index].soloi;
-                    int thoigian = dsManThuThach[index].maman;
+                    int thoigian = dsManThuThach[index].thoigian;
                     int goiy = dsManThuThach[index].sogoiy;
+                    bool trangthaiman = dsManThuThach[index].trangthai;
 
                     return _xayDungCacThanhPhan(
                       title: manThuThach.tenman,
                       sl: soluongoan,
-                      color: Colors.lightBlue[100]!,
-                      onTapEdit: () {
+                      mau: Colors.lightBlue[100]!,
+                      trangthaiman: trangthaiman,
+                      sua: () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -98,8 +101,39 @@ class _QuanLyThuThachState extends State<QuanLyThuThach> {
                           ),
                         );
                       },
-                      onTapDelete: () {
-                        thongBaoXoaManChoi('man${maman.toString()}');
+                      trangThai: () {
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: Text(trangthaiman
+                                  ? 'Ẩn màn chơi'
+                                  : 'Hiển thị màn chơi'),
+                              content: Text(trangthaiman
+                                  ? 'Bạn có muốn ẩn màn chơi không ?'
+                                  : 'Bạn có muốn hiển thị lại màn chơi không ?'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: const Text('Hủy bỏ'),
+                                ),
+                                TextButton(
+                                  onPressed: () {
+                                    cManThuThach.capNhatTrangThaiManChoi(maman);
+                                    setState(() {
+                                      taiLaiDanhSachMan();
+                                    });
+                                    thongBaoCapNhat(trangthaiman);
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: const Text('Đồng ý'),
+                                ),
+                              ],
+                            );
+                          },
+                        );
                       },
                     );
                   },
@@ -115,12 +149,13 @@ class _QuanLyThuThachState extends State<QuanLyThuThach> {
   Widget _xayDungCacThanhPhan({
     required String title,
     required int sl,
-    required Color color,
-    VoidCallback? onTapEdit,
-    VoidCallback? onTapDelete,
+    required Color mau,
+    required bool trangthaiman,
+    VoidCallback? sua,
+    VoidCallback? trangThai,
   }) {
     return Card(
-      color: color,
+      color: mau,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
       ),
@@ -140,60 +175,39 @@ class _QuanLyThuThachState extends State<QuanLyThuThach> {
           children: [
             IconButton(
               icon: const Icon(Icons.edit, color: Colors.black),
-              onPressed: onTapEdit,
+              onPressed: sua,
             ),
-            IconButton(
-              icon: const Icon(Icons.delete, color: Colors.black),
-              onPressed: onTapDelete,
-            ),
+            if (trangthaiman)
+              IconButton(
+                icon: const Icon(Icons.visibility, color: Colors.black),
+                onPressed: trangThai,
+              )
+            else
+              IconButton(
+                icon: const Icon(Icons.visibility_off, color: Colors.black),
+                onPressed: trangThai,
+              )
           ],
         ),
       ),
     );
   }
 
-  void thongBaoXoaManChoi(String maman) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text(
-            'Xóa màn chơi',
-            style: TextStyle(fontSize: 25),
-            textAlign: TextAlign.center,
-          ),
-          content: const Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.warning_amber, size: 30, color: Colors.red),
-              SizedBox(width: 8), // Khoảng cách giữa icon và văn bản
-              Flexible(
-                child: Text(
-                    'Màn chơi sẽ bị xóa vĩnh viễn, bạn có muốn xóa không ?'),
-              ),
-            ],
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Hủy'),
-              onPressed: () {
-                Navigator.of(context).pop(); // Đóng hộp thoại
-              },
-            ),
-            TextButton(
-              child: const Text('Đồng ý'),
-              onPressed: () {
-                xoaManChoi(maman);
-                Navigator.of(context).pop();
-                setState(() {
-                  taiLaiDanhSachMan();
-                });
-              },
-            ),
-          ],
-        );
-      },
-    );
+  void thongBaoCapNhat(bool trangthai) {
+    if (!thongbao) {
+      thongbao = true;
+      final snackbar = SnackBar(
+        content:
+            Text(trangthai ? 'Đã ẩn màn chơi' : 'Màn chơi đã hiển thị lại'),
+        duration: Duration(seconds: 1),
+        backgroundColor: Colors.green,
+      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(snackbar)
+          .closed
+          .then((reason) {
+        thongbao = false;
+      });
+    }
   }
 }

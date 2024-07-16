@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:sudoku/ManHinh/TaoDoKho.dart';
 import 'package:sudoku/MoHinh/xulydulieu.dart';
-import 'package:sudoku/ThanhPhan/SuaMucDoChoi.dart';
+
+import '../ManHinh/SuaMucDoChoi.dart';
 
 class QuanLyMucDo extends StatefulWidget {
   const QuanLyMucDo({Key? key}) : super(key: key);
@@ -16,10 +16,10 @@ class _QuanLyMucDoState extends State<QuanLyMucDo> {
   @override
   void initState() {
     super.initState();
-    _loadLevels();
+    HienThiMucDo();
   }
 
-  Future<void> _loadLevels() async {
+  Future<void> HienThiMucDo() async {
     List<cmucDo> LayMucDo = await cmucDo.dsMucDo();
     setState(() {
       MucDo = LayMucDo;
@@ -34,40 +34,20 @@ class _QuanLyMucDoState extends State<QuanLyMucDo> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // ElevatedButton(
-            //   onPressed: () {
-            //     Navigator.push(
-            //       context,
-            //       MaterialPageRoute(builder: (context) => TaoDoKho()),
-            //     );
-            //   },
-            //   child: Text(
-            //     'Tạo mức độ chơi',
-            //     style: TextStyle(color: Colors.white, fontSize: 18),
-            //   ),
-            //   style: ElevatedButton.styleFrom(
-            //     minimumSize: Size(double.infinity, 50), // Co giãn theo màn hình
-            //     shape: RoundedRectangleBorder(
-            //       borderRadius: BorderRadius.circular(15), // Bo tròn góc
-            //     ),
-            //     backgroundColor: Colors.blue, // Màu nền xanh
-            //   ),
-            // ),
-            // const SizedBox(height: 20),
             Expanded(
               child: ListView.builder(
                 itemCount: MucDo.length,
                 itemBuilder: (context, index) {
-                  final level = MucDo[index];
+                  final mucDo = MucDo[index];
                   return Card(
                     color: Colors.lightBlue[100],
                     child: ListTile(
                       title: Text(
-                        level.tenmucdo,
+                        mucDo.tenmucdo,
                         style: TextStyle(color: Colors.black),
                       ),
                       subtitle: Text(
-                        'Số ô ẩn: ${level.soan}, Điểm: ${level.diem}',
+                        'Số ô ẩn: ${mucDo.soan}, Điểm: ${mucDo.diem}',
                         style: TextStyle(color: Colors.black),
                       ),
                       trailing: Row(
@@ -80,10 +60,10 @@ class _QuanLyMucDoState extends State<QuanLyMucDo> {
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) => SuaMucDoChoi(
-                                    mamucdo: level.mamucdo,
-                                    tenmucdo: level.tenmucdo,
-                                    soan: level.soan,
-                                    diem: level.diem,
+                                    mamucdo: mucDo.mamucdo,
+                                    tenmucdo: mucDo.tenmucdo,
+                                    soan: mucDo.soan,
+                                    diem: mucDo.diem,
                                   ),
                                 ),
                               );
@@ -91,8 +71,57 @@ class _QuanLyMucDoState extends State<QuanLyMucDo> {
                           ),
                           IconButton(
                             icon: Icon(Icons.delete),
-                            onPressed: () {
-                              // Implement delete logic
+                            onPressed: () async {
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    title: Text("Xác nhận xóa"),
+                                    content: Text(
+                                        "Bạn có chắc chắn muốn xóa mức độ này?"),
+                                    actions: [
+                                      TextButton(
+                                        child: Text("Hủy"),
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                      ),
+                                      TextButton(
+                                        child: Text("Xóa"),
+                                        onPressed: () async {
+                                          try {
+                                            await cmucDo.capNhatMucDoChoi(
+                                                mucDo.mamucdo,
+                                                mucDo.tenmucdo,
+                                                mucDo.soan,
+                                                mucDo.diem,
+                                                false);
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              const SnackBar(
+                                                backgroundColor: Colors.green,
+                                                content: Text(
+                                                    "Xóa mức độ thành công"),
+                                              ),
+                                            );
+                                          } catch (error) {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              const SnackBar(
+                                                backgroundColor: Colors.red,
+                                                content: Text(
+                                                    "Xóa mức độ không thành công"),
+                                              ),
+                                            );
+                                          } finally {
+                                            Navigator.of(context).pop();
+                                          }
+                                        },
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
                             },
                           ),
                         ],

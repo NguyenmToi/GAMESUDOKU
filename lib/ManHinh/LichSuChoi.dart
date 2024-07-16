@@ -73,9 +73,9 @@ class LichSuaChoiState extends State<LichSuaChoi> {
       body: isLoading
           ? Center(child: CircularProgressIndicator())
           : sudokuList.isEmpty
-              ? Center(child: Text('No data available'))
+              ? Center(child: Text('Không có dữ liệu'))
               : ListView.builder(
-                  itemCount: sudokuList.length,
+                  itemCount: sudokuList.length > 10 ? 10 : sudokuList.length,
                   itemBuilder: (context, index) {
                     final sudoku = sudokuList[index];
                     return Padding(

@@ -1,5 +1,6 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:sudoku/MoHinh/xulydulieu.dart';
 
 class SuaMucDoChoi extends StatefulWidget {
@@ -32,42 +33,73 @@ class _SuaMucDoChoiState extends State<SuaMucDoChoi> {
     diem.text = widget.diem.toString();
   }
 
-  // final ChuNhapHopLe =
-  //     FilteringTextInputFormatter.deny(RegExp(r'[\u0300-\u036f]'));
-
-  // Khởi tạo bảng Sudoku
   List<List<int>> BangSudoku =
       List.generate(9, (_) => List.generate(9, (_) => 0));
   List<List<bool>> oKhoiTao =
       List.generate(9, (_) => List.generate(9, (_) => false));
   List<List<bool>> oDaThayDoi =
       List.generate(9, (_) => List.generate(9, (_) => false));
-
   void xoaONgauNhien() {
     setState(() {
       try {
         int soOAn = int.tryParse(SoOAn.text) ?? 0;
-        soOAn = soOAn.clamp(0, 81);
-        BangSudoku = List.generate(9, (_) => List.generate(9, (_) => 0));
-        oKhoiTao = List.generate(9, (_) => List.generate(9, (_) => false));
-        oDaThayDoi = List.generate(9, (_) => List.generate(9, (_) => false));
+        soOAn =
+            soOAn.clamp(0, 81); // Giới hạn số ô cần ẩn trong khoảng từ 0 đến 81
+
+        BangSudoku = List.generate(
+            9, (_) => List.generate(9, (_) => 0)); // Khởi tạo bảng Sudoku
+        oKhoiTao = List.generate(
+            9,
+            (_) => List.generate(
+                9, (_) => false)); // Khởi tạo mảng kiểm tra ô khởi tạo
+        oDaThayDoi = List.generate(
+            9,
+            (_) => List.generate(
+                9, (_) => false)); // Khởi tạo mảng đánh dấu ô đã thay đổi
+
+        // Điền số ngẫu nhiên vào bảng Sudoku
         dienSudokuNgauNhien(0, 0);
-        List<int> ViTriO = [];
+
+        // Tạo danh sách các ô đã điền và xáo trộn
+        List<int> viTriO = [];
         for (int i = 0; i < 81; i++) {
           if (BangSudoku[i ~/ 9][i % 9] != 0) {
-            ViTriO.add(i);
+            viTriO.add(i);
           }
         }
-        ViTriO.shuffle();
-        for (int i = 0; i < soOAn; i++) {
-          int index = ViTriO[i];
-          int row = index ~/ 9;
-          int col = index % 9;
-          if (!oKhoiTao[row][col]) {
-            BangSudoku[row][col] = 0;
-            oKhoiTao[row][col] = true;
-          } else {
-            i--;
+        viTriO.shuffle();
+
+        // Số ô ẩn trong mỗi khối và mảng đếm số ô ẩn trong từng khối
+        int soOAnToiThieuMoiKhoi = soOAn ~/ 9;
+        int soOAnDu = soOAn % 9;
+
+        // Tạo danh sách số ô ẩn cần thiết cho mỗi khối
+        List<int> soOAnTrongMoiKhoi =
+            List.generate(9, (index) => soOAnToiThieuMoiKhoi);
+
+        // Phân bố ngẫu nhiên số dư vào các khối
+        List<int> khongGian = List.generate(9, (index) => index);
+        khongGian.shuffle();
+        for (int i = 0; i < soOAnDu; i++) {
+          soOAnTrongMoiKhoi[khongGian[i]]++;
+        }
+
+        // Lặp để ẩn số ô cần ẩn
+        for (int i = 0; i < viTriO.length && soOAn > 0; i++) {
+          int index = viTriO[i];
+          int hang = index ~/ 9;
+          int cot = index % 9;
+          int khoi = (hang ~/ 3) * 3 + (cot ~/ 3);
+
+          // Kiểm tra ô đã có giá trị và không phải là ô khởi tạo
+          if (BangSudoku[hang][cot] != 0 && !oKhoiTao[hang][cot]) {
+            // Đảm bảo mỗi khối có đủ số ô ẩn cần thiết
+            if (soOAnTrongMoiKhoi[khoi] > 0) {
+              BangSudoku[hang][cot] = 0;
+              oKhoiTao[hang][cot] = true;
+              soOAn--;
+              soOAnTrongMoiKhoi[khoi]--;
+            }
           }
         }
       } catch (e) {
@@ -184,28 +216,60 @@ class _SuaMucDoChoiState extends State<SuaMucDoChoi> {
         ),
       );
     } else {
-      try {
-        int mamucdo = widget.mamucdo;
-        await cmucDo.capNhatMucDoChoi(mamucdo, TenMucDo.text, SoAn, DiemSo);
-        print('Tên: ${TenMucDo.text}');
-        print('Số ô ẩn: $SoAn');
-        print('Số điểm: $DiemSo');
+      bool confirmed = await showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Xác nhận'),
+          content: const Text('Bạn có chắc chắn muốn cập nhật thông tin này?'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text('Hủy'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text('Xác nhận'),
+            ),
+          ],
+        ),
+      );
 
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('Thành công'),
-            content: const Text('Đã cập nhật mức độ thành công.'),
-            actions: <Widget>[
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text('OK'),
-              ),
-            ],
-          ),
-        );
-      } catch (e) {
-        print('Lỗi: $e');
+      if (confirmed == true) {
+        try {
+          int mamucdo = widget.mamucdo;
+          await cmucDo.capNhatMucDoChoi(
+              mamucdo, TenMucDo.text, SoAn, DiemSo, true);
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Thành công'),
+              content: const Text('Đã cập nhật mức độ thành công.'),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    Navigator.of(context).pop(true); // Quay lại màn hình ngoài
+                  },
+                  child: Text('OK'),
+                ),
+              ],
+            ),
+          );
+        } catch (e) {
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: Text('Lỗi'),
+              content: Text('Có lỗi xảy ra: $e'),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text('OK'),
+                ),
+              ],
+            ),
+          );
+        }
       }
     }
   }
@@ -238,7 +302,6 @@ class _SuaMucDoChoiState extends State<SuaMucDoChoi> {
                   TextField(
                     controller: TenMucDo,
                     decoration: const InputDecoration(labelText: 'Tên mức độ'),
-                    // inputFormatters: [ChuNhapHopLe],
                   ),
                   TextField(
                     controller: SoOAn,

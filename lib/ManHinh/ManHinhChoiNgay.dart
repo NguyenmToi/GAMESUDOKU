@@ -1,51 +1,50 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:sudoku/MoHinh/xulydulieu.dart';
 import 'package:vibration/vibration.dart';
 
-class Manhinhchoimucdo extends StatefulWidget {
-  const Manhinhchoimucdo(
+class ManHinhChoiNgay extends StatefulWidget {
+  const ManHinhChoiNgay(
       {Key? key,
-      required this.taikhoan,
-      required this.mucdo,
-      required this.soan,
-      required this.diem})
+      required this.soOAn,
+      required this.tenMucDo,
+      required this.ngauNhien})
       : super(key: key);
-
-  final String taikhoan;
-  final String mucdo;
-  final int soan;
-  final int diem;
+  final String tenMucDo;
+  final int soOAn;
+  final bool ngauNhien;
 
   @override
-  State<Manhinhchoimucdo> createState() => _ManhinhchoimucdoState();
+  State<ManHinhChoiNgay> createState() => _ManHinhChoiNgayState();
 }
 
-class _ManhinhchoimucdoState extends State<Manhinhchoimucdo> {
+class _ManHinhChoiNgayState extends State<ManHinhChoiNgay> {
   int giay = 0; // Biến lưu trữ thời gian đã trôi qua
   late Timer thoiGian; // Đối tượng Timer để đếm thời gian
   int? hangDuocChon; // Chỉ số hàng được chọn
   int? cotDuocChon; // Chỉ số cột được chọn
   int loiSai = 5;
   bool ttghichu = false;
+
   // Khởi tạo bảng Sudoku
   List<List<int>> bangSudoku =
       List.generate(9, (_) => List.generate(9, (_) => 0));
   List<List<bool>> oKhoiTao =
       List.generate(9, (_) => List.generate(9, (_) => false));
-  List<List<int>> mangTam = List.generate(
-      9,
-      (_) => List.generate(
-          9, (_) => 0)); // Khai báo mảng tạm để lưu trữ các giá trị
-  List<List<Set<int>>> ghiChu =
-      List.generate(9, (_) => List.generate(9, (_) => <int>{}));
+  List<List<int>> mangTam = List.generate(9, (_) => List.generate(9, (_) => 0));
+  List<List<Set<int>>> ghiChu = List.generate(9,
+      (_) => List.generate(9, (_) => <int>{})); // Danh sách ghi chú cho mỗi ô
+
   @override
   void initState() {
     super.initState();
     batDauThoiGian(); // Bắt đầu đếm thời gian
-    xoaONgauNhien(); // Tạo bảng Sudoku ngẫu nhiên
-    ctaiKhoan.capNhatSoVanDaChoi(widget.taikhoan, 1);
+    // Kiểm tra và thực hiện xóa ô Sudoku ngẫu nhiên nếu widget.ngauNhien là true
+    if (widget.ngauNhien) {
+      xoaOSudokuNgauNhien();
+    } else {
+      xoaOSudoku();
+    }
   }
 
   void batDauThoiGian() {
@@ -117,6 +116,7 @@ class _ManhinhchoimucdoState extends State<Manhinhchoimucdo> {
               }
             } else {
               loiSai--;
+
               _rungDienThoai();
               kiemTraLoiSai(); // thong bao ket thuc
             }
@@ -156,19 +156,6 @@ class _ManhinhchoimucdoState extends State<Manhinhchoimucdo> {
     return true;
   }
 
-  void capNhatDiemVaThemManChoi() async {
-    try {
-      // Sử dụng await để đợi hàm layDiemTaiKhoan hoàn thành
-      int DiemCu = await ctaiKhoan.layDiemTaiKhoan(widget.taikhoan);
-      int diem = DiemCu + widget.diem;
-      cMucDoChoiNgauNhien.themManChoiNgauNhien(widget.taikhoan, widget.mucdo,
-          5 - loiSai, DateTime.now(), giay, widget.diem, bangSudoku);
-      await ctaiKhoan.capNhatDiem(widget.taikhoan, diem);
-    } catch (e) {
-      print("Lỗi khi cập nhật điểm và thêm màn chơi: $e");
-    }
-  }
-
   void dungThoiGian() {
     if (thoiGian != null) {
       thoiGian!.cancel();
@@ -177,18 +164,12 @@ class _ManhinhchoimucdoState extends State<Manhinhchoimucdo> {
 
   void xuLyHoanThanhTroChoi() {
     dungThoiGian();
-    capNhatDiemVaThemManChoi();
-    ctaiKhoan.capNhatSoVanDaChoiThang(widget.taikhoan, 1);
-    if (loiSai == 5) {
-      ctaiKhoan.capNhatSoVanDaChoiThangKhongLoi(widget.taikhoan, 1);
-    }
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text('Chúc mừng!'),
-          content: Text(
-              'Giải thành công câu đố Sudoku bạn được cộng ${widget.diem} điểm'),
+          content: Text('Giải thành công câu đố Sudoku'),
           actions: <Widget>[
             TextButton(
               onPressed: () {
@@ -238,14 +219,17 @@ class _ManhinhchoimucdoState extends State<Manhinhchoimucdo> {
       bangSudoku = List.generate(9, (_) => List.generate(9, (_) => 0));
       oKhoiTao = List.generate(9, (_) => List.generate(9, (_) => false));
       mangTam = List.generate(9, (_) => List.generate(9, (_) => 0));
-      ctaiKhoan.capNhatSoVanDaChoi(widget.taikhoan, 1);
       // Đặt lại các biến trạng thái
       hangDuocChon = null;
       cotDuocChon = null;
       loiSai = 5;
       giay = 0;
-      // Tạo bảng Sudoku mới
-      xoaONgauNhien();
+      // Kiểm tra và thực hiện xóa ô Sudoku ngẫu nhiên nếu widget.ngauNhien là true
+      if (widget.ngauNhien) {
+        xoaOSudokuNgauNhien();
+      } else {
+        xoaOSudoku();
+      }
       // Khởi động lại bộ đếm thời gian
       thoiGian.cancel();
       batDauThoiGian();
@@ -306,7 +290,7 @@ class _ManhinhchoimucdoState extends State<Manhinhchoimucdo> {
                     Row(
                       children: [
                         Text(
-                          'Mức độ ${widget.mucdo}',
+                          'Mức độ: ${widget.tenMucDo}',
                           style: TextStyle(
                               color: Colors.black,
                               fontSize: 20,
@@ -371,8 +355,7 @@ class _ManhinhchoimucdoState extends State<Manhinhchoimucdo> {
                                   -1); // Kiểm tra ô có được chọn không
                       bool laKhoiTao = oKhoiTao[hang]
                           [cot]; // Kiểm tra ô có phải là ô khởi tạo không
-                      bool daDien = bangSudoku[hang][cot] !=
-                          0; // Kiểm tra ô đã có số hay chưa
+                      //bool daDien = bangSudoku[hang][cot] != 0; // Kiểm tra ô đã có số hay chưa
                       bool coLoi = mangTam[hang][cot] == -1;
                       // Kiểm tra ô có nằm trong cùng hàng, cột hoặc vùng 3x3 với ô được chọn không
                       bool cungHang = hang == (hangDuocChon ?? -1);
@@ -567,13 +550,40 @@ class _ManhinhchoimucdoState extends State<Manhinhchoimucdo> {
     );
   }
 
-  void xoaONgauNhien() {
+  void xoaOSudokuNgauNhien() {
+    dienSudokuNgauNhien(0, 0); // Gọi ban đầu để điền bảng Sudoku
+    // Lấy danh sách các vị trí đã điền số
+    List<int> viTriDaDien = [];
+    for (int i = 0; i < 81; i++) {
+      if (bangSudoku[i ~/ 9][i % 9] != 0) {
+        // Kiểm tra ô đã được điền số chưa
+        viTriDaDien.add(i);
+      }
+    }
+    viTriDaDien.shuffle();
+    Random random = Random();
+    for (int i = 0; i < widget.soOAn; i++) {
+      // Số ô cần xóa
+      int index = viTriDaDien[i];
+      int hang = index ~/ 9;
+      int cot = index % 9;
+      if (!oKhoiTao[hang][cot]) {
+        // Nếu ô không phải là ô khởi tạo
+        bangSudoku[hang][cot] = 0; // Xóa ô này bằng cách gán giá trị về 0
+        oKhoiTao[hang][cot] = true; // Đặt giá trị của ô khởi tạo thành true
+      } else {
+        i--; // Thử lại nếu ô đã được xóa
+      }
+    }
+  }
+
+  void xoaOSudoku() {
     dienSudokuNgauNhien(0, 0);
     // Khởi tạo danh sách vị trí đã điền
     List<int> viTriDaDien = List.generate(81, (index) => index);
     viTriDaDien.shuffle();
     // Số ô cần ẩn và số ẩn tối thiểu trong mỗi khối
-    int soOAn = widget.soan;
+    int soOAn = widget.soOAn;
     int soOAnToiThieuMoiKhoi = soOAn ~/ 9;
     int soOAnDu = soOAn % 9;
 
@@ -613,7 +623,6 @@ class _ManhinhchoimucdoState extends State<Manhinhchoimucdo> {
     if (hang == 9) {
       return true; // Đã điền đầy đủ Sudoku
     }
-
     // Tính toán hàng và cột tiếp theo
     int hangTiepTheo = (cot == 8) ? (hang + 1) : hang;
     int cotTiepTheo = (cot + 1) % 9;

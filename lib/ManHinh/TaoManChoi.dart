@@ -59,11 +59,9 @@ class _TaoManChoiState extends State<TaoManChoi> {
   void themManChoiLenFireBase() async {
     String maman = 'man${_tenManChoiController.text.toString()}';
     bangChoiSudoku = bangSudoku;
-    bool exists = await kiemTraManChoi(maman);
-    if (exists) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Tên màn chơi đã tồn tại")),
-      );
+    bool tontai = await kiemTraManChoi(maman);
+    if (tontai) {
+      loiManChoiDaTonTai();
     } else {
       themManChoi();
     }
@@ -76,11 +74,24 @@ class _TaoManChoiState extends State<TaoManChoi> {
         _soGoiYController.text.isEmpty ||
         _soLoiController.text.isEmpty ||
         _thoiGianController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Vui lòng điền đầy đủ thông tin'),
-        ),
-      );
+      dienDayDuThongTin();
+      return;
+    }
+    int thoigian = int.parse(_thoiGianController.text.toString());
+    int goiy = int.parse(_soGoiYController.text.toString());
+    int soloi = int.parse(_soLoiController.text.toString());
+    int soman = int.parse(_tenManChoiController.text.toString());
+    if (thoigian < 1 || thoigian >= 3600) {
+      loiThoiGian();
+      return;
+    } else if (goiy > 81) {
+      loiGoiY();
+      return;
+    } else if (soloi > 729) {
+      loiSoLoi();
+      return;
+    } else if (soman == 0) {
+      loiMan0();
       return;
     }
 
@@ -97,12 +108,7 @@ class _TaoManChoiState extends State<TaoManChoi> {
       'trangthai': true,
       'thoigiantao': DateTime.now().toString(),
     }).then((_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Đã thêm màn chơi thành công'),
-          duration: Duration(milliseconds: 500),
-        ),
-      );
+      thongBaoThemManChoiThanhCong();
     }).catchError((error) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -117,15 +123,12 @@ class _TaoManChoiState extends State<TaoManChoi> {
         .child('thuthach')
         .child('man${_tenManChoiController.text.toString()}')
         .update({'banggiai': bangLoiGiaiSudoku});
+
+    lamMoiBangSuDoKu();
   }
 
   @override
   Widget build(BuildContext context) {
-    // cố định màn hình ứng dụng ở chế độ dọc
-    // SystemChrome.setPreferredOrientations([
-    //   DeviceOrientation.portraitUp,
-    //   DeviceOrientation.portraitDown,
-    // ]);
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.yellow[200],
@@ -289,7 +292,12 @@ class _TaoManChoiState extends State<TaoManChoi> {
                     ),
                     child: TextButton(
                       onPressed: () {
-                        giaiSudoku();
+                        if (kiemTraBangSudoku(bangSudoku) == true &&
+                            kiemTraBangRong(bangSudoku) == false) {
+                          giaiSudoku();
+                        } else {
+                          thongBaoBangKhongHopLe();
+                        }
                       },
                       child: const Text(
                         'Giải trò chơi',
@@ -325,7 +333,7 @@ class _TaoManChoiState extends State<TaoManChoi> {
                         xoaODangChon();
                       },
                       color: Colors.black,
-                      icon: const Icon(Icons.visibility_off),
+                      icon: const Icon(Icons.delete),
                     ),
                   ),
                   Container(
@@ -335,7 +343,8 @@ class _TaoManChoiState extends State<TaoManChoi> {
                     ),
                     child: IconButton(
                         onPressed: () {
-                          if (kiemTraBangSudoku(bangSudoku) == true) {
+                          if (kiemTraBangSudoku(bangSudoku) == true &&
+                              kiemTraBangRong(bangSudoku) == false) {
                             thongBaoBangHopLe();
                           } else {
                             thongBaoBangKhongHopLe();
@@ -348,7 +357,7 @@ class _TaoManChoiState extends State<TaoManChoi> {
               ),
               const SizedBox(height: 20),
               SizedBox(
-                height: MediaQuery.of(context).size.height * 0.47,
+                height: MediaQuery.of(context).size.height * 0.455,
                 child: GridView.builder(
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 9,
@@ -357,8 +366,7 @@ class _TaoManChoiState extends State<TaoManChoi> {
                   itemBuilder: (context, index) {
                     int hang = index ~/ 9;
                     int cot = index % 9;
-                    bool isSelected =
-                        hang == hangDuocChon && cot == cotDuocChon;
+                    bool daChon = hang == hangDuocChon && cot == cotDuocChon;
 
                     Border border = Border(
                       top: BorderSide(
@@ -399,7 +407,7 @@ class _TaoManChoiState extends State<TaoManChoi> {
                       onTap: () => xuLyNhan(hang, cot),
                       child: Container(
                         decoration: BoxDecoration(
-                          color: isSelected ? Colors.blue[100] : null,
+                          color: daChon ? Colors.blue[100] : null,
                           border: border,
                         ),
                         child: Center(
@@ -434,7 +442,7 @@ class _TaoManChoiState extends State<TaoManChoi> {
                     height: 45,
                     width: 60,
                     decoration: BoxDecoration(
-                      color: Colors.blue[50],
+                      color: Colors.blue[100],
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: InkWell(
@@ -450,7 +458,7 @@ class _TaoManChoiState extends State<TaoManChoi> {
                   ),
                 ],
               ),
-              const SizedBox(height: 15),
+              const SizedBox(height: 25),
               Center(
                 child: Container(
                   width: double.infinity,
@@ -460,9 +468,16 @@ class _TaoManChoiState extends State<TaoManChoi> {
                   ),
                   child: TextButton(
                     onPressed: () {
-                      setState(() {
-                        themManChoiLenFireBase();
-                      });
+                      if (kiemTraBangSudoku(bangSudoku) == true &&
+                          kiemTraBangRong(bangSudoku) == false) {
+                        if (demSoLuongSo(bangSudoku) >= 17) {
+                          themManChoiLenFireBase();
+                        } else {
+                          thongBaoBangKhongDuSo();
+                        }
+                      } else {
+                        thongBaoBangKhongHopLe();
+                      }
                     },
                     style: TextButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 15),
@@ -512,12 +527,23 @@ class _TaoManChoiState extends State<TaoManChoi> {
         bangSudoku[i][j] = 0;
       }
     }
+    _soGoiYController.text = '';
+    _soLoiController.text = '';
+    _tenManChoiController.text = '';
+    _thoiGianController.text = '';
     setState(() {});
+  }
+
+  void lamMoiThongTinNutNhan() {
+    _soGoiYController.text = '';
+    _soLoiController.text = '';
+    _tenManChoiController.text = '';
+    _thoiGianController.text = '';
   }
 
   bool _ngauNhienSudoku(int hang, int cot) {
     if (hang == 9) {
-      return true; // Đã điền đầy đủ Sudoku thành công
+      return true;
     }
 
     // Tính toán hàng và cột tiếp theo
@@ -538,12 +564,10 @@ class _TaoManChoiState extends State<TaoManChoi> {
         if (_ngauNhienSudoku(hangtieptheo, cottieptheo)) {
           return true;
         }
-
         // Nếu điền ô tiếp theo thất bại, backtrack
         bangSudoku[hang][cot] = 0;
       }
     }
-
     // Không tìm thấy số hợp lệ cho ô này, backtrack
     return false;
   }
@@ -566,7 +590,6 @@ class _TaoManChoiState extends State<TaoManChoi> {
         }
       }
     }
-
     return true;
   }
 
@@ -579,7 +602,6 @@ class _TaoManChoiState extends State<TaoManChoi> {
 
     // tạo bảng hợp lệ
     if (_ngauNhienSudoku(0, 0)) {
-      // Cập nhật giao diện
       setState(() {});
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -592,13 +614,26 @@ class _TaoManChoiState extends State<TaoManChoi> {
     }
   }
 
+  int demSoLuongSo(List<List<int?>> bang) {
+    int dem = 0;
+    for (int i = 0; i < bang.length; i++) {
+      for (int j = 0; j < bang[i].length; j++) {
+        if (bang[i][j] != 0) {
+          dem++;
+        }
+      }
+    }
+    return dem;
+  }
+
   void thongBaoBangHopLe() {
     if (!_thongbaokiemtra) {
       _thongbaokiemtra = true;
 
       final snackbar = SnackBar(
         content: Text('Màn chơi hợp lệ'),
-        duration: Duration(seconds: 2),
+        duration: Duration(seconds: 1),
+        backgroundColor: Colors.green,
       );
       ScaffoldMessenger.of(context)
           .showSnackBar(snackbar)
@@ -615,8 +650,153 @@ class _TaoManChoiState extends State<TaoManChoi> {
 
       final snackbar = SnackBar(
         content: Text('Màn chơi không hợp lệ'),
-        duration: Duration(seconds: 2),
+        duration: Duration(seconds: 1),
         backgroundColor: Colors.red,
+      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(snackbar)
+          .closed
+          .then((reason) {
+        _thongbaokiemtra = false;
+      });
+    }
+  }
+
+  void thongBaoBangKhongDuSo() {
+    if (!_thongbaokiemtra) {
+      _thongbaokiemtra = true;
+
+      final snackbar = SnackBar(
+        content: Text('Bảng chơi phải có tối thiểu 17 số'),
+        duration: Duration(seconds: 1),
+        backgroundColor: Colors.red,
+      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(snackbar)
+          .closed
+          .then((reason) {
+        _thongbaokiemtra = false;
+      });
+    }
+  }
+
+  void dienDayDuThongTin() {
+    if (!_thongbaokiemtra) {
+      _thongbaokiemtra = true;
+
+      final snackbar = SnackBar(
+        content: Text('Vui lòng điền đầy đủ thông tin'),
+        duration: Duration(seconds: 1),
+        backgroundColor: Colors.red,
+      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(snackbar)
+          .closed
+          .then((reason) {
+        _thongbaokiemtra = false;
+      });
+    }
+  }
+
+  void loiThoiGian() {
+    if (!_thongbaokiemtra) {
+      _thongbaokiemtra = true;
+
+      final snackbar = SnackBar(
+        content:
+            Text('Thời gian tối thiểu màn chơi là 1 giây, tối đa là 3599 giây'),
+        duration: Duration(seconds: 1),
+        backgroundColor: Colors.red,
+      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(snackbar)
+          .closed
+          .then((reason) {
+        _thongbaokiemtra = false;
+      });
+    }
+  }
+
+  void loiGoiY() {
+    if (!_thongbaokiemtra) {
+      _thongbaokiemtra = true;
+
+      final snackbar = SnackBar(
+        content: Text('Số gợi ý tối đa là 81'),
+        duration: Duration(seconds: 1),
+        backgroundColor: Colors.red,
+      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(snackbar)
+          .closed
+          .then((reason) {
+        _thongbaokiemtra = false;
+      });
+    }
+  }
+
+  void loiSoLoi() {
+    if (!_thongbaokiemtra) {
+      _thongbaokiemtra = true;
+
+      final snackbar = SnackBar(
+        content: Text('Số lỗi tối đa là 729'),
+        duration: Duration(seconds: 1),
+        backgroundColor: Colors.red,
+      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(snackbar)
+          .closed
+          .then((reason) {
+        _thongbaokiemtra = false;
+      });
+    }
+  }
+
+  void loiMan0() {
+    if (!_thongbaokiemtra) {
+      _thongbaokiemtra = true;
+
+      final snackbar = SnackBar(
+        content: Text('Màn chơi tối thiểu là 1'),
+        duration: Duration(seconds: 1),
+        backgroundColor: Colors.red,
+      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(snackbar)
+          .closed
+          .then((reason) {
+        _thongbaokiemtra = false;
+      });
+    }
+  }
+
+  void loiManChoiDaTonTai() {
+    if (!_thongbaokiemtra) {
+      _thongbaokiemtra = true;
+
+      final snackbar = SnackBar(
+        content: Text('Màn chơi đã tồn tại'),
+        duration: Duration(seconds: 1),
+        backgroundColor: Colors.red,
+      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(snackbar)
+          .closed
+          .then((reason) {
+        _thongbaokiemtra = false;
+      });
+    }
+  }
+
+  void thongBaoThemManChoiThanhCong() {
+    if (!_thongbaokiemtra) {
+      _thongbaokiemtra = true;
+
+      final snackbar = SnackBar(
+        content: Text('Đã thêm màn chơi thành công'),
+        duration: Duration(seconds: 1),
+        backgroundColor: Colors.green,
       );
       ScaffoldMessenger.of(context)
           .showSnackBar(snackbar)
@@ -630,7 +810,7 @@ class _TaoManChoiState extends State<TaoManChoi> {
   Widget xayDungSo(int so) {
     return Ink(
       decoration: BoxDecoration(
-        color: Colors.blue[50],
+        color: Colors.blue[100],
         borderRadius: BorderRadius.circular(20),
       ),
       child: InkWell(

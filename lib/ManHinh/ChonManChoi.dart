@@ -4,20 +4,21 @@ import 'package:sudoku/ManHinh/ManHinhChoiThuThach.dart';
 import 'package:sudoku/MoHinh/xulydulieu.dart';
 
 class ChonManChoi extends StatefulWidget {
-  ChonManChoi(
-      {super.key,
-      required this.man,
-      required this.matkhau,
-      required this.taikhoan,
-      required this.ttsovandachoi,
-      required this.ttsovanthangkhongloi,
-      required this.tttilemokhoamanmoi});
+  ChonManChoi({
+    super.key,
+    required this.man,
+    required this.matkhau,
+    required this.taikhoan,
+    required this.ttsovandachoi,
+    required this.ttsovanthangkhongloi,
+    // required this.tttilemokhoamanmoi
+  });
   final String taikhoan;
   final String matkhau;
   final int man;
   late int ttsovandachoi;
   final int ttsovanthangkhongloi;
-  final String tttilemokhoamanmoi;
+  // final String tttilemokhoamanmoi;
 
   @override
   State<ChonManChoi> createState() => _ChonManCHoiState();
@@ -30,23 +31,24 @@ class _ChonManCHoiState extends State<ChonManChoi> {
   @override
   void initState() {
     super.initState();
-    _dsManThuThach = cManThuThach
-        .taiDanhSachMan(); // Gọi hàm để load danh sách màn thử thách
+    _dsManThuThach = cManThuThach.taiDanhSachMan();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.yellow[200], // Màu nền appbar
+        backgroundColor: Colors.yellow[200],
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios),
           color: Colors.grey,
           onPressed: () {
             Navigator.pop(context);
+
+            //sua lai thanh load
           },
         ),
-        title: const Stack(
+        title: Stack(
           children: [
             Align(
               alignment: Alignment.center,
@@ -62,8 +64,7 @@ class _ChonManCHoiState extends State<ChonManChoi> {
         ),
       ),
       body: Padding(
-        padding: const EdgeInsets.fromLTRB(
-            7, 10, 7, 5), // Thêm khoảng cách padding ở trên
+        padding: const EdgeInsets.fromLTRB(7, 10, 7, 5),
         child: FutureBuilder<List<cManThuThach>>(
           future: _dsManThuThach,
           builder: (BuildContext context,
@@ -97,33 +98,39 @@ class _ChonManCHoiState extends State<ChonManChoi> {
                   int maman = dsManThuThach[index].maman;
 
                   return GestureDetector(
-                    onTap: () {
-                      if (widget.man >= maman) {
-                        int sovan = widget.ttsovandachoi += 1;
-                        ctaiKhoan.capNhatThongKeTTSoVanChoi(
-                            widget.taikhoan, sovan);
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ManHinhChoiThuThach(
-                              tenMan: manThuThach.tenman,
-                              bang: bangc,
-                              soloi: soloic,
-                              goiy: goiyc,
-                              thoigian: thoigianc,
-                              banggiai: banggiaic,
-                              maman: maman,
-                              taikhoan: widget.taikhoan,
-                              matkhau: widget.matkhau,
-                              mannguoichoi: widget.man,
-                              ttsovandachoi: widget.ttsovandachoi,
-                              ttsovanthangkhongloi: widget.ttsovanthangkhongloi,
-                              tttilemokhoamanmoi: widget.tttilemokhoamanmoi,
+                    onTap: () async {
+                      ctaiKhoan? ttTaiKhoan =
+                          await ctaiKhoan.thongTinDangNhap(widget.taikhoan);
+                      if (ttTaiKhoan != null) {
+                        int mannguoichoi = ttTaiKhoan.man;
+
+                        if (mannguoichoi >= maman) {
+                          int sovan = widget.ttsovandachoi += 1;
+                          ctaiKhoan.capNhatThongKeTTSoVanChoi(
+                              widget.taikhoan, sovan);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ManHinhChoiThuThach(
+                                tenMan: manThuThach.tenman,
+                                bang: bangc,
+                                soloi: soloic,
+                                goiy: goiyc,
+                                thoigian: thoigianc,
+                                banggiai: banggiaic,
+                                maman: maman,
+                                taikhoan: widget.taikhoan,
+                                matkhau: widget.matkhau,
+                                mannguoichoi: widget.man,
+                                ttsovandachoi: widget.ttsovandachoi,
+                                ttsovanthangkhongloi:
+                                    widget.ttsovanthangkhongloi,
+                              ),
                             ),
-                          ),
-                        );
-                      } else {
-                        thongBao();
+                          );
+                        } else {
+                          thongBao(mannguoichoi);
+                        }
                       }
                     },
                     child: Container(
@@ -152,13 +159,12 @@ class _ChonManCHoiState extends State<ChonManChoi> {
     );
   }
 
-  void thongBao() {
+  void thongBao(int man) {
     if (!_thongBao) {
       _thongBao = true;
 
       final snackbar = SnackBar(
-        content: Text(
-            'Hãy hoàn thành màn chơi ${widget.man} để mở khóa màn chơi mới'),
+        content: Text('Hãy hoàn thành màn chơi $man để mở khóa màn chơi mới'),
         duration: Duration(seconds: 2),
       );
       ScaffoldMessenger.of(context)

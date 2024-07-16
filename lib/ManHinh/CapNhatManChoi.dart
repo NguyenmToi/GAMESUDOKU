@@ -15,7 +15,6 @@ class CapNhatManChoi extends StatefulWidget {
       required this.thoigian});
   final List bang;
   final List banggiai;
-
   final int soloi;
   final int thoigian;
   final int goiy;
@@ -72,28 +71,32 @@ class _CapNhatManChoiState extends State<CapNhatManChoi> {
         _soGoiYController.text.isEmpty ||
         _soLoiController.text.isEmpty ||
         _thoiGianController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Vui lòng điền đầy đủ thông tin'),
-        ),
-      );
+      dienDayDuThongTin();
+      return;
+    }
+    int thoigian = int.parse(_thoiGianController.text.toString());
+    int goiy = int.parse(_soGoiYController.text.toString());
+    int soloi = int.parse(_soLoiController.text.toString());
+    if (thoigian < 1 || thoigian >= 3600) {
+      loiThoiGian();
+      return;
+    } else if (goiy > 81) {
+      loiGoiY();
+      return;
+    } else if (soloi > 729) {
+      loiSoLoi();
       return;
     }
 
     databaseReference.child('thuthach').child('man${widget.maman}').update({
       'bang': bangSudoku,
-      'thoigian': int.parse(_thoiGianController.text.toString()),
+      'thoigian': thoigian,
       'soloi': int.parse(_soLoiController.text.toString()),
       'sogoiy': int.parse(_soGoiYController.text.toString()),
       'trangthai': true,
       'thoigiantao': DateTime.now().toString(),
     }).then((_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Đã cập nhật màn chơi thành công'),
-          duration: Duration(milliseconds: 500),
-        ),
-      );
+      thongBaoCapNhatManChoiThanhCong();
     }).catchError((error) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -108,6 +111,9 @@ class _CapNhatManChoiState extends State<CapNhatManChoi> {
         .child('thuthach')
         .child('man${widget.maman}')
         .update({'banggiai': bangLoiGiaiSudoku});
+
+    lamMoiBangSuDoKu();
+    thongBaoCapNhatManChoiThanhCong();
   }
 
   @override
@@ -123,11 +129,6 @@ class _CapNhatManChoiState extends State<CapNhatManChoi> {
 
   @override
   Widget build(BuildContext context) {
-    // cố định màn hình ứng dụng ở chế độ dọc
-    // SystemChrome.setPreferredOrientations([
-    //   DeviceOrientation.portraitUp,
-    //   DeviceOrientation.portraitDown,
-    // ]);
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.yellow[200],
@@ -136,6 +137,7 @@ class _CapNhatManChoiState extends State<CapNhatManChoi> {
           color: Colors.grey,
           onPressed: () {
             Navigator.pop(context);
+            setState(() {});
           },
         ),
         title: const Stack(
@@ -292,7 +294,12 @@ class _CapNhatManChoiState extends State<CapNhatManChoi> {
                     ),
                     child: TextButton(
                       onPressed: () {
-                        giaiSudoku();
+                        if (kiemTraBangSudoku(bangSudoku) == true &&
+                            kiemTraBangRong(bangSudoku) == false) {
+                          giaiSudoku();
+                        } else {
+                          thongBaoBangKhongHopLe();
+                        }
                       },
                       child: const Text(
                         'Giải trò chơi',
@@ -328,7 +335,7 @@ class _CapNhatManChoiState extends State<CapNhatManChoi> {
                         xoaODangChon();
                       },
                       color: Colors.black,
-                      icon: const Icon(Icons.visibility_off),
+                      icon: const Icon(Icons.delete),
                     ),
                   ),
                   Container(
@@ -338,7 +345,8 @@ class _CapNhatManChoiState extends State<CapNhatManChoi> {
                     ),
                     child: IconButton(
                         onPressed: () {
-                          if (kiemTraBangSudoku(bangSudoku) == true) {
+                          if (kiemTraBangSudoku(bangSudoku) == true &&
+                              kiemTraBangRong(bangSudoku) == false) {
                             thongBaoBangHopLe();
                           } else {
                             thongBaoBangKhongHopLe();
@@ -351,7 +359,7 @@ class _CapNhatManChoiState extends State<CapNhatManChoi> {
               ),
               const SizedBox(height: 20),
               SizedBox(
-                height: MediaQuery.of(context).size.height * 0.47,
+                height: MediaQuery.of(context).size.height * 0.445,
                 child: GridView.builder(
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 9,
@@ -464,7 +472,14 @@ class _CapNhatManChoiState extends State<CapNhatManChoi> {
                   child: TextButton(
                     onPressed: () {
                       setState(() {
-                        CapNhatManChoi();
+                        if (kiemTraBangSudoku(bangSudoku) == true &&
+                            kiemTraBangRong(bangSudoku) == false) {
+                          CapNhatManChoi();
+                          // thongBaoCapNhatManChoiThanhCong();
+                          Navigator.pop(context);
+                        } else {
+                          thongBaoBangKhongHopLe();
+                        }
                       });
                     },
                     style: TextButton.styleFrom(
@@ -602,6 +617,7 @@ class _CapNhatManChoiState extends State<CapNhatManChoi> {
       final snackbar = SnackBar(
         content: Text('Màn chơi hợp lệ'),
         duration: Duration(seconds: 2),
+        backgroundColor: Colors.green,
       );
       ScaffoldMessenger.of(context)
           .showSnackBar(snackbar)
@@ -620,6 +636,97 @@ class _CapNhatManChoiState extends State<CapNhatManChoi> {
         content: Text('Màn chơi không hợp lệ'),
         duration: Duration(seconds: 2),
         backgroundColor: Colors.red,
+      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(snackbar)
+          .closed
+          .then((reason) {
+        _thongbaokiemtra = false;
+      });
+    }
+  }
+
+  void dienDayDuThongTin() {
+    if (!_thongbaokiemtra) {
+      _thongbaokiemtra = true;
+
+      final snackbar = SnackBar(
+        content: Text('Vui lòng điền đầy đủ thông tin'),
+        duration: Duration(seconds: 1),
+        backgroundColor: Colors.red,
+      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(snackbar)
+          .closed
+          .then((reason) {
+        _thongbaokiemtra = false;
+      });
+    }
+  }
+
+  void loiThoiGian() {
+    if (!_thongbaokiemtra) {
+      _thongbaokiemtra = true;
+
+      final snackbar = SnackBar(
+        content:
+            Text('Thời gian tối thiểu màn chơi là 1 giây, tối đa là 3599 giây'),
+        duration: Duration(seconds: 1),
+        backgroundColor: Colors.red,
+      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(snackbar)
+          .closed
+          .then((reason) {
+        _thongbaokiemtra = false;
+      });
+    }
+  }
+
+  void loiGoiY() {
+    if (!_thongbaokiemtra) {
+      _thongbaokiemtra = true;
+
+      final snackbar = SnackBar(
+        content: Text('Số gợi ý tối đa là 81'),
+        duration: Duration(seconds: 1),
+        backgroundColor: Colors.red,
+      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(snackbar)
+          .closed
+          .then((reason) {
+        _thongbaokiemtra = false;
+      });
+    }
+  }
+
+  void loiSoLoi() {
+    if (!_thongbaokiemtra) {
+      _thongbaokiemtra = true;
+
+      final snackbar = SnackBar(
+        content: Text('Số lỗi tối đa là 729'),
+        duration: Duration(seconds: 1),
+        backgroundColor: Colors.red,
+      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(snackbar)
+          .closed
+          .then((reason) {
+        _thongbaokiemtra = false;
+      });
+    }
+  }
+
+  void thongBaoCapNhatManChoiThanhCong() {
+    if (!_thongbaokiemtra) {
+      _thongbaokiemtra = true;
+
+      final snackbar = SnackBar(
+        content: Text('Đã thêm màn chơi thành công'),
+        duration: Duration(seconds: 1),
+        backgroundColor: Colors.green,
       );
       ScaffoldMessenger.of(context)
           .showSnackBar(snackbar)

@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:sudoku/MoHinh/xulydulieu.dart';
 
@@ -25,13 +23,15 @@ class XepHangState extends State<XepHang> {
   Future<void> NguoiChoiXepHang({required bool SapXep}) async {
     List<ctaiKhoan> nguoichoi =
         await ctaiKhoan.layDSTaiKhoan(SapXepDiem: SapXep);
-    setState(() {
-      if (SapXep) {
-        doKho = nguoichoi;
-      } else {
-        thuThach = nguoichoi;
-      }
-    });
+    if (mounted) {
+      setState(() {
+        if (SapXep) {
+          doKho = nguoichoi;
+        } else {
+          thuThach = nguoichoi;
+        }
+      });
+    }
   }
 
   @override
@@ -133,7 +133,9 @@ class XepHangState extends State<XepHang> {
         return ListTile(
           leading: CircleAvatar(
             radius: 25,
-            backgroundImage: NetworkImage(nguoichoi.anh!),
+            backgroundImage: nguoichoi.anh != null && nguoichoi.anh.isNotEmpty
+                ? NetworkImage(nguoichoi.anh) as ImageProvider
+                : AssetImage('assets/image/logo.png'),
             backgroundColor: Colors.black,
           ),
           title: Text(

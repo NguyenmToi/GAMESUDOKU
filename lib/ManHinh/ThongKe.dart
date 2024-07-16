@@ -10,7 +10,6 @@ class ThongKe extends StatefulWidget {
 }
 
 class _ThongKeState extends State<ThongKe> {
-  ctaiKhoan? ttTaikhoan;
   @override
   void initState() {
     super.initState();
@@ -25,6 +24,17 @@ class _ThongKeState extends State<ThongKe> {
           (widget.ttTaiKhoan!.mdsovanthang / widget.ttTaiKhoan!.mdsovandachoi) *
               100;
     }
+
+    double tilethuthach = 0.0;
+
+    if (widget.ttTaiKhoan!.man >= 2) {
+      tilethuthach =
+          ((widget.ttTaiKhoan!.man - 1) / widget.ttTaiKhoan!.ttsovandachoi) *
+              100;
+    } else {
+      tilethuthach = 0;
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -34,6 +44,7 @@ class _ThongKeState extends State<ThongKe> {
             fontWeight: FontWeight.bold,
           ),
         ),
+        backgroundColor: Colors.amber[200],
         centerTitle: true,
         automaticallyImplyLeading: false,
       ),
@@ -87,13 +98,16 @@ class _ThongKeState extends State<ThongKe> {
               ),
             ),
             SizedBox(height: 16),
-            buildStatContainer2(
-                'Số ván đã chơi',
-                widget.ttTaiKhoan.ttsovandachoi.toString(),
-                'Số ván thắng không lỗi',
-                widget.ttTaiKhoan.ttsovanthangkhongloi.toString(),
-                'Tỉ lệ mở khóa màn mới',
-                widget.ttTaiKhoan.tttilemokhoamanmoi.toString()),
+            buildStatContainer(
+              'Số ván đã chơi',
+              widget.ttTaiKhoan.ttsovandachoi.toString(),
+              'Màn cao nhất được mở khóa',
+              widget.ttTaiKhoan.man.toString(),
+              'Số ván thắng không lỗi',
+              widget.ttTaiKhoan.ttsovanthangkhongloi.toString(),
+              'Tỉ lệ mở khóa màn mới',
+              tilethuthach.toStringAsFixed(2) + '%',
+            ),
           ],
         ),
       ),
@@ -125,33 +139,6 @@ class _ThongKeState extends State<ThongKe> {
           buildStatRow(label3, value3),
           buildDivider(),
           buildStatRow(label4, value4),
-        ],
-      ),
-    );
-  }
-
-  Widget buildStatContainer2(
-    String label1,
-    String value1,
-    String label2,
-    String value2,
-    String label3,
-    String value3,
-  ) {
-    return Container(
-      padding: EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.grey[300],
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          buildStatRow(label1, value1),
-          buildDivider(),
-          buildStatRow(label2, value2),
-          buildDivider(),
-          buildStatRow(label3, value3),
         ],
       ),
     );

@@ -2,44 +2,40 @@ import 'package:flutter/material.dart';
 import 'package:sudoku/MoHinh/xulydulieu.dart';
 
 class DangKy extends StatefulWidget {
-  const DangKy({super.key});
+  const DangKy({Key? key}) : super(key: key);
 
   @override
   State<DangKy> createState() => DangKyState();
 }
 
 class DangKyState extends State<DangKy> {
-  final _formKey = GlobalKey<
-      FormState>(); // GlobalKey để quản lý và kiểm tra trạng thái của Form
-  final TextEditingController _TaiKhoan =
-      TextEditingController(); // Controller cho ô nhập tài khoản
-  final TextEditingController _MatKhau =
-      TextEditingController(); // Controller cho ô nhập mật khẩu
-  final TextEditingController _NhapLaiMatKhau =
-      TextEditingController(); // Controller cho ô nhập lại mật khẩu
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController _TaiKhoan = TextEditingController();
+  final TextEditingController _MatKhau = TextEditingController();
+  final TextEditingController _NhapLaiMatKhau = TextEditingController();
+
+  RegExp KhongKiTuDacBiet = RegExp(r'^[a-zA-Z0-9]+$');
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back), // Biểu tượng nút quay lại
+          icon: Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pop(context); // Quay lại màn hình trước đó khi nhấn nút
+            Navigator.pop(context);
           },
         ),
-        title: Text('Đăng ký tài khoản'), // Tiêu đề của AppBar
+        title: Text('Đăng ký tài khoản'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
-          key:
-              _formKey, // Gắn GlobalKey cho Form để quản lý và kiểm tra trạng thái Form
+          key: _formKey,
           child: Column(
             children: <Widget>[
               TextFormField(
-                controller:
-                    _TaiKhoan, // Controller để lấy giá trị từ ô nhập tài khoản
+                controller: _TaiKhoan,
                 decoration: InputDecoration(
                   labelText: 'Tên tài khoản (3-15 kí tự)',
                 ),
@@ -50,84 +46,83 @@ class DangKyState extends State<DangKy> {
                   if (value.length < 3 || value.length > 15) {
                     return 'Tên tài khoản phải có từ 3 đến 15 kí tự';
                   }
+                  if (!KhongKiTuDacBiet.hasMatch(value)) {
+                    return 'Tên tài khoản không được chứa ký tự đặc biệt';
+                  }
                   return null;
                 },
               ),
               TextFormField(
-                controller:
-                    _MatKhau, // Controller để lấy giá trị từ ô nhập mật khẩu
+                controller: _MatKhau,
                 decoration: InputDecoration(
-                  labelText:
-                      'Mật khẩu (6-20 kí tự)', // Nhãn cho ô nhập mật khẩu
+                  labelText: 'Mật khẩu (6-20 kí tự)',
                 ),
-                obscureText: true, // Ẩn văn bản nhập vào ô mật khẩu
+                obscureText: true,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Vui lòng nhập mật khẩu'; // Kiểm tra hợp lệ khi submit Form
+                    return 'Vui lòng nhập mật khẩu';
                   }
                   if (value.length < 6 || value.length > 20) {
-                    return 'Mật khẩu phải có từ 6 đến 20 kí tự'; // Kiểm tra độ dài mật khẩu
+                    return 'Mật khẩu phải có từ 6 đến 20 kí tự';
+                  }
+                  if (!KhongKiTuDacBiet.hasMatch(value)) {
+                    return 'Mật khẩu không được chứa ký tự đặc biệt';
                   }
                   return null;
                 },
               ),
               TextFormField(
-                controller:
-                    _NhapLaiMatKhau, // Controller để lấy giá trị từ ô nhập lại mật khẩu
+                controller: _NhapLaiMatKhau,
                 decoration: InputDecoration(
-                  labelText:
-                      'Nhập lại mật khẩu', // Nhãn cho ô nhập lại mật khẩu
+                  labelText: 'Nhập lại mật khẩu',
                 ),
-                obscureText: true, // Ẩn văn bản nhập vào ô nhập lại mật khẩu
+                obscureText: true,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Vui lòng nhập lại mật khẩu'; // Kiểm tra hợp lệ khi submit Form
+                    return 'Vui lòng nhập lại mật khẩu';
                   }
                   if (value != _MatKhau.text) {
-                    return 'Mật khẩu không khớp'; // Kiểm tra xem mật khẩu nhập lại có khớp với mật khẩu đã nhập không
+                    return 'Mật khẩu không khớp';
                   }
                   return null;
                 },
               ),
+              SizedBox(height: 20),
               SizedBox(
-                  height:
-                      20), // Khoảng cách giữa các ô nhập liệu và nút Đăng ký
-              SizedBox(
-                width: double.infinity, // Chiều rộng bằng toàn bộ phần màn hình
-                height: 50, // Chiều cao của nút Đăng ký
+                width: double.infinity,
+                height: 50,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue, // Màu nền của nút Đăng ký
+                    backgroundColor: Colors.blue,
                   ),
                   onPressed: () async {
                     if (_formKey.currentState!.validate()) {
-                      // Kiểm tra hợp lệ khi submit Form
                       try {
                         bool tonTai = await ctaiKhoan
                             .kiemTraTaiKhoanTonTai(_TaiKhoan.text);
                         if (tonTai) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                                backgroundColor: Colors.red,
-                                content: Text(
-                                    'Tên tài khoản đã được sử dụng')), // Hiển thị thông báo khi tài khoản đã tồn tại
+                              backgroundColor: Colors.red,
+                              content: Text('Tên tài khoản đã được sử dụng'),
+                            ),
                           );
                         } else {
-                          await ctaiKhoan.ThemTaiKhoan(_TaiKhoan.text,
-                              _MatKhau.text); // Thêm tài khoản mới vào Firebase
+                          await ctaiKhoan.ThemTaiKhoan(
+                              _TaiKhoan.text, _MatKhau.text);
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                                backgroundColor: Colors.green,
-                                content: Text(
-                                    'Đăng ký thành công')), // Hiển thị thông báo đăng ký thành công
+                              backgroundColor: Colors.green,
+                              content: Text('Đăng ký thành công'),
+                            ),
                           );
                         }
                       } catch (error) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                              backgroundColor: Colors.red,
-                              content: Text(
-                                  'Lỗi khi thêm tài khoản: $error')), // Hiển thị thông báo lỗi nếu có lỗi khi thêm tài khoản
+                            backgroundColor: Colors.red,
+                            content: Text('Lỗi khi thêm tài khoản: $error'),
+                          ),
                         );
                       }
                     }

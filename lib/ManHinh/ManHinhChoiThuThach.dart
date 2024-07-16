@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:sudoku/ManHinh/ChonManChoi.dart';
 import 'package:sudoku/ManHinh/LichSuChoi.dart';
 import 'package:sudoku/ManHinh/ManHinhChinh.dart';
+import 'package:vibration/vibration.dart';
 
 import '../MoHinh/xulydulieu.dart';
 
@@ -21,8 +22,7 @@ class ManHinhChoiThuThach extends StatefulWidget {
       required this.matkhau,
       required this.mannguoichoi,
       required this.ttsovandachoi,
-      required this.ttsovanthangkhongloi,
-      required this.tttilemokhoamanmoi});
+      required this.ttsovanthangkhongloi});
   late final List bang;
   final List banggiai;
   final String tenMan;
@@ -35,7 +35,6 @@ class ManHinhChoiThuThach extends StatefulWidget {
   late final mannguoichoi;
   late int ttsovandachoi;
   late final int ttsovanthangkhongloi;
-  final String tttilemokhoamanmoi;
 
   @override
   State<ManHinhChoiThuThach> createState() => _ManHinhChoiThuThachState();
@@ -49,6 +48,10 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
   late int goiy = widget.goiy;
   int hangDuocChon = -1;
   int cotDuocChon = -1;
+  bool _thongbaokiemtra = false;
+  bool cheDoGhiChu = false;
+  List<List<Set<int>>> ghiChuO =
+      List.generate(9, (i) => List.generate(9, (j) => <int>{}));
 
   @override
   void initState() {
@@ -82,56 +85,74 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
   }
 
   String dinhDangThoiGian(int thoiGian) {
-    int phut = thoiGian ~/ 60;
+    // int gio = thoiGian ~/ 3600;
+    //${gio.toString().padLeft(2, '0')}:
+    int phut = (thoiGian % 3600) ~/ 60;
     int giay = thoiGian % 60;
-    return '${phut.toString().padLeft(1, '0')}:${giay.toString().padLeft(2, '0')}';
+    return '${phut.toString().padLeft(2, '0')}:${giay.toString().padLeft(2, '0')}';
   }
 
   void xuLyChonO(int hang, int cot) {
     setState(() {
       hangDuocChon = hang;
       cotDuocChon = cot;
+
+      for (int i = 0; i < 9; i++) {
+        for (int j = 0; j < 9; j++) {
+          if (i == hang ||
+              j == cot ||
+              (i ~/ 3 == hang ~/ 3 && j ~/ 3 == cot ~/ 3)) {
+            mauSo[i][j] = Colors.blue[50]!;
+          } else {
+            mauSo[i][j] = Colors.white;
+          }
+        }
+      }
+
+      mauSo[hang][cot] = Colors.blue[100]!;
     });
   }
 
-  void xuLyNhapSo(int so) {
-    if (hangDuocChon != -1 && cotDuocChon != -1) {
-      setState(() {
-        widget.bang[hangDuocChon][cotDuocChon] = so;
+  void doiTrangThaiGhiChu() {
+    setState(() {
+      cheDoGhiChu = !cheDoGhiChu;
+    });
+  }
 
-        // So sánh số nhập vào với đáp án
-        if (so == widget.banggiai[hangDuocChon][cotDuocChon]) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Đúng!'),
-              backgroundColor: Colors.green,
-              duration: Duration(seconds: 1), // Thời gian hiển thị SnackBar
-            ),
-          );
+  void xuLyNhapSo(int so) async {
+    if (hangDuocChon != -1 && cotDuocChon != -1) {
+      widget.bang[hangDuocChon][cotDuocChon] = so;
+
+      if (so == widget.banggiai[hangDuocChon][cotDuocChon]) {
+        thongBaoNhapDung();
+        setState(() {
           mauSo[hangDuocChon][cotDuocChon] = Colors.green;
-        } else {
-          // Số nhập vào sai
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Sai!'),
-              backgroundColor: Colors.red,
-              duration: Duration(milliseconds: 500),
-            ),
-          );
+        });
+      } else {
+        await _rungDienThoai();
+
+        setState(() {
           mauSo[hangDuocChon][cotDuocChon] = Colors.red;
 
           if (soloi == 0) {
-            setState(() {
-              thongBaoThua();
-            });
+            thongBaoThua();
           } else {
             soloi -= 1;
           }
 
           widget.bang[hangDuocChon][cotDuocChon] = 0;
-        }
+        });
+      }
+      setState(() {
         kiemTraBangHoanThanh();
       });
+    }
+  }
+
+  Future<void> _rungDienThoai() async {
+    bool? hasVibrator = await Vibration.hasVibrator();
+    if (hasVibrator != null && hasVibrator) {
+      Vibration.vibrate(duration: 400);
     }
   }
 
@@ -163,7 +184,7 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
         ),
       ),
       body: Padding(
-        padding: const EdgeInsets.fromLTRB(5, 40, 5, 60),
+        padding: const EdgeInsets.fromLTRB(5, 40, 5, 90),
         child: Column(
           children: [
             Text(
@@ -194,7 +215,29 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
                 ),
                 Row(
                   children: [
-                    const Icon(Icons.lightbulb, size: 20),
+              
+                    InkWell(
+                      borderRadius: BorderRadius.circular(20),
+                      child: IconButton(
+                        onPressed: () {
+                          if (goiy == 0) {
+                            setState(() {
+                              thongBaoHetGoiY();
+                            });
+                          } else if (widget.bang[hangDuocChon][cotDuocChon] ==
+                              widget.banggiai[hangDuocChon][cotDuocChon]) {
+                            return;
+                          } else {
+                            widget.bang[hangDuocChon][cotDuocChon] =
+                                widget.banggiai[hangDuocChon][cotDuocChon];
+                            goiy -= 1;
+                            kiemTraBangHoanThanh();
+                          }
+                        },
+                        color: Colors.black,
+                        icon: const Icon(Icons.lightbulb_outline_sharp),
+                      ),
+                    ),
                     const SizedBox(width: 5),
                     Text(goiy.toString(), style: const TextStyle(fontSize: 20)),
                   ],
@@ -227,7 +270,7 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
                           : (hang % 3 == 0)
                               ? Colors.black
                               : Colors.grey,
-                      width: hang == 0 ? 1.0 : 1.0,
+                      width: hang == 0 ? 1 : 1,
                     ),
                     left: BorderSide(
                       color: cot == 0
@@ -235,7 +278,7 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
                           : (cot % 3 == 0)
                               ? Colors.black
                               : Colors.grey,
-                      width: cot == 0 ? 1.0 : 1.0,
+                      width: cot == 0 ? 1 : 1,
                     ),
                     bottom: BorderSide(
                       color: hang == 8
@@ -243,7 +286,7 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
                           : ((hang + 1) % 3 == 0)
                               ? Colors.black
                               : Colors.grey,
-                      width: hang == 8 ? 1.0 : 1.0,
+                      width: hang == 8 ? 1 : 1,
                     ),
                     right: BorderSide(
                       color: cot == 8
@@ -251,10 +294,9 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
                           : ((cot + 1) % 3 == 0)
                               ? Colors.black
                               : Colors.grey,
-                      width: cot == 8 ? 1.0 : 1.0,
+                      width: cot == 8 ? 1 : 1,
                     ),
                   );
-
                   return InkWell(
                     onTap: () {
                       if (widget.bang != null &&
@@ -271,18 +313,18 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
                         border: border,
                       ),
                       child: Center(
-                        child: Text(
-                          widget.bang != null &&
-                                  hang < widget.bang.length &&
-                                  widget.bang[hang] != null &&
-                                  cot < widget.bang[hang].length &&
-                                  widget.bang[hang][cot] != 0
-                              ? widget.bang[hang][cot].toString()
-                              : '',
-                          style: const TextStyle(
-                            fontSize: 24,
-                          ),
-                        ),
+                        child: widget.bang != null &&
+                                hang < widget.bang.length &&
+                                widget.bang[hang] != null &&
+                                cot < widget.bang[hang].length &&
+                                widget.bang[hang][cot] != 0
+                            ? Text(
+                                widget.bang[hang][cot].toString(),
+                                style: const TextStyle(
+                                  fontSize: 24,
+                                ),
+                              )
+                            : xayDungOGhiChu(hang, cot),
                       ),
                     ),
                   );
@@ -292,9 +334,6 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
             ),
             Column(
               children: [
-                const SizedBox(
-                  height: 10,
-                ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
@@ -312,29 +351,15 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
                       height: 45,
                       width: 60,
                       decoration: BoxDecoration(
-                        color: Colors.blue[50],
+                        color: Colors.blue[100],
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: InkWell(
                         borderRadius: BorderRadius.circular(20),
                         child: IconButton(
-                          onPressed: () {
-                            if (goiy == 0) {
-                              setState(() {
-                                thongBaoHetGoiY();
-                              });
-                            } else if (widget.bang[hangDuocChon][cotDuocChon] ==
-                                widget.banggiai[hangDuocChon][cotDuocChon]) {
-                              return;
-                            } else {
-                              widget.bang[hangDuocChon][cotDuocChon] =
-                                  widget.banggiai[hangDuocChon][cotDuocChon];
-                              goiy -= 1;
-                              kiemTraBangHoanThanh();
-                            }
-                          },
-                          color: Colors.black,
-                          icon: const Icon(Icons.lightbulb_outline_sharp),
+                          onPressed: doiTrangThaiGhiChu,
+                          color: cheDoGhiChu ? Colors.blue : Colors.black,
+                          icon: const Icon(Icons.note_alt_outlined),
                         ),
                       ),
                     ),
@@ -364,13 +389,9 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
             TextButton(
               child: const Text('Thoát'),
               onPressed: () async {
-                ctaiKhoan? ttTaiKhoan = await ctaiKhoan.thongTindangNhap(
-                    widget.taikhoan, widget.matkhau);
+                ctaiKhoan? ttTaiKhoan =
+                    await ctaiKhoan.thongTinDangNhap(widget.taikhoan);
 
-                double tilemoman =
-                    widget.maman.toDouble() / widget.ttsovandachoi.toDouble();
-                ctaiKhoan.capNhatThongKeTTTiLeMoKhoaManMoi(
-                    widget.taikhoan, tilemoman.toString());
                 setState(() {
                   if (ttTaiKhoan != null) {
                     Navigator.pushAndRemoveUntil(
@@ -393,7 +414,6 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
                               ttsovandachoi: ttTaiKhoan!.ttsovandachoi,
                               ttsovanthangkhongloi:
                                   ttTaiKhoan.mdsovanthangkhongloi,
-                              tttilemokhoamanmoi: ttTaiKhoan.tttilemokhoamanmoi,
                             )),
                   );
                 });
@@ -402,8 +422,8 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
             TextButton(
               child: const Text('Đồng ý'),
               onPressed: () async {
-                ctaiKhoan? ttTaiKhoan = await ctaiKhoan.thongTindangNhap(
-                    widget.taikhoan, widget.matkhau);
+                ctaiKhoan? ttTaiKhoan =
+                    await ctaiKhoan.thongTinDangNhap(widget.taikhoan);
                 List<List<int>>? bang =
                     await cManThuThach.layDuLieuBang(widget.maman);
                 // suawr lay thang
@@ -431,7 +451,6 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
                               ttsovandachoi: ttTaiKhoan!.ttsovandachoi,
                               ttsovanthangkhongloi:
                                   ttTaiKhoan.mdsovanthangkhongloi,
-                              tttilemokhoamanmoi: ttTaiKhoan.tttilemokhoamanmoi,
                             )),
                   );
 
@@ -452,7 +471,6 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
                           mannguoichoi: widget.mannguoichoi,
                           ttsovandachoi: widget.ttsovandachoi,
                           ttsovanthangkhongloi: widget.ttsovanthangkhongloi,
-                          tttilemokhoamanmoi: widget.tttilemokhoamanmoi,
                         ),
                       ),
                     );
@@ -463,6 +481,30 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
           ],
         );
       },
+    );
+  }
+
+  Widget xayDungOGhiChu(int hang, int cot) {
+    return GridView.count(
+      crossAxisCount: 3,
+      mainAxisSpacing: 1,
+      crossAxisSpacing: 1,
+      children: List.generate(9, (index) {
+        int so = index + 1;
+
+        return Center(
+          child: ghiChuO[hang][cot].contains(so)
+              ? Text(
+                  so.toString(),
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: Colors.black,
+                  ),
+                  textAlign: TextAlign.center,
+                )
+              : Container(),
+        );
+      }),
     );
   }
 
@@ -483,8 +525,8 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
             TextButton(
               child: const Text('Đồng ý'),
               onPressed: () async {
-                ctaiKhoan? ttTaiKhoan = await ctaiKhoan.thongTindangNhap(
-                    widget.taikhoan, widget.matkhau);
+                ctaiKhoan? ttTaiKhoan =
+                    await ctaiKhoan.thongTinDangNhap(widget.taikhoan);
                 setState(() {
                   if (ttTaiKhoan != null) {
                     Navigator.pushAndRemoveUntil(
@@ -507,7 +549,6 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
                               ttsovandachoi: ttTaiKhoan!.ttsovandachoi,
                               ttsovanthangkhongloi:
                                   ttTaiKhoan.mdsovanthangkhongloi,
-                              tttilemokhoamanmoi: ttTaiKhoan.tttilemokhoamanmoi,
                             )),
                   );
                 });
@@ -551,17 +592,40 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
   }
 
   Widget xayDungSo(int so) {
+    bool daChon = hangDuocChon >= 0 &&
+        hangDuocChon < 9 &&
+        cotDuocChon >= 0 &&
+        cotDuocChon < 9;
+    bool coSoGhiChu =
+        daChon ? ghiChuO[hangDuocChon][cotDuocChon].contains(so) : false;
+
     return Ink(
+      height: 45,
+      width: 60,
       decoration: BoxDecoration(
-        color: Colors.blue[50],
+        color: cheDoGhiChu
+            ? coSoGhiChu
+                ? Colors.blue[100]
+                : Colors.blue[50]
+            : Colors.blue[100],
         borderRadius: BorderRadius.circular(20),
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(20),
         onTap: () {
-          if (so != 0) {
-            xuLyNhapSo(so);
-          }
+          setState(() {
+            if (cheDoGhiChu) {
+              if (ghiChuO[hangDuocChon][cotDuocChon].contains(so)) {
+                ghiChuO[hangDuocChon][cotDuocChon].remove(so);
+              } else {
+                ghiChuO[hangDuocChon][cotDuocChon].add(so);
+              }
+            } else {
+              widget.bang[hangDuocChon][cotDuocChon] = so;
+              ghiChuO[hangDuocChon][cotDuocChon].clear();
+              xuLyNhapSo(so);
+            }
+          });
         },
         child: Container(
           width: 60,
@@ -569,11 +633,37 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
           alignment: Alignment.center,
           child: Text(
             so.toString(),
-            style: const TextStyle(color: Colors.black, fontSize: 20),
+            style: TextStyle(
+                color: cheDoGhiChu
+                    ? coSoGhiChu
+                        ? Colors.black
+                        : Colors.grey
+                    : Colors.black,
+                fontSize: 20,
+                fontWeight: FontWeight.w500),
+            textAlign: TextAlign.center,
           ),
         ),
       ),
     );
+  }
+
+  void thongBaoNhapDung() {
+    if (!_thongbaokiemtra) {
+      _thongbaokiemtra = true;
+
+      final snackbar = SnackBar(
+        content: Text('Đúng'),
+        duration: Duration(seconds: 1),
+        backgroundColor: Colors.green,
+      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(snackbar)
+          .closed
+          .then((reason) {
+        _thongbaokiemtra = false;
+      });
+    }
   }
 
   void kiemTraBangHoanThanh() {
@@ -592,24 +682,24 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
     if (bangHoanThanh) {
       if (widget.maman == widget.mannguoichoi) {
         widget.mannguoichoi += 1;
-        int soloiman = cManThuThach.layThongTinSoLoi(widget.maman) as int;
 
         final databaseReference = FirebaseDatabase.instance.reference();
         databaseReference
             .child('taikhoan')
             .child(widget.taikhoan)
             .update({'man': widget.mannguoichoi});
+      }
 
+      if (widget.maman != null) {
+        Future<int?> soloiman = cManThuThach.layThongTinSoLoi(widget.maman);
         if (widget.soloi == soloiman) {
           int sovan = widget.ttsovanthangkhongloi += 1;
           ctaiKhoan.capNhatThongKeTTThangKhongLoi(widget.taikhoan, sovan);
         }
-        int man = widget.maman;
-        String tilemoman = (man / widget.ttsovandachoi) as String;
-        ctaiKhoan.capNhatThongKeTTTiLeMoKhoaManMoi(widget.taikhoan, tilemoman);
       }
 
       thoiGian.cancel();
+
       showDialog(
         context: context,
         barrierDismissible: false,
@@ -638,8 +728,8 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
               TextButton(
                 child: const Text('Đóng'),
                 onPressed: () async {
-                  ctaiKhoan? ttTaiKhoan = await ctaiKhoan.thongTindangNhap(
-                      widget.taikhoan, widget.matkhau);
+                  ctaiKhoan? ttTaiKhoan =
+                      await ctaiKhoan.thongTinDangNhap(widget.taikhoan);
 
                   setState(() {
                     if (ttTaiKhoan != null) {
@@ -652,7 +742,6 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
                         (Route<dynamic> route) => false,
                       );
                     }
-
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -663,8 +752,6 @@ class _ManHinhChoiThuThachState extends State<ManHinhChoiThuThach> {
                                 ttsovandachoi: ttTaiKhoan!.ttsovandachoi,
                                 ttsovanthangkhongloi:
                                     ttTaiKhoan.mdsovanthangkhongloi,
-                                tttilemokhoamanmoi:
-                                    ttTaiKhoan.tttilemokhoamanmoi,
                               )),
                     );
                   });
